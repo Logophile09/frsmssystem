@@ -19,6 +19,15 @@ export default {
           900: '#12161f',
         },
       },
+      keyframes: {
+        pageIn: {
+          '0%': { opacity: '0', transform: 'translateY(6px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'page-in': 'pageIn 0.25s ease-out',
+      },
     },
   },
   plugins: [],

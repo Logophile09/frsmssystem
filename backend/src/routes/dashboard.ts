@@ -9,6 +9,7 @@ router.get('/summary', async (_req, res) => {
   const [
     { count: totalIncidents },
     { count: activeIncidents },
+    { count: criticalUnresolved },
     { count: totalPersonnel },
     { count: onDutyPersonnel },
     { count: totalVehicles },
@@ -18,9 +19,15 @@ router.get('/summary', async (_req, res) => {
     { data: statusRows },
     { data: recentIncidents },
     { count: expiringCerts },
+    { data: gpsIssues },
   ] = await Promise.all([
     supabaseAdmin.from('incidents').select('id', { count: 'exact', head: true }),
     supabaseAdmin.from('incidents').select('id', { count: 'exact', head: true }).in('status', ['reported', 'dispatched', 'on_scene']),
+    supabaseAdmin
+      .from('incidents')
+      .select('id', { count: 'exact', head: true })
+      .eq('severity', 'critical')
+      .in('status', ['reported', 'dispatched', 'on_scene']),
     supabaseAdmin.from('personnel').select('id', { count: 'exact', head: true }),
     supabaseAdmin.from('personnel').select('id', { count: 'exact', head: true }).eq('status', 'on_duty'),
     supabaseAdmin.from('vehicles').select('id', { count: 'exact', head: true }),
@@ -34,6 +41,7 @@ router.get('/summary', async (_req, res) => {
       .select('id', { count: 'exact', head: true })
       .eq('status', 'Active')
       .lte('expiry_date', new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)),
+    supabaseAdmin.from('gps_devices').select('device_code, status').neq('status', 'online'),
   ]);
 
   const tally = (rows: { [k: string]: string }[] | null, key: string) => {
@@ -47,6 +55,7 @@ router.get('/summary', async (_req, res) => {
   res.json({
     totalIncidents: totalIncidents ?? 0,
     activeIncidents: activeIncidents ?? 0,
+    criticalUnresolved: criticalUnresolved ?? 0,
     totalPersonnel: totalPersonnel ?? 0,
     onDutyPersonnel: onDutyPersonnel ?? 0,
     totalVehicles: totalVehicles ?? 0,
@@ -56,6 +65,7 @@ router.get('/summary', async (_req, res) => {
     incidentsBySeverity: tally(severityRows as any, 'severity'),
     incidentsByStatus: tally(statusRows as any, 'status'),
     recentIncidents,
+    gpsIssues: gpsIssues ?? [],
   });
 });
 

@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 import Badge from '../components/Badge';
 
 interface Summary {
   totalIncidents: number;
   activeIncidents: number;
+  criticalUnresolved: number;
   totalPersonnel: number;
   onDutyPersonnel: number;
   totalVehicles: number;
@@ -15,105 +17,233 @@ interface Summary {
   certificatesExpiringSoon: number;
   incidentsBySeverity: Record<string, number>;
   incidentsByStatus: Record<string, number>;
-  recentIncidents: { id: number; incident_number: string; incident_type: string; location: string; severity: string; status: string; created_at: string }[];
+  recentIncidents: {
+    id: number;
+    incident_number: string;
+    incident_type: string;
+    location: string;
+    severity: string;
+    status: string;
+    created_at: string;
+  }[];
+  gpsIssues: { device_code: string; status: string }[];
 }
 
-const SEVERITY_COLORS: Record<string, string> = { low: '#10b981', moderate: '#f59e0b', high: '#f97316', critical: '#e11d48' };
+interface Vehicle {
+  id: number;
+  unit_code: string;
+  vehicle_type: string;
+  status: string;
+}
 
-function Card({ label, value, sub }: { label: string; value: ReactNode; sub?: string }) {
+function StatCard({
+  label,
+  value,
+  icon,
+  accent,
+}: {
+  label: string;
+  value: ReactNode;
+  icon: string;
+  accent: 'emerald' | 'rose' | 'blue' | 'amber';
+}) {
+  const accents: Record<string, string> = {
+    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    rose: 'bg-rose-50 text-rose-600 border-rose-100',
+    blue: 'bg-blue-50 text-blue-600 border-blue-100',
+    amber: 'bg-amber-50 text-amber-600 border-amber-100',
+  };
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-ink-900">{value}</p>
-      {sub && <p className="mt-0.5 text-xs text-slate-400">{sub}</p>}
+    <div className="flex items-center justify-between rounded-xl border border-emerald-100 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-ink-800">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
+        <p className="mt-1 text-3xl font-bold text-slate-900 dark:text-slate-100">{value}</p>
+      </div>
+      <div className={`flex h-11 w-11 items-center justify-center rounded-full border text-lg ${accents[accent]}`}>
+        {icon}
+      </div>
     </div>
   );
 }
 
+function initials(name: string) {
+  return name
+    .split(' ')
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+}
+
 export default function Dashboard() {
+  const { profile } = useAuth();
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
-    api
-      .get('/dashboard/summary')
-      .then(setSummary)
+    Promise.all([api.get('/dashboard/summary'), api.get('/vehicles')])
+      .then(([s, v]) => {
+        setSummary(s);
+        setVehicles(v ?? []);
+      })
       .catch((e) => setError(e.message));
   }, []);
 
   if (error) return <div className="rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>;
   if (!summary) return <div className="text-slate-400">Loading dashboard…</div>;
 
-  const severityData = Object.entries(summary.incidentsBySeverity).map(([name, value]) => ({ name, value }));
-  const statusData = Object.entries(summary.incidentsByStatus).map(([name, value]) => ({ name, value }));
+  const notifications = [
+    ...summary.gpsIssues.map((g) => ({ text: `GPS signal ${g.status.replace('_', ' ')}: ${g.device_code}` })),
+    ...(summary.pendingFalseAlarmReviews > 0
+      ? [{ text: `${summary.pendingFalseAlarmReviews} incident(s) awaiting false-alarm review` }]
+      : []),
+    ...(summary.certificatesExpiringSoon > 0
+      ? [{ text: `${summary.certificatesExpiringSoon} certificate(s) expiring within 30 days` }]
+      : []),
+  ];
 
   return (
     <div>
-      <h1 className="mb-5 text-xl font-semibold text-ink-900">Dashboard</h1>
+      {/* Page header strip */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
+            FRSMS / Dashboard &middot; {summary.activeIncidents} Active
+          </p>
+          <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">Dashboard</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Real-time snapshot of incidents, fleet, and personnel readiness.
+          </p>
+        </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Card label="Active Incidents" value={summary.activeIncidents} sub={`${summary.totalIncidents} total`} />
-        <Card label="Personnel On Duty" value={summary.onDutyPersonnel} sub={`${summary.totalPersonnel} total`} />
-        <Card label="Vehicles Available" value={summary.availableVehicles} sub={`${summary.totalVehicles} total`} />
-        <Card label="False-Alarm Reviews" value={summary.pendingFalseAlarmReviews} sub="pending, score ≥ 65" />
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications((s) => !s)}
+              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-emerald-100 bg-white text-lg shadow-sm hover:bg-emerald-50 dark:border-white/10 dark:bg-ink-800"
+            >
+              🔔
+              {notifications.length > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+                  {notifications.length}
+                </span>
+              )}
+            </button>
+            {showNotifications && (
+              <div className="absolute right-0 z-10 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-white/10 dark:bg-ink-800">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  Notifications
+                </p>
+                {notifications.length === 0 ? (
+                  <p className="py-2 text-sm text-slate-400">All clear — nothing needs attention.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {notifications.map((n, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                        {n.text}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white">
+            {initials(profile?.full_name ?? '?')}
+          </div>
+
+          <Link
+            to="/incidents"
+            className="rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:from-emerald-600 hover:to-emerald-700"
+          >
+            + Report Incident
+          </Link>
+        </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="mb-3 text-sm font-medium text-ink-900">Incidents by Severity</p>
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie data={severityData} dataKey="value" nameKey="name" outerRadius={80} label>
-                {severityData.map((d) => (
-                  <Cell key={d.name} fill={SEVERITY_COLORS[d.name] ?? '#94a3b8'} />
+      {/* Stat cards */}
+      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label="Active Incidents" value={summary.activeIncidents} icon="⚠️" accent="rose" />
+        <StatCard label="Critical & Unresolved" value={summary.criticalUnresolved} icon="🔥" accent="rose" />
+        <StatCard label="Vehicles Available" value={summary.availableVehicles} icon="🚒" accent="emerald" />
+        <StatCard label="Personnel On Duty" value={summary.onDutyPersonnel} icon="👥" accent="amber" />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        {/* Recent incidents */}
+        <div className="rounded-xl border border-emerald-100 bg-white shadow-sm dark:border-white/10 dark:bg-ink-800 xl:col-span-2">
+          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 dark:border-white/10">
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Recent Incidents</p>
+            <Link to="/incidents" className="text-xs font-medium text-emerald-600 hover:underline">
+              View all
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-100 text-sm dark:divide-white/10">
+              <thead className="bg-emerald-50/60 dark:bg-white/5">
+                <tr>
+                  <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Incident #</th>
+                  <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Type</th>
+                  <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Location</th>
+                  <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Severity</th>
+                  <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Status</th>
+                  <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Reported</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                {summary.recentIncidents.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-5 py-6 text-center text-slate-400">
+                      No incidents yet.
+                    </td>
+                  </tr>
+                )}
+                {summary.recentIncidents.map((i) => (
+                  <tr key={i.id} className="hover:bg-emerald-50/40 dark:hover:bg-white/5">
+                    <td className="px-5 py-2.5 font-medium text-slate-700 dark:text-slate-300">{i.incident_number}</td>
+                    <td className="px-5 py-2.5 text-slate-700 dark:text-slate-300">{i.incident_type}</td>
+                    <td className="px-5 py-2.5 text-slate-700 dark:text-slate-300">{i.location}</td>
+                    <td className="px-5 py-2.5">
+                      <Badge value={i.severity} />
+                    </td>
+                    <td className="px-5 py-2.5">
+                      <Badge value={i.status} />
+                    </td>
+                    <td className="px-5 py-2.5 text-slate-500 dark:text-slate-400">
+                      {new Date(i.created_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                  </tr>
                 ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="mb-3 text-sm font-medium text-ink-900">Incidents by Status</p>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={statusData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Bar dataKey="value" fill="#f8641f" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-4 py-3 text-sm font-medium text-ink-900">Recent Incidents</div>
-        <table className="min-w-full divide-y divide-slate-100 text-sm">
-          <thead className="bg-slate-50">
-            <tr>
-              <th className="px-4 py-2 text-left font-medium text-slate-500">#</th>
-              <th className="px-4 py-2 text-left font-medium text-slate-500">Type</th>
-              <th className="px-4 py-2 text-left font-medium text-slate-500">Location</th>
-              <th className="px-4 py-2 text-left font-medium text-slate-500">Severity</th>
-              <th className="px-4 py-2 text-left font-medium text-slate-500">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {summary.recentIncidents.map((i) => (
-              <tr key={i.id}>
-                <td className="px-4 py-2 text-slate-700">{i.incident_number}</td>
-                <td className="px-4 py-2 text-slate-700">{i.incident_type}</td>
-                <td className="px-4 py-2 text-slate-700">{i.location}</td>
-                <td className="px-4 py-2">
-                  <Badge value={i.severity} />
-                </td>
-                <td className="px-4 py-2">
-                  <Badge value={i.status} />
-                </td>
-              </tr>
+        {/* Fleet snapshot */}
+        <div className="rounded-xl border border-emerald-100 bg-white shadow-sm dark:border-white/10 dark:bg-ink-800">
+          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 dark:border-white/10">
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Fleet Snapshot</p>
+            <Link to="/vehicles" className="text-xs font-medium text-emerald-600 hover:underline">
+              View all
+            </Link>
+          </div>
+          <ul className="divide-y divide-slate-100 dark:divide-white/5">
+            {vehicles.length === 0 && <li className="px-5 py-6 text-center text-sm text-slate-400">No vehicles yet.</li>}
+            {vehicles.slice(0, 6).map((v) => (
+              <li key={v.id} className="flex items-center justify-between px-5 py-3 text-sm">
+                <div>
+                  <p className="font-medium text-slate-700 dark:text-slate-300">{v.unit_code}</p>
+                  <p className="text-xs text-slate-400">{v.vehicle_type}</p>
+                </div>
+                <Badge value={v.status} />
+              </li>
             ))}
-          </tbody>
-        </table>
+          </ul>
+        </div>
       </div>
     </div>
   );
