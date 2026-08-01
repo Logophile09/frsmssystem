@@ -9,7 +9,7 @@ interface StaffAccount {
   username: string;
   full_name: string;
   role: 'admin' | 'staff';
-  status: 'active' | 'disabled';
+  status: 'active' | 'disabled' | 'pending';
   last_login_at: string | null;
   created_at: string;
 }
@@ -58,6 +58,11 @@ export default function StaffAccountsPage() {
     await load();
   }
 
+  async function approve(row: StaffAccount) {
+    await api.put(`/staff-accounts/${row.id}`, { status: 'active' });
+    await load();
+  }
+
   async function toggleRole(row: StaffAccount) {
     await api.put(`/staff-accounts/${row.id}`, { role: row.role === 'admin' ? 'staff' : 'admin' });
     await load();
@@ -82,6 +87,13 @@ export default function StaffAccountsPage() {
       </div>
 
       {error && <div className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
+
+      {rows.some((r) => r.status === 'pending') && (
+        <div className="mb-4 rounded-lg bg-amber-50 px-4 py-2 text-sm text-amber-800">
+          {rows.filter((r) => r.status === 'pending').length} account(s) signed in via Google/Facebook and are
+          waiting for approval below.
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="min-w-full divide-y divide-slate-200 text-sm">
@@ -115,12 +127,19 @@ export default function StaffAccountsPage() {
                 </td>
                 <td className="px-4 py-2.5 text-slate-500">{r.last_login_at ? new Date(r.last_login_at).toLocaleString() : 'never'}</td>
                 <td className="whitespace-nowrap px-4 py-2.5 text-right">
+                  {r.status === 'pending' && (
+                    <button onClick={() => approve(r)} className="mr-3 font-medium text-emerald-600 hover:underline">
+                      Approve
+                    </button>
+                  )}
                   <button onClick={() => toggleRole(r)} className="mr-3 text-ember-600 hover:underline" disabled={r.id === profile?.id}>
                     Make {r.role === 'admin' ? 'Staff' : 'Admin'}
                   </button>
-                  <button onClick={() => toggleStatus(r)} className="mr-3 text-ember-600 hover:underline" disabled={r.id === profile?.id}>
-                    {r.status === 'active' ? 'Disable' : 'Re-enable'}
-                  </button>
+                  {r.status !== 'pending' && (
+                    <button onClick={() => toggleStatus(r)} className="mr-3 text-ember-600 hover:underline" disabled={r.id === profile?.id}>
+                      {r.status === 'active' ? 'Disable' : 'Re-enable'}
+                    </button>
+                  )}
                   <button onClick={() => remove(r)} className="text-rose-600 hover:underline" disabled={r.id === profile?.id}>
                     Delete
                   </button>
