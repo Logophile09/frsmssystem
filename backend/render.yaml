@@ -1,0 +1,24 @@
+# Exported from Render on 2026-08-01T10:58:51Z
+version: "1"
+projects:
+- name: FRSMS
+  environments:
+  - name: Production
+    services:
+    - type: web
+      name: frsmssystem
+      runtime: node
+      repo: https://github.com/Logophile09/frsmssystem
+      plan: free
+      envVars:
+      - key: CORS_ORIGIN
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      region: ohio
+      buildCommand: npm install && npm run build
+      startCommand: npm start
+      autoDeployTrigger: commit
+      rootDir: backend

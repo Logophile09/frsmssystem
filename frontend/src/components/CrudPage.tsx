@@ -111,15 +111,15 @@ export default function CrudPage<T extends { id: number | string }>({
     <div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-ink-900">{title}</h1>
-          {description && <p className="text-sm text-slate-500">{description}</p>}
+          <h1 className="text-xl font-semibold text-ink-900 dark:text-slate-100">{title}</h1>
+          {description && <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>}
         </div>
         <div className="flex items-center gap-2">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search…"
-            className="w-48 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none"
+            className="w-48 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none dark:border-white/10 dark:bg-ink-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
           <button
             onClick={openNew}
@@ -130,21 +130,21 @@ export default function CrudPage<T extends { id: number | string }>({
         </div>
       </div>
 
-      {error && <div className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
+      {error && <div className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">{error}</div>}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-ink-800">
+        <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-white/10">
+          <thead className="bg-slate-50 dark:bg-white/5">
             <tr>
               {columns.map((c) => (
-                <th key={c.key} className="px-4 py-2.5 text-left font-medium text-slate-500">
+                <th key={c.key} className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">
                   {c.label}
                 </th>
               ))}
               <th className="px-4 py-2.5" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-white/5">
             {loading && (
               <tr>
                 <td colSpan={columns.length + 1} className="px-4 py-6 text-center text-slate-400">
@@ -160,18 +160,18 @@ export default function CrudPage<T extends { id: number | string }>({
               </tr>
             )}
             {filtered.map((row) => (
-              <tr key={row.id} className="hover:bg-slate-50">
+              <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-white/5">
                 {columns.map((c) => (
-                  <td key={c.key} className="px-4 py-2.5 text-slate-700">
+                  <td key={c.key} className="px-4 py-2.5 text-slate-700 dark:text-slate-300">
                     {c.render ? c.render(row) : String((row as any)[c.key] ?? '—')}
                   </td>
                 ))}
                 <td className="whitespace-nowrap px-4 py-2.5 text-right">
-                  <button onClick={() => openEdit(row)} className="mr-3 text-ember-600 hover:underline">
+                  <button onClick={() => openEdit(row)} className="mr-3 text-ember-600 hover:underline dark:text-ember-400">
                     Edit
                   </button>
                   {canDelete && (
-                    <button onClick={() => remove(row)} className="text-rose-600 hover:underline">
+                    <button onClick={() => remove(row)} className="text-rose-600 hover:underline dark:text-rose-400">
                       Delete
                     </button>
                   )}
@@ -187,12 +187,12 @@ export default function CrudPage<T extends { id: number | string }>({
           <div className="space-y-3">
             {fields.map((f) => (
               <div key={f.name}>
-                <label className="mb-1 block text-xs font-medium text-slate-600">{f.label}</label>
+                <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{f.label}</label>
                 {f.type === 'select' ? (
                   <select
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none dark:border-white/10 dark:bg-ink-800 dark:text-slate-100"
                   >
                     <option value="" disabled>
                       Select…
@@ -212,7 +212,7 @@ export default function CrudPage<T extends { id: number | string }>({
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
                     rows={3}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none dark:border-white/10 dark:bg-ink-800 dark:text-slate-100"
                   />
                 ) : (
                   <input
@@ -221,7 +221,7 @@ export default function CrudPage<T extends { id: number | string }>({
                     required={f.required}
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none dark:border-white/10 dark:bg-ink-800 dark:text-slate-100"
                   />
                 )}
               </div>
@@ -230,7 +230,7 @@ export default function CrudPage<T extends { id: number | string }>({
           <div className="mt-5 flex justify-end gap-2">
             <button
               onClick={() => setEditing(null)}
-              className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+              className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
             >
               Cancel
             </button>

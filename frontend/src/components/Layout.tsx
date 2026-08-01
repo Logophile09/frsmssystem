@@ -1,6 +1,8 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import LiveClock from './LiveClock';
 
 const NAV_GROUPS: { label: string; items: { to: string; label: string; adminOnly?: boolean }[] }[] = [
   {
@@ -44,9 +46,10 @@ const NAV_GROUPS: { label: string; items: { to: string; label: string; adminOnly
 
 export default function Layout() {
   const { profile, signOut } = useAuth();
+  const { dark, toggle } = useTheme();
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex min-h-screen bg-slate-100 dark:bg-ink-900">
       <aside className="hidden w-64 shrink-0 flex-col bg-ink-900 text-slate-200 md:flex">
         <div className="flex items-center gap-2 border-b border-white/10 px-5 py-5">
           <span className="text-xl">🚒</span>
@@ -85,16 +88,24 @@ export default function Layout() {
       </aside>
 
       <div className="flex min-h-screen flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3">
-          <div className="text-sm text-slate-500">Fire And Rescue Service Management System</div>
-          <div className="flex items-center gap-3">
+        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-white/10 dark:bg-ink-800">
+          <div className="text-sm text-slate-500 dark:text-slate-400">Fire And Rescue Service Management System</div>
+          <div className="flex items-center gap-4">
+            <LiveClock />
+            <button
+              onClick={toggle}
+              title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
+            >
+              {dark ? '☀️ Light' : '🌙 Dark'}
+            </button>
             <div className="text-right">
-              <p className="text-sm font-medium text-ink-900">{profile?.full_name ?? '—'}</p>
-              <p className="text-xs capitalize text-slate-500">{profile?.role ?? ''}</p>
+              <p className="text-sm font-medium text-ink-900 dark:text-slate-100">{profile?.full_name ?? '—'}</p>
+              <p className="text-xs capitalize text-slate-500 dark:text-slate-400">{profile?.role ?? ''}</p>
             </div>
             <button
               onClick={() => signOut()}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
             >
               Sign out
             </button>
