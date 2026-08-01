@@ -15,6 +15,7 @@ import {
   Ban,
   BarChart3,
   UserCog,
+  type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -23,7 +24,7 @@ import LiveClock from './LiveClock';
 
 const NAV_GROUPS: {
   label: string;
-  items: { to: string; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; adminOnly?: boolean }[];
+  items: { to: string; label: string; icon: LucideIcon; adminOnly?: boolean }[];
 }[] = [
   {
     label: 'Overview',

@@ -11,6 +11,7 @@
           "-webkit-text-size-adjust"
         ]
       }
-    ]
+    ],
+    "typescript-config/consistent-casing": "off"
   }
 }
