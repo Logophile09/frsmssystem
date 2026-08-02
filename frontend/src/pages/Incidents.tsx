@@ -114,7 +114,7 @@ export default function IncidentsPage() {
           <h1 className="text-xl font-semibold text-ink-900">Incidents &amp; Dispatch</h1>
           <p className="text-sm text-slate-500">Log emergencies, assign personnel &amp; vehicles, track status.</p>
         </div>
-        <button onClick={openNew} className="rounded-lg bg-ember-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-ember-700">
+        <button onClick={openNew} className="rounded-lg bg-gold-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-gold-600">
           + Log Incident
         </button>
       </div>
@@ -170,7 +170,7 @@ export default function IncidentsPage() {
                   )}
                 </td>
                 <td className="whitespace-nowrap px-4 py-2.5 text-right">
-                  <button onClick={() => openEdit(r)} className="mr-3 text-ember-600 hover:underline">
+                  <button onClick={() => openEdit(r)} className="mr-3 text-gold-500 hover:underline">
                     Edit
                   </button>
                   <button onClick={() => remove(r)} className="text-rose-600 hover:underline">
@@ -192,7 +192,7 @@ export default function IncidentsPage() {
                 <input
                   value={form.incident_type ?? ''}
                   onChange={(e) => setForm({ ...form, incident_type: e.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none"
                   placeholder="Structure Fire, Medical Emergency, …"
                 />
               </div>
@@ -201,7 +201,7 @@ export default function IncidentsPage() {
                 <input
                   value={form.location ?? ''}
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -211,7 +211,7 @@ export default function IncidentsPage() {
                 rows={3}
                 value={form.description ?? ''}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -220,7 +220,7 @@ export default function IncidentsPage() {
                 <select
                   value={form.severity ?? 'moderate'}
                   onChange={(e) => setForm({ ...form, severity: e.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none"
                 >
                   {SEVERITIES.map((s) => (
                     <option key={s} value={s}>
@@ -235,7 +235,7 @@ export default function IncidentsPage() {
                   <select
                     value={form.status ?? 'reported'}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none"
                   >
                     {STATUSES.map((s) => (
                       <option key={s} value={s}>
@@ -282,7 +282,7 @@ export default function IncidentsPage() {
             <button
               onClick={save}
               disabled={saving}
-              className="rounded-lg bg-ember-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-ember-700 disabled:opacity-60"
+              className="rounded-lg bg-gold-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-gold-600 disabled:opacity-60"
             >
               {saving ? 'Saving…' : 'Save'}
             </button>

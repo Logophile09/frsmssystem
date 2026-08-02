@@ -10,7 +10,7 @@ export default function LiveClock() {
 
   return (
     <div className="text-right leading-tight">
-      <p className="text-sm font-medium text-ink-900 dark:text-slate-100">
+      <p className="text-sm font-medium text-navy-900 dark:text-slate-100">
         {now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
       </p>
       <p className="text-xs text-slate-500 dark:text-slate-400">
