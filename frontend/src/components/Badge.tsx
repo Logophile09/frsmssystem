@@ -5,7 +5,6 @@ const COLORS: Record<string, string> = {
   inactive: 'bg-slate-200 text-slate-700',
   Inactive: 'bg-slate-200 text-slate-700',
   disabled: 'bg-slate-200 text-slate-700',
-  pending: 'bg-amber-100 text-amber-800',
   // personnel
   on_duty: 'bg-emerald-100 text-emerald-800',
   off_duty: 'bg-slate-200 text-slate-700',

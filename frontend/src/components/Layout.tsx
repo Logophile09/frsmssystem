@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { api } from '../lib/api';
+import { api, isBackendUnreachable } from '../lib/api';
 import LiveClock from './LiveClock';
 
 const NAV_GROUPS: {
@@ -66,7 +66,7 @@ const NAV_GROUPS: {
 ];
 
 export default function Layout() {
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, demoMode } = useAuth();
   const { dark, toggle } = useTheme();
   const location = useLocation();
   const [activeIncidents, setActiveIncidents] = useState<number | null>(null);
@@ -79,7 +79,7 @@ export default function Layout() {
         const summary = await api.get('/dashboard/summary');
         if (!cancelled) {
           setActiveIncidents(summary.activeIncidents ?? 0);
-          setOnline(true);
+          setOnline(!isBackendUnreachable());
         }
       } catch {
         if (!cancelled) setOnline(false);
@@ -151,6 +151,11 @@ export default function Layout() {
             <span className="hidden text-slate-500 dark:text-slate-400 sm:inline">
               Active Incidents: <span className="font-semibold text-slate-700 dark:text-slate-200">{activeIncidents ?? '—'}</span>
             </span>
+            {(demoMode || !online) && (
+              <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
+                Demo Data
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-4">
             <LiveClock />
