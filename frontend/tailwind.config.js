@@ -4,29 +4,62 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        display: ['Cinzel', 'ui-serif', 'Georgia', 'serif'],
+        sans: ['Cinzel', 'ui-serif', 'Georgia', 'serif'],
+      },
       colors: {
-        ember: {
-          50: '#fff4ed',
-          100: '#ffe4d3',
-          400: '#ff8a4c',
-          500: '#f8641f',
-          600: '#e04c10',
-          700: '#b8380f',
-          900: '#7a2410',
+        leaf: {
+          50: '#f1faf3',
+          100: '#dcf3e2',
+          200: '#b7e6c4',
+          300: '#8ad3a1',
+          400: '#5cbd80',
+          500: '#3fa367',
+          600: '#2f8352',
+          700: '#276843',
+          800: '#215137',
+          900: '#1b402d',
+        },
+        navy: {
+          50: '#eef1f6',
+          100: '#d3dae7',
+          200: '#a6b6cf',
+          300: '#71889f',
+          400: '#3f597a',
+          500: '#26405e',
+          600: '#1b3049',
+          700: '#14243a',
+          800: '#0f1a2b',
+          900: '#0a121e',
+          950: '#060a12',
         },
         ink: {
-          800: '#1c2230',
-          900: '#12161f',
+          800: '#0f1a2b',
+          900: '#0a121e',
         },
       },
       keyframes: {
         pageIn: {
-          '0%': { opacity: '0', transform: 'translateY(6px)' },
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeScaleIn: {
+          '0%': { opacity: '0', transform: 'scale(0.97)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        shimmerLeaf: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.6' },
         },
       },
       animation: {
-        'page-in': 'pageIn 0.25s ease-out',
+        'page-in': 'pageIn 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+        'modal-in': 'fadeScaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        'leaf-pulse': 'shimmerLeaf 2.4s ease-in-out infinite',
+      },
+      transitionTimingFunction: {
+        smooth: 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
     },
   },
