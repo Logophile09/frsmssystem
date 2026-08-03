@@ -111,7 +111,7 @@ export default function IncidentsPage() {
     <div>
       <div className="mb-5 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-ink-900">Incidents &amp; Dispatch</h1>
+          <h1 className="text-xl font-semibold text-navy-900 dark:text-slate-100">Incidents &amp; Dispatch</h1>
           <p className="text-sm text-slate-500">Log emergencies, assign personnel &amp; vehicles, track status.</p>
         </div>
         <button onClick={openNew} className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600">
@@ -119,22 +119,22 @@ export default function IncidentsPage() {
         </button>
       </div>
 
-      {error && <div className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
+      {error && <div className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">{error}</div>}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">
+        <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-white/10">
+          <thead className="bg-slate-50 dark:bg-white/5">
             <tr>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">#</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">Type</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">Location</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">Severity</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">Status</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">AI Score</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">#</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Type</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Location</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Severity</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Status</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">AI Score</th>
               <th className="px-4 py-2.5" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-white/5">
             {loading && (
               <tr>
                 <td colSpan={7} className="px-4 py-6 text-center text-slate-400">
@@ -150,10 +150,10 @@ export default function IncidentsPage() {
               </tr>
             )}
             {rows.map((r) => (
-              <tr key={r.id} className="hover:bg-slate-50">
-                <td className="px-4 py-2.5 text-slate-700">{r.incident_number}</td>
-                <td className="px-4 py-2.5 text-slate-700">{r.incident_type}</td>
-                <td className="px-4 py-2.5 text-slate-700">{r.location}</td>
+              <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-white/5">
+                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{r.incident_number}</td>
+                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{r.incident_type}</td>
+                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{r.location}</td>
                 <td className="px-4 py-2.5">
                   <Badge value={r.severity} />
                 </td>
@@ -162,7 +162,7 @@ export default function IncidentsPage() {
                 </td>
                 <td className="px-4 py-2.5">
                   {r.ai_false_alarm_score != null ? (
-                    <span className="text-xs text-slate-600">
+                    <span className="text-xs text-slate-600 dark:text-slate-400">
                       {r.ai_false_alarm_score} · <Badge value={r.ai_false_alarm_label} />
                     </span>
                   ) : (
@@ -188,39 +188,39 @@ export default function IncidentsPage() {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-600">Incident Type</label>
+                <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Incident Type</label>
                 <input
                   value={form.incident_type ?? ''}
                   onChange={(e) => setForm({ ...form, incident_type: e.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                   placeholder="Structure Fire, Medical Emergency, …"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-600">Location</label>
+                <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Location</label>
                 <input
                   value={form.location ?? ''}
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                 />
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">Description</label>
+              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Description</label>
               <textarea
                 rows={3}
                 value={form.description ?? ''}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-600">Severity</label>
+                <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Severity</label>
                 <select
                   value={form.severity ?? 'moderate'}
                   onChange={(e) => setForm({ ...form, severity: e.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                 >
                   {SEVERITIES.map((s) => (
                     <option key={s} value={s}>
@@ -231,11 +231,11 @@ export default function IncidentsPage() {
               </div>
               {editing !== 'new' && (
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-600">Status</label>
+                  <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Status</label>
                   <select
                     value={form.status ?? 'reported'}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                   >
                     {STATUSES.map((s) => (
                       <option key={s} value={s}>
@@ -248,35 +248,35 @@ export default function IncidentsPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">Assign Personnel</label>
-              <div className="max-h-32 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2">
+              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Assign Personnel</label>
+              <div className="max-h-32 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2 dark:border-white/10">
                 {personnel.map((p) => (
-                  <label key={p.id} className="flex items-center gap-2 text-sm">
+                  <label key={p.id} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                     <input type="checkbox" checked={(form.personnel_ids ?? []).includes(p.id)} onChange={() => toggleId('personnel_ids', p.id)} />
-                    {p.full_name} <span className="text-xs text-slate-400">({p.rank_title})</span>
+                    {p.full_name} <span className="text-xs text-slate-400 dark:text-slate-500">({p.rank_title})</span>
                   </label>
                 ))}
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">Assign Vehicles</label>
-              <div className="max-h-32 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2">
+              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Assign Vehicles</label>
+              <div className="max-h-32 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2 dark:border-white/10">
                 {vehicles.map((v) => (
-                  <label key={v.id} className="flex items-center gap-2 text-sm">
+                  <label key={v.id} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                     <input type="checkbox" checked={(form.vehicle_ids ?? []).includes(v.id)} onChange={() => toggleId('vehicle_ids', v.id)} />
-                    {v.unit_code} <span className="text-xs text-slate-400">({v.vehicle_type})</span>
+                    {v.unit_code} <span className="text-xs text-slate-400 dark:text-slate-500">({v.vehicle_type})</span>
                   </label>
                 ))}
               </div>
             </div>
 
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 dark:text-slate-500">
               The AI false-alarm score is recalculated automatically from the description, severity, time of day, and
               this location's history whenever the incident is saved.
             </p>
           </div>
           <div className="mt-5 flex justify-end gap-2">
-            <button onClick={() => setEditing(null)} className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
+            <button onClick={() => setEditing(null)} className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5">
               Cancel
             </button>
             <button

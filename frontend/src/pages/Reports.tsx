@@ -24,8 +24,8 @@ const PERSONNEL_COLORS: Record<string, string> = { on_duty: '#10b981', off_duty:
 
 function ChartCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="mb-3 text-sm font-medium text-ink-900">{title}</p>
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-navy-800">
+      <p className="mb-3 text-sm font-medium text-navy-900 dark:text-slate-100">{title}</p>
       {children}
     </div>
   );
@@ -85,7 +85,7 @@ export default function ReportsPage() {
   return (
     <div>
       <div className="mb-5">
-        <h1 className="text-xl font-semibold text-ink-900">Reports</h1>
+        <h1 className="text-xl font-semibold text-navy-900 dark:text-slate-100">Reports</h1>
         <p className="text-sm text-slate-500">Incident trends, severity/status breakdown, and fleet &amp; personnel readiness.</p>
       </div>
 
@@ -97,7 +97,7 @@ export default function ReportsPage() {
               <XAxis dataKey="day" tick={{ fontSize: 12 }} />
               <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
               <Tooltip />
-              <Line type="monotone" dataKey="count" stroke="#f8641f" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="count" stroke="#3fa367" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>

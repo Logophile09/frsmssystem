@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { Bell } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/Badge';
@@ -122,11 +123,11 @@ export default function Dashboard() {
           <div className="relative">
             <button
               onClick={() => setShowNotifications((s) => !s)}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-leaf-100 bg-white text-lg shadow-sm hover:bg-leaf-50 dark:border-leaf-400/10 dark:bg-navy-800"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition-colors duration-300 hover:bg-slate-100 hover:text-leaf-600 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-leaf-300"
             >
-              🔔
+              <Bell size={19} />
               {notifications.length > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+                <span className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
                   {notifications.length}
                 </span>
               )}

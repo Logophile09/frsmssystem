@@ -73,7 +73,7 @@ export default function StaffAccountsPage() {
     <div>
       <div className="mb-5 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-ink-900">Staff Accounts</h1>
+          <h1 className="text-xl font-semibold text-navy-900 dark:text-slate-100">Staff Accounts</h1>
           <p className="text-sm text-slate-500">Manage who can log in, and at what role. Admin only.</p>
         </div>
         <button onClick={() => setAdding(true)} className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600">
@@ -81,21 +81,21 @@ export default function StaffAccountsPage() {
         </button>
       </div>
 
-      {error && <div className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
+      {error && <div className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">{error}</div>}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">
+        <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-white/10">
+          <thead className="bg-slate-50 dark:bg-white/5">
             <tr>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">Username</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">Full Name</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">Role</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">Status</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">Last Login</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Username</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Full Name</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Role</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Status</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Last Login</th>
               <th className="px-4 py-2.5" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-white/5">
             {loading && (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
@@ -104,16 +104,16 @@ export default function StaffAccountsPage() {
               </tr>
             )}
             {rows.map((r) => (
-              <tr key={r.id} className="hover:bg-slate-50">
-                <td className="px-4 py-2.5 text-slate-700">{r.username}</td>
-                <td className="px-4 py-2.5 text-slate-700">{r.full_name}</td>
+              <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-white/5">
+                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{r.username}</td>
+                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{r.full_name}</td>
                 <td className="px-4 py-2.5">
                   <Badge value={r.role} />
                 </td>
                 <td className="px-4 py-2.5">
                   <Badge value={r.status} />
                 </td>
-                <td className="px-4 py-2.5 text-slate-500">{r.last_login_at ? new Date(r.last_login_at).toLocaleString() : 'never'}</td>
+                <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400">{r.last_login_at ? new Date(r.last_login_at).toLocaleString() : 'never'}</td>
                 <td className="whitespace-nowrap px-4 py-2.5 text-right">
                   <button onClick={() => toggleRole(r)} className="mr-3 text-leaf-500 hover:underline" disabled={r.id === profile?.id}>
                     Make {r.role === 'admin' ? 'Staff' : 'Admin'}
@@ -135,46 +135,46 @@ export default function StaffAccountsPage() {
         <Modal title="New Staff Account" onClose={() => setAdding(false)}>
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">Full Name</label>
+              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Full Name</label>
               <input
                 value={form.full_name}
                 onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">Username</label>
+              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Username</label>
               <input
                 value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">Email (login)</label>
+              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Email (login)</label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">Temporary Password</label>
+              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Temporary Password</label>
               <input
                 type="text"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                 placeholder="At least 6 characters"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">Role</label>
+              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Role</label>
               <select
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
               >
                 <option value="staff">Staff</option>
                 <option value="admin">Admin</option>
@@ -182,7 +182,7 @@ export default function StaffAccountsPage() {
             </div>
           </div>
           <div className="mt-5 flex justify-end gap-2">
-            <button onClick={() => setAdding(false)} className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
+            <button onClick={() => setAdding(false)} className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5">
               Cancel
             </button>
             <button

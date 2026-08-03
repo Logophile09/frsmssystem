@@ -41,27 +41,27 @@ export default function FalseAlarmsPage() {
   return (
     <div>
       <div className="mb-5">
-        <h1 className="text-xl font-semibold text-ink-900">False Alarm Review</h1>
+        <h1 className="text-xl font-semibold text-navy-900 dark:text-slate-100">False Alarm Review</h1>
         <p className="text-sm text-slate-500">
           Sorted by AI false-alarm score, highest first. Scoring is a transparent, rule-based weighted model — not a
           black box — every factor is shown before you decide.
         </p>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">
+        <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-white/10">
+          <thead className="bg-slate-50 dark:bg-white/5">
             <tr>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">#</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">Type</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">Location</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">AI Score</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">Label</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500">Review Status</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">#</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Type</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Location</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">AI Score</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Label</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Review Status</th>
               <th className="px-4 py-2.5" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-white/5">
             {loading && (
               <tr>
                 <td colSpan={7} className="px-4 py-6 text-center text-slate-400">
@@ -70,11 +70,11 @@ export default function FalseAlarmsPage() {
               </tr>
             )}
             {rows.map((r) => (
-              <tr key={r.id} className="hover:bg-slate-50">
-                <td className="px-4 py-2.5 text-slate-700">{r.incident_number}</td>
-                <td className="px-4 py-2.5 text-slate-700">{r.incident_type}</td>
-                <td className="px-4 py-2.5 text-slate-700">{r.location}</td>
-                <td className="px-4 py-2.5 font-medium text-slate-800">{r.ai_false_alarm_score}</td>
+              <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-white/5">
+                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{r.incident_number}</td>
+                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{r.incident_type}</td>
+                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{r.location}</td>
+                <td className="px-4 py-2.5 font-medium text-slate-800 dark:text-slate-200">{r.ai_false_alarm_score}</td>
                 <td className="px-4 py-2.5">
                   <Badge value={r.ai_false_alarm_label} />
                 </td>
@@ -95,11 +95,11 @@ export default function FalseAlarmsPage() {
       {reviewing && (
         <Modal title={`Review ${reviewing.incident_number}`} onClose={() => setReviewing(null)}>
           <div className="mb-4 flex items-center gap-3">
-            <div className="text-3xl font-semibold text-ink-900">{reviewing.ai_false_alarm_score}</div>
+            <div className="text-3xl font-semibold text-navy-900 dark:text-slate-100">{reviewing.ai_false_alarm_score}</div>
             <Badge value={reviewing.ai_false_alarm_label} />
           </div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Score breakdown</p>
-          <ul className="mb-5 space-y-1 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+          <ul className="mb-5 space-y-1 rounded-lg bg-slate-50 p-3 text-sm text-slate-700 dark:bg-white/5 dark:text-slate-300">
             {(reviewing.ai_false_alarm_factors ?? []).map((f, i) => (
               <li key={i}>• {f}</li>
             ))}
@@ -111,7 +111,7 @@ export default function FalseAlarmsPage() {
             <button onClick={() => decide('confirmed_real')} className="rounded-lg bg-rose-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-rose-700">
               Confirm Real Incident
             </button>
-            <button onClick={() => decide('pending')} className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
+            <button onClick={() => decide('pending')} className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5">
               Reset to Pending
             </button>
           </div>
