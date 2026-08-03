@@ -82,7 +82,7 @@ export default function GpsTrackerPage() {
           <h1 className="text-xl font-semibold text-ink-900">GPS Tracker</h1>
           <p className="text-sm text-slate-500">Live schematic map + device roster. No external map API/key required.</p>
         </div>
-        <button onClick={() => setAdding(true)} className="rounded-lg bg-gold-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-gold-600">
+        <button onClick={() => setAdding(true)} className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600">
           + Register Device
         </button>
       </div>
@@ -145,7 +145,7 @@ export default function GpsTrackerPage() {
                   <button
                     onClick={() => simulatePing(d.id)}
                     disabled={pinging === d.id}
-                    className="mr-3 text-gold-500 hover:underline disabled:opacity-50"
+                    className="mr-3 text-leaf-500 hover:underline disabled:opacity-50"
                   >
                     {pinging === d.id ? 'Pinging…' : 'Simulate Ping'}
                   </button>
@@ -168,7 +168,7 @@ export default function GpsTrackerPage() {
                 value={newCode}
                 onChange={(e) => setNewCode(e.target.value)}
                 placeholder="GPS-ENG-03"
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
               />
             </div>
             <div>
@@ -176,7 +176,7 @@ export default function GpsTrackerPage() {
               <select
                 value={newVehicle}
                 onChange={(e) => setNewVehicle(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
               >
                 <option value="">None</option>
                 {vehicles.map((v) => (
@@ -195,7 +195,7 @@ export default function GpsTrackerPage() {
             <button onClick={() => setAdding(false)} className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
               Cancel
             </button>
-            <button onClick={addDevice} className="rounded-lg bg-gold-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-gold-600">
+            <button onClick={addDevice} className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600">
               Register
             </button>
           </div>

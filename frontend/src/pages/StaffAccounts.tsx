@@ -76,7 +76,7 @@ export default function StaffAccountsPage() {
           <h1 className="text-xl font-semibold text-ink-900">Staff Accounts</h1>
           <p className="text-sm text-slate-500">Manage who can log in, and at what role. Admin only.</p>
         </div>
-        <button onClick={() => setAdding(true)} className="rounded-lg bg-gold-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-gold-600">
+        <button onClick={() => setAdding(true)} className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600">
           + New Account
         </button>
       </div>
@@ -115,10 +115,10 @@ export default function StaffAccountsPage() {
                 </td>
                 <td className="px-4 py-2.5 text-slate-500">{r.last_login_at ? new Date(r.last_login_at).toLocaleString() : 'never'}</td>
                 <td className="whitespace-nowrap px-4 py-2.5 text-right">
-                  <button onClick={() => toggleRole(r)} className="mr-3 text-gold-500 hover:underline" disabled={r.id === profile?.id}>
+                  <button onClick={() => toggleRole(r)} className="mr-3 text-leaf-500 hover:underline" disabled={r.id === profile?.id}>
                     Make {r.role === 'admin' ? 'Staff' : 'Admin'}
                   </button>
-                  <button onClick={() => toggleStatus(r)} className="mr-3 text-gold-500 hover:underline" disabled={r.id === profile?.id}>
+                  <button onClick={() => toggleStatus(r)} className="mr-3 text-leaf-500 hover:underline" disabled={r.id === profile?.id}>
                     {r.status === 'active' ? 'Disable' : 'Re-enable'}
                   </button>
                   <button onClick={() => remove(r)} className="text-rose-600 hover:underline" disabled={r.id === profile?.id}>
@@ -139,7 +139,7 @@ export default function StaffAccountsPage() {
               <input
                 value={form.full_name}
                 onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
               />
             </div>
             <div>
@@ -147,7 +147,7 @@ export default function StaffAccountsPage() {
               <input
                 value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
               />
             </div>
             <div>
@@ -156,7 +156,7 @@ export default function StaffAccountsPage() {
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
               />
             </div>
             <div>
@@ -165,7 +165,7 @@ export default function StaffAccountsPage() {
                 type="text"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
                 placeholder="At least 6 characters"
               />
             </div>
@@ -174,7 +174,7 @@ export default function StaffAccountsPage() {
               <select
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none"
               >
                 <option value="staff">Staff</option>
                 <option value="admin">Admin</option>
@@ -188,7 +188,7 @@ export default function StaffAccountsPage() {
             <button
               onClick={createAccount}
               disabled={saving}
-              className="rounded-lg bg-gold-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-gold-600 disabled:opacity-60"
+              className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600 disabled:opacity-60"
             >
               {saving ? 'Creating…' : 'Create Account'}
             </button>

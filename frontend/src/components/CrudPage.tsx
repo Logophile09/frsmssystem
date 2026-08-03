@@ -119,11 +119,11 @@ export default function CrudPage<T extends { id: number | string }>({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search…"
-            className="w-48 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+            className="w-48 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
           <button
             onClick={openNew}
-            className="rounded-lg bg-gold-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-gold-600"
+            className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600"
           >
             + Add
           </button>
@@ -167,7 +167,7 @@ export default function CrudPage<T extends { id: number | string }>({
                   </td>
                 ))}
                 <td className="whitespace-nowrap px-4 py-2.5 text-right">
-                  <button onClick={() => openEdit(row)} className="mr-3 text-gold-500 hover:underline dark:text-gold-300">
+                  <button onClick={() => openEdit(row)} className="mr-3 text-leaf-500 hover:underline dark:text-leaf-300">
                     Edit
                   </button>
                   {canDelete && (
@@ -192,7 +192,7 @@ export default function CrudPage<T extends { id: number | string }>({
                   <select
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                   >
                     <option value="" disabled>
                       Select…
@@ -212,7 +212,7 @@ export default function CrudPage<T extends { id: number | string }>({
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
                     rows={3}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                   />
                 ) : (
                   <input
@@ -221,7 +221,7 @@ export default function CrudPage<T extends { id: number | string }>({
                     required={f.required}
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-gold-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                   />
                 )}
               </div>
@@ -237,7 +237,7 @@ export default function CrudPage<T extends { id: number | string }>({
             <button
               onClick={save}
               disabled={saving}
-              className="rounded-lg bg-gold-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-gold-600 disabled:opacity-60"
+              className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600 disabled:opacity-60"
             >
               {saving ? 'Saving…' : 'Save'}
             </button>

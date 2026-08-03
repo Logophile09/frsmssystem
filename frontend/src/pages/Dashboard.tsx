@@ -109,7 +109,7 @@ export default function Dashboard() {
       {/* Page header strip */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-gold-600">
+          <p className="text-xs font-semibold uppercase tracking-wider text-leaf-600">
             FRSMS / Dashboard &middot; {summary.activeIncidents} Active
           </p>
           <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">Dashboard</h1>
@@ -122,7 +122,7 @@ export default function Dashboard() {
           <div className="relative">
             <button
               onClick={() => setShowNotifications((s) => !s)}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gold-100 bg-white text-lg shadow-sm hover:bg-gold-50 dark:border-gold-400/10 dark:bg-navy-800"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-leaf-100 bg-white text-lg shadow-sm hover:bg-leaf-50 dark:border-leaf-400/10 dark:bg-navy-800"
             >
               🔔
               {notifications.length > 0 && (
@@ -132,7 +132,7 @@ export default function Dashboard() {
               )}
             </button>
             {showNotifications && (
-              <div className="absolute right-0 z-10 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-gold-400/10 dark:bg-navy-800">
+              <div className="absolute right-0 z-10 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-leaf-400/10 dark:bg-navy-800">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   Notifications
                 </p>
@@ -152,13 +152,13 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-600 text-sm font-bold text-navy-950">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-600 text-sm font-bold text-navy-950">
             {initials(profile?.full_name ?? '?')}
           </div>
 
           <Link
             to="/incidents"
-            className="rounded-lg bg-gradient-to-r from-gold-400 to-gold-600 px-4 py-2 text-sm font-semibold text-navy-950 shadow-sm transition-all duration-300 hover:from-gold-300 hover:to-gold-500"
+            className="rounded-lg bg-gradient-to-r from-leaf-400 to-leaf-600 px-4 py-2 text-sm font-semibold text-navy-950 shadow-sm transition-all duration-300 hover:from-leaf-300 hover:to-leaf-500"
           >
             + Report Incident
           </Link>
@@ -175,16 +175,16 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Recent incidents */}
-        <div className="rounded-xl border border-gold-100 bg-white shadow-sm dark:border-gold-400/10 dark:bg-navy-800 xl:col-span-2">
+        <div className="rounded-xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800 xl:col-span-2">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 dark:border-white/10">
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Recent Incidents</p>
-            <Link to="/incidents" className="text-xs font-medium text-gold-600 hover:underline">
+            <Link to="/incidents" className="text-xs font-medium text-leaf-600 hover:underline">
               View all
             </Link>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-100 text-sm dark:divide-white/10">
-              <thead className="bg-gold-50/60 dark:bg-white/5">
+              <thead className="bg-leaf-50/60 dark:bg-white/5">
                 <tr>
                   <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Incident #</th>
                   <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Type</th>
@@ -203,7 +203,7 @@ export default function Dashboard() {
                   </tr>
                 )}
                 {summary.recentIncidents.map((i) => (
-                  <tr key={i.id} className="hover:bg-gold-50/40 dark:hover:bg-white/5">
+                  <tr key={i.id} className="hover:bg-leaf-50/40 dark:hover:bg-white/5">
                     <td className="px-5 py-2.5 font-medium text-slate-700 dark:text-slate-300">{i.incident_number}</td>
                     <td className="px-5 py-2.5 text-slate-700 dark:text-slate-300">{i.incident_type}</td>
                     <td className="px-5 py-2.5 text-slate-700 dark:text-slate-300">{i.location}</td>
@@ -224,10 +224,10 @@ export default function Dashboard() {
         </div>
 
         {/* Fleet snapshot */}
-        <div className="rounded-xl border border-gold-100 bg-white shadow-sm dark:border-gold-400/10 dark:bg-navy-800">
+        <div className="rounded-xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 dark:border-white/10">
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Fleet Snapshot</p>
-            <Link to="/vehicles" className="text-xs font-medium text-gold-600 hover:underline">
+            <Link to="/vehicles" className="text-xs font-medium text-leaf-600 hover:underline">
               View all
             </Link>
           </div>

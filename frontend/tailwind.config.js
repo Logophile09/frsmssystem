@@ -9,17 +9,17 @@ export default {
         sans: ['Cinzel', 'ui-serif', 'Georgia', 'serif'],
       },
       colors: {
-        gold: {
-          50: '#fdf9ee',
-          100: '#f8edc9',
-          200: '#f0da8f',
-          300: '#e5c05a',
-          400: '#d8ad3f',
-          500: '#c69a2e',
-          600: '#a67d20',
-          700: '#7f5f18',
-          800: '#5c4512',
-          900: '#3d2e0d',
+        leaf: {
+          50: '#f1faf3',
+          100: '#dcf3e2',
+          200: '#b7e6c4',
+          300: '#8ad3a1',
+          400: '#5cbd80',
+          500: '#3fa367',
+          600: '#2f8352',
+          700: '#276843',
+          800: '#215137',
+          900: '#1b402d',
         },
         navy: {
           50: '#eef1f6',
@@ -48,7 +48,7 @@ export default {
           '0%': { opacity: '0', transform: 'scale(0.97)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
         },
-        shimmerGold: {
+        shimmerLeaf: {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.6' },
         },
@@ -56,7 +56,7 @@ export default {
       animation: {
         'page-in': 'pageIn 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         'modal-in': 'fadeScaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-        'gold-pulse': 'shimmerGold 2.4s ease-in-out infinite',
+        'leaf-pulse': 'shimmerLeaf 2.4s ease-in-out infinite',
       },
       transitionTimingFunction: {
         smooth: 'cubic-bezier(0.16, 1, 0.3, 1)',

@@ -96,8 +96,8 @@ export default function Layout() {
   return (
     <div className="flex min-h-screen bg-slate-100 dark:bg-navy-900">
       <aside className="hidden w-64 shrink-0 flex-col bg-navy-950 text-slate-200 md:flex">
-        <div className="flex items-center gap-2 border-b border-gold-400/15 px-5 py-5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gold-400/50 bg-white shadow-[0_0_12px_rgba(216,173,63,0.25)]">
+        <div className="flex items-center gap-2 border-b border-leaf-400/15 px-5 py-5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-leaf-400/50 bg-white shadow-[0_0_12px_rgba(92,189,128,0.25)]">
             <img src="/barangay-culiat-seal.png" alt="Barangay Culiat seal" className="h-full w-full object-cover" />
           </div>
           <div>
@@ -108,7 +108,7 @@ export default function Layout() {
         <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
           {NAV_GROUPS.map((group) => (
             <div key={group.label}>
-              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gold-200/50">
+              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-leaf-200/50">
                 {group.label}
               </p>
               <div className="space-y-0.5">
@@ -124,8 +124,8 @@ export default function Layout() {
                         className={({ isActive }) =>
                           `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-300 ease-out ${
                             isActive
-                              ? 'bg-gradient-to-r from-gold-500/90 to-gold-600/90 text-navy-950 font-semibold shadow-sm shadow-black/30'
-                              : 'text-slate-300 hover:translate-x-0.5 hover:bg-white/5 hover:text-gold-200'
+                              ? 'bg-gradient-to-r from-leaf-500/90 to-leaf-600/90 text-navy-950 font-semibold shadow-sm shadow-black/30'
+                              : 'text-slate-300 hover:translate-x-0.5 hover:bg-white/5 hover:text-leaf-200'
                           }`
                         }
                       >
@@ -141,7 +141,7 @@ export default function Layout() {
       </aside>
 
       <div className="flex min-h-screen flex-1 flex-col">
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-6 py-3 dark:border-gold-400/10 dark:bg-navy-800">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-6 py-3 dark:border-leaf-400/10 dark:bg-navy-800">
           <div className="flex items-center gap-4 text-sm">
             <span className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
               <span className={`h-2 w-2 rounded-full transition-colors duration-300 ${online ? 'animate-pulse bg-emerald-500' : 'bg-rose-500'}`} />
@@ -152,7 +152,7 @@ export default function Layout() {
               Active Incidents: <span className="font-semibold text-slate-700 dark:text-slate-200">{activeIncidents ?? '—'}</span>
             </span>
             {(demoMode || !online) && (
-              <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 dark:bg-gold-500/20 dark:text-gold-300">
+              <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 dark:bg-leaf-500/20 dark:text-leaf-300">
                 Demo Data
               </span>
             )}
@@ -162,7 +162,7 @@ export default function Layout() {
             <button
               onClick={toggle}
               title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition-colors duration-300 hover:bg-slate-50 dark:border-gold-400/15 dark:text-slate-300 dark:hover:bg-white/5"
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition-colors duration-300 hover:bg-slate-50 dark:border-leaf-400/15 dark:text-slate-300 dark:hover:bg-white/5"
             >
               {dark ? '☀️ Light' : '🌙 Dark'}
             </button>
@@ -172,7 +172,7 @@ export default function Layout() {
             </div>
             <button
               onClick={() => signOut()}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition-colors duration-300 hover:bg-slate-50 dark:border-gold-400/15 dark:text-slate-300 dark:hover:bg-white/5"
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition-colors duration-300 hover:bg-slate-50 dark:border-leaf-400/15 dark:text-slate-300 dark:hover:bg-white/5"
             >
               Sign out
             </button>

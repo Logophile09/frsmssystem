@@ -11,7 +11,7 @@ const AGENCY_NAME = 'Barangay Culiat Government';
 const AGENCY_TAGLINE = 'Integrated Public Safety & Security';
 const STATION_NAME = "Barangay Culiat's fire and rescue station";
 const EMERGENCY_NUMBER = '911';
-const BACKGROUND_IMAGE: string | null = null;
+const BACKGROUND_IMAGE: string | null = '/station-photo.jpg';
 
 export default function Login() {
   const { session, demoMode, signIn, signInDemo } = useAuth();
@@ -55,7 +55,7 @@ export default function Login() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-navy-950">
-      {/* Background: real photo if provided, otherwise a generated dark navy/gold atmosphere */}
+      {/* Background: real photo if provided, otherwise a generated dark navy/leaf atmosphere */}
       {BACKGROUND_IMAGE ? (
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -76,33 +76,33 @@ export default function Login() {
             <rect x="1160" y="90" width="160" height="210" fill="#060a12" />
             <rect x="1340" y="130" width="260" height="170" fill="#060a12" />
           </svg>
-          {/* subtle gold radial glow behind the sign-in card */}
+          {/* subtle leaf-green radial glow behind the sign-in card */}
           <div
             className="absolute right-[-10%] top-1/2 h-[560px] w-[560px] -translate-y-1/2 rounded-full opacity-[0.12] blur-3xl"
-            style={{ background: 'radial-gradient(circle, #d8ad3f 0%, transparent 70%)' }}
+            style={{ background: 'radial-gradient(circle, #5cbd80 0%, transparent 70%)' }}
           />
           <div
             className="absolute inset-0 opacity-[0.06]"
             style={{
               backgroundImage:
-                'linear-gradient(to right, #d8ad3f 1px, transparent 1px), linear-gradient(to bottom, #d8ad3f 1px, transparent 1px)',
+                'linear-gradient(to right, #5cbd80 1px, transparent 1px), linear-gradient(to bottom, #5cbd80 1px, transparent 1px)',
               backgroundSize: '56px 56px',
             }}
           />
         </div>
       )}
       {/* Dark overlay so text/cards stay legible regardless of background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/70" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-navy-950/70 to-black/85" />
 
       <div className="relative flex min-h-screen flex-col">
         {/* Header / brand bar */}
-        <header className="flex items-center justify-between border-b border-gold-400/20 px-6 py-5 sm:px-10">
+        <header className="flex items-center justify-between border-b border-leaf-400/20 px-6 py-5 sm:px-10">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-gold-400 bg-white shadow-[0_0_18px_rgba(216,173,63,0.35)] transition-shadow duration-300 hover:shadow-[0_0_28px_rgba(216,173,63,0.55)]">
+            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-400 bg-white shadow-[0_0_18px_rgba(92,189,128,0.35)] transition-shadow duration-300 hover:shadow-[0_0_28px_rgba(92,189,128,0.55)]">
               <img src="/barangay-culiat-seal.png" alt="Barangay Culiat seal" className="h-full w-full object-cover" />
             </div>
             <div className="leading-tight">
-              <p className="text-xs font-bold uppercase tracking-widest text-gold-300">{AGENCY_NAME}</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-leaf-300">{AGENCY_NAME}</p>
               <p className="font-display text-sm font-semibold text-white">{AGENCY_TAGLINE}</p>
             </div>
           </div>
@@ -117,14 +117,14 @@ export default function Login() {
           {/* Left: hero copy */}
           <div className="max-w-xl">
             <div className="mb-4 flex items-center gap-2">
-              <span className="h-0.5 w-8 bg-gold-400" />
-              <span className="text-xs font-bold uppercase tracking-widest text-gold-300">
+              <span className="h-0.5 w-8 bg-leaf-400" />
+              <span className="text-xs font-bold uppercase tracking-widest text-leaf-300">
                 Fire &amp; Rescue Service Management
               </span>
             </div>
             <h1 className="font-display text-4xl font-bold leading-tight text-white sm:text-5xl">
-              Command every response, from the <span className="text-gold-300">first call</span> to{' '}
-              <span className="text-gold-300">close-out</span>.
+              Command every response, from the <span className="text-leaf-300">first call</span> to{' '}
+              <span className="text-leaf-300">close-out</span>.
             </h1>
             <p className="mt-5 max-w-md text-slate-300">
               Sign in to access live dispatch, unit tracking, resource management, and incident reporting for{' '}
@@ -134,7 +134,7 @@ export default function Login() {
               {['Live Dispatch', 'Unit Tracking', 'Incident Reports'].map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full border border-gold-400/30 bg-white/5 px-3 py-1 text-xs font-medium text-gold-200 backdrop-blur transition-colors duration-300 hover:border-gold-400/60 hover:bg-white/10"
+                  className="rounded-full border border-leaf-400/30 bg-white/5 px-3 py-1 text-xs font-medium text-leaf-200 backdrop-blur transition-colors duration-300 hover:border-leaf-400/60 hover:bg-white/10"
                 >
                   {tag}
                 </span>
@@ -143,7 +143,7 @@ export default function Login() {
           </div>
 
           {/* Right: sign-in card */}
-          <div className="w-full max-w-sm rounded-2xl border border-gold-400/20 bg-navy-900/80 p-8 shadow-2xl shadow-black/50 backdrop-blur-xl transition-shadow duration-300 hover:shadow-[0_0_40px_rgba(216,173,63,0.08)]">
+          <div className="w-full max-w-sm rounded-2xl border border-leaf-400/20 bg-navy-900/80 p-8 shadow-2xl shadow-black/50 backdrop-blur-xl transition-shadow duration-300 hover:shadow-[0_0_40px_rgba(92,189,128,0.08)]">
             <h2 className="font-display text-xl font-bold text-white">Welcome Back</h2>
             <p className="mt-1 text-sm text-slate-400">Sign in to your console</p>
 
@@ -156,7 +156,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@agency.gov"
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-gold-400 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-gold-400/20"
+                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-leaf-400 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-leaf-400/20"
                 />
               </div>
               <div>
@@ -167,7 +167,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-gold-400 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-gold-400/20"
+                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-leaf-400 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-leaf-400/20"
                 />
               </div>
 
@@ -176,7 +176,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full rounded-lg bg-gradient-to-r from-gold-300 to-gold-500 py-2.5 text-sm font-semibold text-navy-950 shadow-lg shadow-gold-500/20 transition-all duration-300 hover:from-gold-200 hover:to-gold-400 hover:shadow-gold-400/30 disabled:opacity-60"
+                className="w-full rounded-lg bg-gradient-to-r from-leaf-300 to-leaf-500 py-2.5 text-sm font-semibold text-navy-950 shadow-lg shadow-leaf-500/20 transition-all duration-300 hover:from-leaf-200 hover:to-leaf-400 hover:shadow-leaf-400/30 disabled:opacity-60"
               >
                 {submitting ? 'Signing in…' : 'Sign in'}
               </button>
@@ -185,7 +185,7 @@ export default function Login() {
             <button
               type="button"
               onClick={handleDemoEntry}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-gold-400/30 bg-gold-400/5 py-2.5 text-sm font-semibold text-gold-200 transition-colors duration-300 hover:bg-gold-400/15"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-leaf-400/30 bg-leaf-400/5 py-2.5 text-sm font-semibold text-leaf-200 transition-colors duration-300 hover:bg-leaf-400/15"
             >
               View Demo (no account needed)
             </button>
@@ -206,7 +206,7 @@ export default function Login() {
                 type="button"
                 onClick={() => handleOAuth('google')}
                 disabled={oauthLoading !== null}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-slate-200 transition-colors duration-300 hover:border-gold-400/30 hover:bg-white/10 disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-slate-200 transition-colors duration-300 hover:border-leaf-400/30 hover:bg-white/10 disabled:opacity-60"
               >
                 <GoogleIcon />
                 {oauthLoading === 'google' ? 'Redirecting…' : 'Continue with Google'}
@@ -215,7 +215,7 @@ export default function Login() {
                 type="button"
                 onClick={() => handleOAuth('facebook')}
                 disabled={oauthLoading !== null}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-slate-200 transition-colors duration-300 hover:border-gold-400/30 hover:bg-white/10 disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-slate-200 transition-colors duration-300 hover:border-leaf-400/30 hover:bg-white/10 disabled:opacity-60"
               >
                 <FacebookIcon />
                 {oauthLoading === 'facebook' ? 'Redirecting…' : 'Continue with Facebook'}
