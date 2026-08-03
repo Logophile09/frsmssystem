@@ -111,7 +111,7 @@ export default function CrudPage<T extends { id: number | string }>({
     <div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-ink-900 dark:text-slate-100">{title}</h1>
+          <h1 className="text-xl font-semibold text-navy-900 dark:text-slate-100">{title}</h1>
           {description && <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>}
         </div>
         <div className="flex items-center gap-2">
@@ -119,11 +119,11 @@ export default function CrudPage<T extends { id: number | string }>({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search…"
-            className="w-48 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none dark:border-white/10 dark:bg-ink-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+            className="w-48 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
           <button
             onClick={openNew}
-            className="rounded-lg bg-ember-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-ember-700"
+            className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600"
           >
             + Add
           </button>
@@ -132,7 +132,7 @@ export default function CrudPage<T extends { id: number | string }>({
 
       {error && <div className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">{error}</div>}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-ink-800">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">
         <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-white/10">
           <thead className="bg-slate-50 dark:bg-white/5">
             <tr>
@@ -167,7 +167,7 @@ export default function CrudPage<T extends { id: number | string }>({
                   </td>
                 ))}
                 <td className="whitespace-nowrap px-4 py-2.5 text-right">
-                  <button onClick={() => openEdit(row)} className="mr-3 text-ember-600 hover:underline dark:text-ember-400">
+                  <button onClick={() => openEdit(row)} className="mr-3 text-leaf-500 hover:underline dark:text-leaf-300">
                     Edit
                   </button>
                   {canDelete && (
@@ -192,7 +192,7 @@ export default function CrudPage<T extends { id: number | string }>({
                   <select
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none dark:border-white/10 dark:bg-ink-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                   >
                     <option value="" disabled>
                       Select…
@@ -212,7 +212,7 @@ export default function CrudPage<T extends { id: number | string }>({
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
                     rows={3}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none dark:border-white/10 dark:bg-ink-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                   />
                 ) : (
                   <input
@@ -221,7 +221,7 @@ export default function CrudPage<T extends { id: number | string }>({
                     required={f.required}
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-ember-500 focus:outline-none dark:border-white/10 dark:bg-ink-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                   />
                 )}
               </div>
@@ -237,7 +237,7 @@ export default function CrudPage<T extends { id: number | string }>({
             <button
               onClick={save}
               disabled={saving}
-              className="rounded-lg bg-ember-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-ember-700 disabled:opacity-60"
+              className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600 disabled:opacity-60"
             >
               {saving ? 'Saving…' : 'Save'}
             </button>

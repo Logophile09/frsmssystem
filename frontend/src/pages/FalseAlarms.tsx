@@ -82,7 +82,7 @@ export default function FalseAlarmsPage() {
                   <Badge value={r.false_alarm_review_status} />
                 </td>
                 <td className="whitespace-nowrap px-4 py-2.5 text-right">
-                  <button onClick={() => setReviewing(r)} className="text-ember-600 hover:underline">
+                  <button onClick={() => setReviewing(r)} className="text-leaf-500 hover:underline">
                     Review
                   </button>
                 </td>
