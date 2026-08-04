@@ -11,7 +11,7 @@ const AGENCY_NAME = 'Barangay Culiat Government';
 const AGENCY_TAGLINE = 'Integrated Public Safety & Security';
 const STATION_NAME = "Barangay Culiat's fire and rescue station";
 const EMERGENCY_NUMBER = '911';
-const BACKGROUND_IMAGE: string | null = '/station-photo.jpg';
+const BACKGROUND_IMAGE: string | null = '/station-photo.png';
 
 export default function Login() {
   const { session, demoMode, signIn, signInDemo } = useAuth();
@@ -59,7 +59,12 @@ export default function Login() {
       {BACKGROUND_IMAGE ? (
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }}
+          style={{
+            backgroundImage: `url(${BACKGROUND_IMAGE})`,
+            backgroundPosition: 'center 30%',
+            filter: 'blur(3px) saturate(1.05) brightness(0.9)',
+            transform: 'scale(1.06)',
+          }}
         />
       ) : (
         <div className="absolute inset-0">
@@ -91,8 +96,25 @@ export default function Login() {
           />
         </div>
       )}
-      {/* Dark overlay so text/cards stay legible regardless of background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-navy-950/70 to-black/85" />
+      {/* Dark overlay so text/cards stay legible while the photo still reads through */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(4,10,10,0.55) 0%, rgba(4,12,12,0.78) 45%, rgba(3,9,9,0.93) 100%), radial-gradient(1000px 600px at 15% 10%, rgba(6,18,16,0.35), transparent 60%)',
+        }}
+      />
+      {/* faint mint grid overlay, matches the mock */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, #4ade80 1px, transparent 1px), linear-gradient(to bottom, #4ade80 1px, transparent 1px)',
+          backgroundSize: '64px 64px',
+          maskImage: 'linear-gradient(to bottom, black 0%, black 55%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 55%, transparent 100%)',
+        }}
+      />
 
       <div className="relative flex min-h-screen flex-col">
         {/* Header / brand bar */}
