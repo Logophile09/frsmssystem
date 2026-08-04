@@ -5,22 +5,24 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Cinzel', 'ui-serif', 'Georgia', 'serif'],
-        sans: ['Cinzel', 'ui-serif', 'Georgia', 'serif'],
+        display: ['Georgia', 'Times New Roman', 'Times', 'serif'],
+        sans: ['Georgia', 'Times New Roman', 'Times', 'serif'],
       },
       colors: {
+        // Mint / leaf green — matches the light-theme dashboard mock
         leaf: {
-          50: '#f1faf3',
-          100: '#dcf3e2',
-          200: '#b7e6c4',
+          50: '#f2fbf4',
+          100: '#e3f6e8',
+          200: '#cdeed6',
           300: '#8ad3a1',
-          400: '#5cbd80',
-          500: '#3fa367',
-          600: '#2f8352',
-          700: '#276843',
-          800: '#215137',
-          900: '#1b402d',
+          400: '#4ade80',
+          500: '#3fae5c',
+          600: '#2f9e44',
+          700: '#1f7a37',
+          800: '#16612c',
+          900: '#0d2416',
         },
+        // Deep navy — matches the dark hero login mock
         navy: {
           50: '#eef1f6',
           100: '#d3dae7',
@@ -32,11 +34,12 @@ export default {
           700: '#14243a',
           800: '#0f1a2b',
           900: '#0a121e',
-          950: '#060a12',
+          950: '#050d12',
         },
         ink: {
-          800: '#0f1a2b',
-          900: '#0a121e',
+          700: '#5b7065',
+          800: '#16612c',
+          900: '#0d2416',
         },
       },
       keyframes: {

@@ -40,29 +40,23 @@ interface Vehicle {
 function StatCard({
   label,
   value,
-  icon,
   accent,
 }: {
   label: string;
   value: ReactNode;
-  icon: string;
+  icon?: string;
   accent: 'emerald' | 'rose' | 'blue' | 'amber';
 }) {
-  const accents: Record<string, string> = {
-    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    rose: 'bg-rose-50 text-rose-600 border-rose-100',
-    blue: 'bg-blue-50 text-blue-600 border-blue-100',
-    amber: 'bg-amber-50 text-amber-600 border-amber-100',
+  const valueColor: Record<string, string> = {
+    emerald: 'text-leaf-700 dark:text-leaf-300',
+    rose: 'text-rose-600 dark:text-rose-400',
+    blue: 'text-ink-900 dark:text-slate-100',
+    amber: 'text-amber-600 dark:text-amber-400',
   };
   return (
-    <div className="flex items-center justify-between rounded-xl border border-emerald-100 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-ink-800">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
-        <p className="mt-1 text-3xl font-bold text-slate-900 dark:text-slate-100">{value}</p>
-      </div>
-      <div className={`flex h-11 w-11 items-center justify-center rounded-full border text-lg ${accents[accent]}`}>
-        {icon}
-      </div>
+    <div className="rounded-2xl border border-leaf-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-leaf-200 hover:shadow-lg dark:border-white/10 dark:bg-ink-800">
+      <p className="text-[11px] font-extrabold uppercase tracking-wider text-leaf-600/70 dark:text-slate-400">{label}</p>
+      <p className={`mt-2.5 text-4xl font-extrabold ${valueColor[accent]}`}>{value}</p>
     </div>
   );
 }
@@ -176,7 +170,7 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Recent incidents */}
-        <div className="rounded-xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800 xl:col-span-2">
+        <div className="rounded-2xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800 xl:col-span-2">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 dark:border-white/10">
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Recent Incidents</p>
             <Link to="/incidents" className="text-xs font-medium text-leaf-600 hover:underline">
@@ -225,7 +219,7 @@ export default function Dashboard() {
         </div>
 
         {/* Fleet snapshot */}
-        <div className="rounded-xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
+        <div className="rounded-2xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 dark:border-white/10">
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Fleet Snapshot</p>
             <Link to="/vehicles" className="text-xs font-medium text-leaf-600 hover:underline">
