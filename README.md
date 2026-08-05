@@ -1,4 +1,4 @@
-# FRSMS v2 — Fire And Rescue Service Management System
+# FRSMS — Fire And Rescue Service Management System
 
 Rebuild of the original PHP/MySQL FRSMS on the target stack:
 
