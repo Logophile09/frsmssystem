@@ -106,7 +106,7 @@ export default function GpsTrackerPage() {
         </button>
       </div>
 
-      <div className="mb-6 overflow-hidden rounded-xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
+      <div className="isolate mb-6 overflow-hidden rounded-xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
         <MapContainer center={DEFAULT_CENTER} zoom={12} scrollWheelZoom style={{ height: '18rem', width: '100%' }}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

@@ -266,7 +266,7 @@ export default function Login() {
       </div>
 
       {transitioning && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-4 bg-navy-950 animate-page-in">
+        <div className="fixed inset-0 z-[2000] flex flex-col items-center justify-center gap-4 bg-navy-950 animate-page-in">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-leaf-400 to-leaf-600 shadow-lg shadow-leaf-500/40 animate-leaf-pulse">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="20 6 9 17 4 12" />

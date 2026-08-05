@@ -12,6 +12,8 @@
 // live data instead -- nothing here gets in the way of that.
 // ---------------------------------------------------------------------
 
+import { computeFalseAlarmScore } from './falseAlarmScoring';
+
 const daysAgo = (n: number) => new Date(Date.now() - n * 86400000).toISOString();
 const hoursAgo = (n: number) => new Date(Date.now() - n * 3600000).toISOString();
 const minutesAgo = (n: number) => new Date(Date.now() - n * 60000).toISOString();
@@ -70,47 +72,38 @@ export const equipment = [
 
 // ---------------------------------------------------------------------
 // Incidents (+ personnel/vehicle assignments, + AI false-alarm scoring)
+//
+// Every incident's ai_false_alarm_* fields below are computed live by
+// computeFalseAlarmScore() from the caller/sensor inputs on each row --
+// NOT hand-written numbers. That keeps demo mode honest about how the
+// AI module actually works (see False_Alarm_AI_Module_Notes.txt).
 // ---------------------------------------------------------------------
 const rawIncidents = [
-  { id: 1, incident_number: 'INC-2026-0001', incident_type: 'Structure Fire', description: 'Reported fire on the 2nd floor of a residential building.', location: 'Fairview, Quezon City', severity: 'high', status: 'resolved', created_at: daysAgo(14), resolved_at: offset(daysAgo(14), 3) },
-  { id: 2, incident_number: 'INC-2026-0002', incident_type: 'Vehicular Accident', description: 'Two-vehicle collision, one injured.', location: 'Commonwealth Ave.', severity: 'moderate', status: 'resolved', created_at: daysAgo(12), resolved_at: offset(daysAgo(12), 2) },
-  { id: 3, incident_number: 'INC-2026-0003', incident_type: 'Grass Fire', description: 'Small grass fire near a vacant lot, contained quickly.', location: 'Novaliches, Quezon City', severity: 'low', status: 'resolved', created_at: daysAgo(11), resolved_at: offset(daysAgo(11), 1) },
-  { id: 4, incident_number: 'INC-2026-0004', incident_type: 'Medical Emergency', description: 'Elderly patient with chest pains.', location: 'Batasan Hills', severity: 'moderate', status: 'resolved', created_at: daysAgo(9), resolved_at: offset(daysAgo(9), 1.5) },
-  { id: 5, incident_number: 'INC-2026-0005', incident_type: 'Structure Fire', description: 'Possible false alarm - smoke detector triggered, no visible fire on arrival.', location: 'Culiat, Quezon City', severity: 'low', status: 'resolved', created_at: daysAgo(8), resolved_at: offset(daysAgo(8), 0.75) },
-  { id: 6, incident_number: 'INC-2026-0006', incident_type: 'Medical Emergency', description: 'Patient with chest pains.', location: 'Brgy. Sauyo', severity: 'moderate', status: 'reported', created_at: daysAgo(6), resolved_at: null },
-  { id: 7, incident_number: 'INC-2026-0007', incident_type: 'Medical Emergency', description: 'Fall injury, ambulance requested.', location: 'Talipapa', severity: 'moderate', status: 'reported', created_at: daysAgo(5), resolved_at: null },
-  { id: 8, incident_number: 'INC-2026-0008', incident_type: 'Grass Fire', description: 'Small brush fire spreading toward fence line.', location: 'Brgy. Fairview, Quezon City', severity: 'low', status: 'reported', created_at: daysAgo(4), resolved_at: null },
-  { id: 9, incident_number: 'INC-2026-0009', incident_type: 'Vehicular Accident', description: 'Rear-end collision, minor injuries reported.', location: 'Commonwealth Ave. corner Regalado', severity: 'low', status: 'reported', created_at: daysAgo(3), resolved_at: null },
-  { id: 10, incident_number: 'INC-2026-0010', incident_type: 'Structure Fire', description: 'Fire reported at commercial building, crews on site.', location: 'Brgy. Commonwealth, Quezon City', severity: 'high', status: 'resolved', created_at: daysAgo(2), resolved_at: offset(daysAgo(2), 4) },
-  { id: 11, incident_number: 'INC-2026-0011', incident_type: 'Structure Fire', description: 'Possible false alarm - smoke detector triggered, no visible fire on arrival.', location: 'Culiat, Quezon City', severity: 'low', status: 'dispatched', created_at: hoursAgo(5), resolved_at: null },
-  { id: 12, incident_number: 'INC-2026-0012', incident_type: 'Structure Fire', description: 'Active fire, occupants trapped on 3rd floor, multiple casualties reported.', location: 'Payatas, Quezon City', severity: 'critical', status: 'on_scene', created_at: minutesAgo(40), resolved_at: null },
+  { id: 1, incident_number: 'INC-2026-0001', incident_type: 'Structure Fire', description: 'Reported fire on the 2nd floor of a residential building.', location: 'Fairview, Quezon City', severity: 'high', status: 'resolved', created_at: daysAgo(14), resolved_at: offset(daysAgo(14), 3),
+    is_anonymous_caller: false, caller_count: 3, smoke_sensor_triggered: true, fire_personnel_confirmed_smoke: true, false_alarm_review_status: 'confirmed_real' },
+  { id: 2, incident_number: 'INC-2026-0002', incident_type: 'Vehicular Accident', description: 'Two-vehicle collision, one injured.', location: 'Commonwealth Ave.', severity: 'moderate', status: 'resolved', created_at: daysAgo(12), resolved_at: offset(daysAgo(12), 2),
+    is_anonymous_caller: false, caller_count: 2, smoke_sensor_triggered: false, fire_personnel_confirmed_smoke: false, false_alarm_review_status: 'confirmed_real' },
+  { id: 3, incident_number: 'INC-2026-0003', incident_type: 'Grass Fire', description: 'Small grass fire near a vacant lot, contained quickly.', location: 'Novaliches, Quezon City', severity: 'low', status: 'resolved', created_at: daysAgo(11), resolved_at: offset(daysAgo(11), 1),
+    is_anonymous_caller: false, caller_count: 1, smoke_sensor_triggered: false, fire_personnel_confirmed_smoke: true, false_alarm_review_status: 'confirmed_real' },
+  { id: 4, incident_number: 'INC-2026-0004', incident_type: 'Medical Emergency', description: 'Elderly patient with chest pains.', location: 'Batasan Hills', severity: 'moderate', status: 'resolved', created_at: daysAgo(9), resolved_at: offset(daysAgo(9), 1.5),
+    is_anonymous_caller: false, caller_count: 2, smoke_sensor_triggered: false, fire_personnel_confirmed_smoke: false, false_alarm_review_status: 'confirmed_real' },
+  { id: 5, incident_number: 'INC-2026-0005', incident_type: 'Structure Fire', description: 'Possible false alarm - smoke detector triggered, no visible fire on arrival.', location: 'Culiat, Quezon City', severity: 'low', status: 'resolved', created_at: daysAgo(8), resolved_at: offset(daysAgo(8), 0.75),
+    is_anonymous_caller: true, caller_count: 1, smoke_sensor_triggered: false, fire_personnel_confirmed_smoke: false, false_alarm_review_status: 'confirmed_false' },
+  { id: 6, incident_number: 'INC-2026-0006', incident_type: 'Medical Emergency', description: 'Patient with chest pains.', location: 'Brgy. Sauyo', severity: 'moderate', status: 'reported', created_at: daysAgo(6), resolved_at: null,
+    is_anonymous_caller: false, caller_count: 2, smoke_sensor_triggered: false, fire_personnel_confirmed_smoke: false, false_alarm_review_status: 'pending' },
+  { id: 7, incident_number: 'INC-2026-0007', incident_type: 'Medical Emergency', description: 'Fall injury, ambulance requested.', location: 'Talipapa', severity: 'moderate', status: 'reported', created_at: daysAgo(5), resolved_at: null,
+    is_anonymous_caller: false, caller_count: 1, smoke_sensor_triggered: false, fire_personnel_confirmed_smoke: false, false_alarm_review_status: 'pending' },
+  { id: 8, incident_number: 'INC-2026-0008', incident_type: 'Grass Fire', description: 'Small brush fire spreading toward fence line.', location: 'Brgy. Fairview, Quezon City', severity: 'low', status: 'reported', created_at: daysAgo(4), resolved_at: null,
+    is_anonymous_caller: false, caller_count: 3, smoke_sensor_triggered: false, fire_personnel_confirmed_smoke: false, false_alarm_review_status: 'pending' },
+  { id: 9, incident_number: 'INC-2026-0009', incident_type: 'Vehicular Accident', description: 'Rear-end collision, minor injuries reported.', location: 'Commonwealth Ave. corner Regalado', severity: 'low', status: 'reported', created_at: daysAgo(3), resolved_at: null,
+    is_anonymous_caller: false, caller_count: 2, smoke_sensor_triggered: false, fire_personnel_confirmed_smoke: false, false_alarm_review_status: 'pending' },
+  { id: 10, incident_number: 'INC-2026-0010', incident_type: 'Structure Fire', description: 'Fire reported at commercial building, crews on site.', location: 'Brgy. Commonwealth, Quezon City', severity: 'high', status: 'resolved', created_at: daysAgo(2), resolved_at: offset(daysAgo(2), 4),
+    is_anonymous_caller: false, caller_count: 4, smoke_sensor_triggered: true, fire_personnel_confirmed_smoke: true, false_alarm_review_status: 'confirmed_real' },
+  { id: 11, incident_number: 'INC-2026-0011', incident_type: 'Structure Fire', description: 'Possible false alarm - smoke detector triggered, no visible fire on arrival.', location: 'Culiat, Quezon City', severity: 'low', status: 'dispatched', created_at: hoursAgo(5), resolved_at: null,
+    is_anonymous_caller: true, caller_count: 1, smoke_sensor_triggered: false, fire_personnel_confirmed_smoke: false, false_alarm_review_status: 'pending' },
+  { id: 12, incident_number: 'INC-2026-0012', incident_type: 'Structure Fire', description: 'Active fire, occupants trapped on 3rd floor, multiple casualties reported.', location: 'Payatas, Quezon City', severity: 'critical', status: 'on_scene', created_at: minutesAgo(40), resolved_at: null,
+    is_anonymous_caller: false, caller_count: 6, smoke_sensor_triggered: true, fire_personnel_confirmed_smoke: true, false_alarm_review_status: 'pending' },
 ];
-
-const falseAlarmMeta: Record<number, { score: number; label: string; factors: string[]; review: string }> = {
-  5: {
-    score: 81,
-    label: 'confirmed_false',
-    review: 'confirmed_false',
-    factors: [
-      '+20 Keyword match: "no visible fire"',
-      '+30 Repeat location: confirmed false alarm at this address previously',
-      '+10 Low severity classification on intake',
-      '+21 Resolved in under 1 hour with no unit redeployment',
-    ],
-  },
-  11: {
-    score: 62,
-    label: 'likely_false',
-    review: 'pending',
-    factors: [
-      '+20 Keyword match: "no visible fire"',
-      '+15 Repeat location: 2nd similar report at this address this year',
-      '+10 Low severity classification on intake',
-      '-8 Time of day: reported during typical occupancy hours',
-      '+25 No casualties or entrapment reported',
-    ],
-  },
-};
 
 const incidentPersonnelPairs: [number, number][] = [
   [1, 1], [1, 2], [2, 2], [3, 1], [4, 4], [5, 3],
@@ -123,14 +116,34 @@ const incidentVehiclePairs: [number, number][] = [
   [11, 2], [12, 1], [12, 2], [12, 7],
 ];
 
-function buildIncident(raw: (typeof rawIncidents)[number]) {
-  const meta = falseAlarmMeta[raw.id];
+/** Does `list` already contain a *confirmed* false alarm at this location? Mirrors the backend's live DB check. */
+function hasConfirmedFalseAt(list: { location: string; false_alarm_review_status: string }[], location: string) {
+  return list.some((i) => i.location === location && i.false_alarm_review_status === 'confirmed_false');
+}
+
+function scoreIncident(
+  priorIncidents: { location: string; false_alarm_review_status: string }[],
+  location: string,
+  reportedAt: string,
+  inputs: { is_anonymous_caller?: boolean; caller_count?: number; smoke_sensor_triggered?: boolean; fire_personnel_confirmed_smoke?: boolean },
+) {
+  return computeFalseAlarmScore({
+    isAnonymousCaller: !!inputs.is_anonymous_caller,
+    repeatedFalseAlarmLocation: hasConfirmedFalseAt(priorIncidents, location),
+    smokeSensorTriggered: !!inputs.smoke_sensor_triggered,
+    callerCount: inputs.caller_count ?? 1,
+    firePersonnelConfirmedSmoke: !!inputs.fire_personnel_confirmed_smoke,
+    reported_at: reportedAt,
+  });
+}
+
+function buildIncident(raw: (typeof rawIncidents)[number], priorIncidents: (typeof rawIncidents)[number][]) {
+  const scoring = scoreIncident(priorIncidents, raw.location, raw.created_at, raw);
   return {
     ...raw,
-    ai_false_alarm_score: meta?.score ?? null,
-    ai_false_alarm_label: meta?.label ?? null,
-    ai_false_alarm_factors: meta?.factors ?? null,
-    false_alarm_review_status: meta?.review ?? 'pending',
+    ai_false_alarm_score: scoring.score,
+    ai_false_alarm_label: scoring.label,
+    ai_false_alarm_factors: scoring.factors,
     incident_personnel: incidentPersonnelPairs
       .filter(([iid]) => iid === raw.id)
       .map(([, pid]) => ({ personnel_id: pid, personnel: personnel.find((p) => p.id === pid) })),
@@ -140,7 +153,13 @@ function buildIncident(raw: (typeof rawIncidents)[number]) {
   };
 }
 
-export const incidents = rawIncidents.map(buildIncident);
+// Score sequentially (each incident's "repeated location" check only sees
+// incidents that came before it), same as the real system scores an
+// incident once, at the moment it's reported.
+export const incidents: any[] = [];
+for (const raw of rawIncidents) {
+  incidents.push(buildIncident(raw, incidents));
+}
 
 // ---------------------------------------------------------------------
 // Attendance
@@ -279,7 +298,7 @@ export function getDashboardSummary() {
     onDutyPersonnel: personnel.filter((p) => p.status === 'on_duty').length,
     totalVehicles: vehicles.length,
     availableVehicles: vehicles.filter((v) => v.status === 'available').length,
-    pendingFalseAlarmReviews: incidents.filter((i) => i.false_alarm_review_status === 'pending' && i.ai_false_alarm_score != null).length,
+    pendingFalseAlarmReviews: incidents.filter((i) => i.false_alarm_review_status === 'pending').length,
     certificatesExpiringSoon: certificates.filter((c) => c.status === 'Active' && new Date(c.expiry_date).getTime() - Date.now() < 30 * 86400000).length,
     incidentsBySeverity: tally(incidents, 'severity'),
     incidentsByStatus: tally(incidents, 'status'),
@@ -294,8 +313,11 @@ export function getDashboardSummary() {
 }
 
 export function getFalseAlarmQueue() {
+  // Every scored incident shows here, sorted highest-risk first -- not
+  // just the ones that already look suspicious. That's the whole point
+  // of a transparent review queue: the dispatcher sees the AI's read on
+  // everything, not a pre-filtered subset.
   return [...incidents]
-    .filter((i) => i.ai_false_alarm_score != null)
     .sort((a, b) => (b.ai_false_alarm_score ?? 0) - (a.ai_false_alarm_score ?? 0))
     .map((i) => ({
       id: i.id,
@@ -354,17 +376,31 @@ export function demoRequest(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: str
   // generic table handler below doesn't know how to construct.
   if (clean === 'incidents' && method === 'POST') {
     const nextId = Math.max(0, ...incidents.map((i) => i.id)) + 1;
-    const record: any = buildIncident({
+    const now = new Date().toISOString();
+    const aiInputs = {
+      is_anonymous_caller: !!body?.is_anonymous_caller,
+      caller_count: body?.caller_count ?? 1,
+      smoke_sensor_triggered: !!body?.smoke_sensor_triggered,
+      fire_personnel_confirmed_smoke: !!body?.fire_personnel_confirmed_smoke,
+    };
+    const location = body?.location ?? '';
+    const scoring = scoreIncident(incidents, location, now, aiInputs);
+    const record: any = {
       id: nextId,
       incident_number: `INC-2026-${String(nextId).padStart(4, '0')}`,
       incident_type: body?.incident_type ?? 'Unspecified',
       description: body?.description ?? null,
-      location: body?.location ?? '',
+      location,
       severity: body?.severity ?? 'moderate',
       status: 'reported',
-      created_at: new Date().toISOString(),
+      created_at: now,
       resolved_at: null,
-    });
+      ...aiInputs,
+      false_alarm_review_status: 'pending',
+      ai_false_alarm_score: scoring.score,
+      ai_false_alarm_label: scoring.label,
+      ai_false_alarm_factors: scoring.factors,
+    };
     record.incident_personnel = (body?.personnel_ids ?? []).map((pid: number) => ({ personnel_id: pid, personnel: personnel.find((p) => p.id === pid) }));
     record.incident_vehicles = (body?.vehicle_ids ?? []).map((vid: number) => ({ vehicle_id: vid, vehicles: vehicles.find((v) => v.id === vid) }));
     incidents.unshift(record);
@@ -382,7 +418,24 @@ export function demoRequest(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: str
         location: body?.location ?? existing.location,
         severity: body?.severity ?? existing.severity,
         status: body?.status ?? existing.status,
+        is_anonymous_caller: body?.is_anonymous_caller !== undefined ? !!body.is_anonymous_caller : existing.is_anonymous_caller,
+        caller_count: body?.caller_count !== undefined ? body.caller_count : existing.caller_count,
+        smoke_sensor_triggered: body?.smoke_sensor_triggered !== undefined ? !!body.smoke_sensor_triggered : existing.smoke_sensor_triggered,
+        fire_personnel_confirmed_smoke:
+          body?.fire_personnel_confirmed_smoke !== undefined ? !!body.fire_personnel_confirmed_smoke : existing.fire_personnel_confirmed_smoke,
       };
+
+      const scoringFieldsChanged = ['location', 'is_anonymous_caller', 'caller_count', 'smoke_sensor_triggered', 'fire_personnel_confirmed_smoke'].some(
+        (k) => body?.[k] !== undefined,
+      );
+      if (scoringFieldsChanged) {
+        const priorIncidents = incidents.filter((i) => i.id !== id);
+        const scoring = scoreIncident(priorIncidents, updated.location, existing.created_at, updated);
+        updated.ai_false_alarm_score = scoring.score;
+        updated.ai_false_alarm_label = scoring.label;
+        updated.ai_false_alarm_factors = scoring.factors;
+      }
+
       if (body?.personnel_ids) {
         updated.incident_personnel = body.personnel_ids.map((pid: number) => ({ personnel_id: pid, personnel: personnel.find((p) => p.id === pid) }));
       }

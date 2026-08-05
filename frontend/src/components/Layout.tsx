@@ -187,13 +187,13 @@ export default function Layout() {
 
       {/* Mobile sidebar — slide-in drawer below md */}
       {mobileNavOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-[1500] md:hidden">
           <div
             className="absolute inset-0 bg-black/50"
             onClick={() => setMobileNavOpen(false)}
             aria-hidden="true"
           />
-          <aside className="relative z-50 flex h-full w-72 max-w-[85vw] flex-col border-r border-leaf-100 bg-white text-ink-900 shadow-2xl dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200">
+          <aside className="relative z-[1501] flex h-full w-72 max-w-[85vw] flex-col border-r border-leaf-100 bg-white text-ink-900 shadow-2xl dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200">
             {sidebarContent}
           </aside>
         </div>

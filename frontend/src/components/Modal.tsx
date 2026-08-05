@@ -17,7 +17,7 @@ export default function Modal({
     // whose address/nav bars shrink the *visible* viewport below 100vh, the
     // top of the dialog is never stranded off-screen with no way to reach it.
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-4 backdrop-blur-sm animate-page-in"
+      className="fixed inset-0 z-[2000] overflow-y-auto bg-black/40 p-4 backdrop-blur-sm animate-page-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
