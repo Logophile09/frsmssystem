@@ -20,14 +20,24 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<'google' | 'facebook' | null>(null);
+  const [transitioning, setTransitioning] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  if (session || demoMode) return <Navigate to="/" replace />;
+  // `transitioning` intentionally holds off the redirect for a beat so the
+  // success overlay below gets to play instead of an instant jump-cut.
+  if ((session || demoMode) && !transitioning) return <Navigate to="/" replace />;
+
+  function goToDashboard() {
+    setTransitioning(true);
+    window.setTimeout(() => {
+      navigate((location.state as any)?.from ?? '/', { replace: true });
+    }, 700);
+  }
 
   function handleDemoEntry() {
     signInDemo();
-    navigate((location.state as any)?.from ?? '/', { replace: true });
+    goToDashboard();
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -37,7 +47,7 @@ export default function Login() {
     const result = await signIn(email, password);
     setSubmitting(false);
     if (result.error) setError(result.error);
-    else navigate((location.state as any)?.from ?? '/', { replace: true });
+    else goToDashboard();
   }
 
   async function handleOAuth(provider: 'google' | 'facebook') {
@@ -55,6 +65,7 @@ export default function Login() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-navy-950">
+      <div className={`transition-opacity duration-500 ${transitioning ? 'pointer-events-none opacity-0' : 'opacity-100'}`}>
       {/* Background: real photo if provided, otherwise a generated dark navy/leaf atmosphere */}
       {BACKGROUND_IMAGE ? (
         <div
@@ -252,6 +263,19 @@ export default function Login() {
           </div>
         </main>
       </div>
+      </div>
+
+      {transitioning && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-4 bg-navy-950 animate-page-in">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-leaf-400 to-leaf-600 shadow-lg shadow-leaf-500/40 animate-leaf-pulse">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <p className="font-display text-lg font-semibold text-white">Welcome back</p>
+          <p className="text-sm text-slate-400">Loading your dashboard…</p>
+        </div>
+      )}
     </div>
   );
 }

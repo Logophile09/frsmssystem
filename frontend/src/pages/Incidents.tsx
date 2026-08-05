@@ -13,8 +13,13 @@ interface Incident {
   status: string;
   created_at: string;
   resolved_at: string | null;
+  is_anonymous_caller: boolean;
+  caller_count: number;
+  smoke_sensor_triggered: boolean;
+  fire_personnel_confirmed_smoke: boolean;
   ai_false_alarm_score: number | null;
   ai_false_alarm_label: string | null;
+  ai_false_alarm_factors: string[] | null;
   incident_personnel: { personnel_id: number; personnel: { id: number; full_name: string; rank_title: string } }[];
   incident_vehicles: { vehicle_id: number; vehicles: { id: number; unit_code: string; vehicle_type: string } }[];
 }
@@ -62,7 +67,18 @@ export default function IncidentsPage() {
   }, []);
 
   function openNew() {
-    setForm({ incident_type: '', description: '', location: '', severity: 'moderate', personnel_ids: [], vehicle_ids: [] });
+    setForm({
+      incident_type: '',
+      description: '',
+      location: '',
+      severity: 'moderate',
+      personnel_ids: [],
+      vehicle_ids: [],
+      is_anonymous_caller: false,
+      caller_count: 1,
+      smoke_sensor_triggered: false,
+      fire_personnel_confirmed_smoke: false,
+    });
     setEditing('new');
   }
 
@@ -75,6 +91,10 @@ export default function IncidentsPage() {
       status: row.status,
       personnel_ids: row.incident_personnel.map((x) => x.personnel_id),
       vehicle_ids: row.incident_vehicles.map((x) => x.vehicle_id),
+      is_anonymous_caller: row.is_anonymous_caller ?? false,
+      caller_count: row.caller_count ?? 1,
+      smoke_sensor_triggered: row.smoke_sensor_triggered ?? false,
+      fire_personnel_confirmed_smoke: row.fire_personnel_confirmed_smoke ?? false,
     });
     setEditing(row);
   }
@@ -162,7 +182,10 @@ export default function IncidentsPage() {
                 </td>
                 <td className="px-4 py-2.5">
                   {r.ai_false_alarm_score != null ? (
-                    <span className="text-xs text-slate-600 dark:text-slate-400">
+                    <span
+                      className="text-xs text-slate-600 dark:text-slate-400"
+                      title={(r.ai_false_alarm_factors ?? []).join('\n')}
+                    >
                       {r.ai_false_alarm_score} · <Badge value={r.ai_false_alarm_label} />
                     </span>
                   ) : (
@@ -270,10 +293,52 @@ export default function IncidentsPage() {
               </div>
             </div>
 
-            <p className="text-xs text-slate-400 dark:text-slate-500">
-              The AI false-alarm score is recalculated automatically from the description, severity, time of day, and
-              this location's history whenever the incident is saved.
-            </p>
+            <div className="rounded-lg border border-leaf-100 bg-leaf-50/60 p-3 dark:border-leaf-400/15 dark:bg-white/5">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-leaf-700 dark:text-leaf-300">
+                False-Alarm AI Inputs
+              </p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={!!form.is_anonymous_caller}
+                    onChange={(e) => setForm({ ...form, is_anonymous_caller: e.target.checked })}
+                  />
+                  Anonymous caller
+                </label>
+                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={!!form.smoke_sensor_triggered}
+                    onChange={(e) => setForm({ ...form, smoke_sensor_triggered: e.target.checked })}
+                  />
+                  IoT smoke sensor triggered
+                </label>
+                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={!!form.fire_personnel_confirmed_smoke}
+                    onChange={(e) => setForm({ ...form, fire_personnel_confirmed_smoke: e.target.checked })}
+                  />
+                  Fire personnel confirmed smoke
+                </label>
+                <div>
+                  <label className="mb-1 block text-xs text-slate-500 dark:text-slate-400">Number of callers</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.caller_count ?? 1}
+                    onChange={(e) => setForm({ ...form, caller_count: Number(e.target.value) })}
+                    className="w-24 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                  />
+                </div>
+              </div>
+              <p className="mt-2 text-[11px] leading-snug text-leaf-700/80 dark:text-slate-400">
+                The AI false-alarm score is recalculated on save from these inputs, time of day, and whether this
+                location has a history of confirmed false alarms — see the False Alarm Review page for the full
+                score breakdown.
+              </p>
+            </div>
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <button onClick={() => setEditing(null)} className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5">

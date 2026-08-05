@@ -25,10 +25,12 @@ router.get('/:id', async (req, res) => {
 });
 
 async function scoreForIncident(incident: {
-  incident_type: string;
-  description: string | null;
   location: string;
-  severity: 'low' | 'moderate' | 'high' | 'critical';
+  reported_at?: string | Date;
+  is_anonymous_caller?: boolean;
+  caller_count?: number;
+  smoke_sensor_triggered?: boolean;
+  fire_personnel_confirmed_smoke?: boolean;
 }) {
   const { count } = await supabaseAdmin
     .from('incidents')
@@ -36,17 +38,41 @@ async function scoreForIncident(incident: {
     .eq('location', incident.location)
     .eq('false_alarm_review_status', 'confirmed_false');
 
-  return computeFalseAlarmScore({ ...incident, priorFalseAlarmsAtLocation: count ?? 0 });
+  return computeFalseAlarmScore({
+    isAnonymousCaller: incident.is_anonymous_caller ?? false,
+    repeatedFalseAlarmLocation: (count ?? 0) > 0,
+    smokeSensorTriggered: incident.smoke_sensor_triggered ?? false,
+    callerCount: incident.caller_count ?? 1,
+    firePersonnelConfirmedSmoke: incident.fire_personnel_confirmed_smoke ?? false,
+    reported_at: incident.reported_at,
+  });
 }
 
 router.post('/', async (req: AuthedRequest, res) => {
-  const { incident_type, description, location, severity, personnel_ids, vehicle_ids } = req.body ?? {};
+  const {
+    incident_type,
+    description,
+    location,
+    severity,
+    personnel_ids,
+    vehicle_ids,
+    is_anonymous_caller,
+    caller_count,
+    smoke_sensor_triggered,
+    fire_personnel_confirmed_smoke,
+  } = req.body ?? {};
   if (!incident_type || !location || !severity) {
     return res.status(400).json({ error: 'incident_type, location, and severity are required' });
   }
 
   const incident_number = `INC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-  const scoring = await scoreForIncident({ incident_type, description: description ?? null, location, severity });
+  const scoring = await scoreForIncident({
+    location,
+    is_anonymous_caller: !!is_anonymous_caller,
+    caller_count: caller_count ?? 1,
+    smoke_sensor_triggered: !!smoke_sensor_triggered,
+    fire_personnel_confirmed_smoke: !!fire_personnel_confirmed_smoke,
+  });
 
   const { data: incident, error } = await supabaseAdmin
     .from('incidents')
@@ -58,6 +84,10 @@ router.post('/', async (req: AuthedRequest, res) => {
       severity,
       status: 'reported',
       created_by: req.user?.id ?? null,
+      is_anonymous_caller: !!is_anonymous_caller,
+      caller_count: caller_count ?? 1,
+      smoke_sensor_triggered: !!smoke_sensor_triggered,
+      fire_personnel_confirmed_smoke: !!fire_personnel_confirmed_smoke,
       ai_false_alarm_score: scoring.score,
       ai_false_alarm_label: scoring.label,
       ai_false_alarm_factors: scoring.factors,
@@ -84,25 +114,51 @@ router.post('/', async (req: AuthedRequest, res) => {
 });
 
 router.put('/:id', async (req: AuthedRequest, res) => {
-  const { incident_type, description, location, severity, status, personnel_ids, vehicle_ids } = req.body ?? {};
+  const {
+    incident_type,
+    description,
+    location,
+    severity,
+    status,
+    personnel_ids,
+    vehicle_ids,
+    is_anonymous_caller,
+    caller_count,
+    smoke_sensor_triggered,
+    fire_personnel_confirmed_smoke,
+  } = req.body ?? {};
   const patch: Record<string, unknown> = {};
   if (incident_type) patch.incident_type = incident_type;
   if (description !== undefined) patch.description = description;
   if (location) patch.location = location;
   if (severity) patch.severity = severity;
+  if (is_anonymous_caller !== undefined) patch.is_anonymous_caller = !!is_anonymous_caller;
+  if (caller_count !== undefined) patch.caller_count = caller_count;
+  if (smoke_sensor_triggered !== undefined) patch.smoke_sensor_triggered = !!smoke_sensor_triggered;
+  if (fire_personnel_confirmed_smoke !== undefined) patch.fire_personnel_confirmed_smoke = !!fire_personnel_confirmed_smoke;
   if (status) {
     patch.status = status;
     if (status === 'resolved' || status === 'closed') patch.resolved_at = new Date().toISOString();
   }
 
-  if (incident_type || description !== undefined || location || severity) {
+  const scoringFieldsChanged =
+    location ||
+    is_anonymous_caller !== undefined ||
+    caller_count !== undefined ||
+    smoke_sensor_triggered !== undefined ||
+    fire_personnel_confirmed_smoke !== undefined;
+
+  if (scoringFieldsChanged) {
     const { data: existing } = await supabaseAdmin.from('incidents').select('*').eq('id', req.params.id).single();
     if (existing) {
       const scoring = await scoreForIncident({
-        incident_type: incident_type ?? existing.incident_type,
-        description: description !== undefined ? description : existing.description,
         location: location ?? existing.location,
-        severity: severity ?? existing.severity,
+        reported_at: existing.created_at,
+        is_anonymous_caller: is_anonymous_caller !== undefined ? !!is_anonymous_caller : existing.is_anonymous_caller,
+        caller_count: caller_count !== undefined ? caller_count : existing.caller_count,
+        smoke_sensor_triggered: smoke_sensor_triggered !== undefined ? !!smoke_sensor_triggered : existing.smoke_sensor_triggered,
+        fire_personnel_confirmed_smoke:
+          fire_personnel_confirmed_smoke !== undefined ? !!fire_personnel_confirmed_smoke : existing.fire_personnel_confirmed_smoke,
       });
       patch.ai_false_alarm_score = scoring.score;
       patch.ai_false_alarm_label = scoring.label;

@@ -3,97 +3,100 @@
  *
  * Deliberately NOT a black-box ML model -- every point added or
  * subtracted is returned in `factors` so dispatch can see exactly why
- * an incident got the score it did. Score runs 0-100:
- *   0   = almost certainly a real incident
- *   100 = almost certainly a false alarm
+ * an incident got the score it did.
+ *
+ * Rules (see False_Alarm_AI_Module_Notes.txt for the source spec):
+ *   Anonymous Caller                +20
+ *   Repeated False Alarm Location   +20
+ *   No Smoke Sensor Trigger         +20
+ *   Single Caller                   +15
+ *   Night Time (10pm - 5am)         +10
+ *   Multiple Callers                -20
+ *   Smoke Sensor Triggered          -40
+ *   Fire Personnel Confirm Smoke    -50
+ *
+ * Score runs 0-100:
+ *   0  - 29  : Very Likely Real Fire
+ *   30 - 49  : Needs Review
+ *   50 - 69  : Likely False Alarm
+ *   70 - 100 : Confirmed False Alarm
  */
 
 export interface ScoreInput {
-  incident_type: string;
-  description: string | null;
-  location: string;
-  severity: 'low' | 'moderate' | 'high' | 'critical';
+  /** Caller did not give / could not be verified with a name+number */
+  isAnonymousCaller?: boolean;
+  /** This location has one or more prior CONFIRMED false alarms */
+  repeatedFalseAlarmLocation?: boolean;
+  /** IoT smoke sensor at the location fired */
+  smokeSensorTriggered?: boolean;
+  /** How many separate people called this incident in */
+  callerCount?: number;
+  /** Fire personnel on-scene / dispatch have visually confirmed smoke */
+  firePersonnelConfirmedSmoke?: boolean;
   reported_at?: string | Date;
-  /** count of this location's incidents previously confirmed false */
-  priorFalseAlarmsAtLocation?: number;
 }
+
+export type FalseAlarmLabel = 'very_likely_real' | 'needs_review' | 'likely_false' | 'confirmed_false';
 
 export interface ScoreResult {
   score: number;
-  label: 'likely_real' | 'uncertain' | 'likely_false';
+  label: FalseAlarmLabel;
   factors: string[];
 }
 
-const FALSE_ALARM_KEYWORDS: Array<[RegExp, number, string]> = [
-  [/false alarm/i, 25, "Description mentions 'false alarm'"],
-  [/\btest\b/i, 20, "Description mentions a system 'test'"],
-  [/\bdrill\b/i, 20, "Description mentions a 'drill'"],
-  [/accidental/i, 15, "Description mentions 'accidental' trigger"],
-  [/no (visible )?fire/i, 15, 'Description notes no fire found on arrival'],
-  [/smoke detector|smoke alarm/i, 10, 'Triggered by a smoke detector/alarm, unconfirmed'],
-  [/malfunction/i, 12, 'Description mentions equipment malfunction'],
-];
-
-const REAL_INCIDENT_KEYWORDS: Array<[RegExp, number, string]> = [
-  [/trapped/i, -20, "Description mentions occupants 'trapped'"],
-  [/casualt(y|ies)/i, -25, 'Description mentions casualties'],
-  [/collapsed?/i, -20, 'Description mentions structural collapse'],
-  [/injured|injury/i, -15, 'Description mentions injuries'],
-  [/explosion/i, -20, 'Description mentions an explosion'],
-  [/fully involved/i, -20, "Description says building is 'fully involved'"],
-  [/spreading/i, -15, 'Description mentions fire spreading'],
-];
-
-const SEVERITY_ADJUSTMENT: Record<ScoreInput['severity'], number> = {
-  critical: -25,
-  high: -15,
-  moderate: -5,
-  low: 10,
-};
-
 export function computeFalseAlarmScore(input: ScoreInput): ScoreResult {
-  let score = 50;
-  const factors: string[] = ['Base score: 50'];
+  let score = 0;
+  const factors: string[] = [];
 
-  const severityAdj = SEVERITY_ADJUSTMENT[input.severity] ?? 0;
-  if (severityAdj !== 0) {
-    score += severityAdj;
-    factors.push(`Severity "${input.severity}": ${severityAdj > 0 ? '+' : ''}${severityAdj}`);
+  const callerCount = input.callerCount ?? 1;
+
+  if (input.isAnonymousCaller) {
+    score += 20;
+    factors.push('Anonymous caller: +20');
   }
 
-  const description = input.description ?? '';
-  for (const [pattern, points, label] of FALSE_ALARM_KEYWORDS) {
-    if (pattern.test(description)) {
-      score += points;
-      factors.push(`${label}: +${points}`);
-    }
+  if (input.repeatedFalseAlarmLocation) {
+    score += 20;
+    factors.push('Repeated false alarm location: +20');
   }
-  for (const [pattern, points, label] of REAL_INCIDENT_KEYWORDS) {
-    if (pattern.test(description)) {
-      score += points;
-      factors.push(`${label}: ${points}`);
-    }
+
+  if (!input.smokeSensorTriggered) {
+    score += 20;
+    factors.push('No smoke sensor trigger: +20');
+  } else {
+    score -= 40;
+    factors.push('Smoke sensor triggered: -40');
+  }
+
+  if (callerCount === 1) {
+    score += 15;
+    factors.push('Single caller: +15');
+  } else if (callerCount > 1) {
+    score -= 20;
+    factors.push(`Multiple callers (${callerCount}): -20`);
   }
 
   const reportedAt = input.reported_at ? new Date(input.reported_at) : new Date();
   const hour = reportedAt.getHours();
   if (hour >= 22 || hour < 5) {
-    score += 8;
-    factors.push('Reported overnight (10pm-5am), higher historical false-alarm rate: +8');
+    score += 10;
+    factors.push('Night time (10pm-5am): +10');
   }
 
-  const priorFalse = Math.min(input.priorFalseAlarmsAtLocation ?? 0, 3);
-  if (priorFalse > 0) {
-    const points = priorFalse * 10;
-    score += points;
-    factors.push(`${priorFalse} prior confirmed false alarm(s) at this location: +${points}`);
+  if (input.firePersonnelConfirmedSmoke) {
+    score -= 50;
+    factors.push('Fire personnel confirmed smoke: -50');
   }
 
   score = Math.max(0, Math.min(100, Math.round(score)));
 
-  let label: ScoreResult['label'] = 'uncertain';
-  if (score >= 65) label = 'likely_false';
-  else if (score <= 35) label = 'likely_real';
+  let label: FalseAlarmLabel;
+  if (score <= 29) label = 'very_likely_real';
+  else if (score <= 49) label = 'needs_review';
+  else if (score <= 69) label = 'likely_false';
+  else label = 'confirmed_false';
+
+  if (factors.length === 0) factors.push('No risk factors detected');
 
   return { score, label, factors };
 }
