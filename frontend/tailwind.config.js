@@ -9,18 +9,18 @@ export default {
         sans: ['Georgia', 'Times New Roman', 'Times', 'serif'],
       },
       colors: {
-        // Gold / amber — Bagong Pilipinas accent, matches the official seal & hero mock
+        // Republic red — primary accent, matches the landing page hotline bar & CTAs
         leaf: {
-          50: '#fffaf0',
-          100: '#fdf0d3',
-          200: '#fbe0a3',
-          300: '#f7cc66',
-          400: '#f0b52e',
-          500: '#e0a017',
-          600: '#c07f0d',
-          700: '#96600c',
-          800: '#6e4710',
-          900: '#3a2408',
+          50: '#fdf2f2',
+          100: '#fbdede',
+          200: '#f5b8b8',
+          300: '#ea8888',
+          400: '#dd4b4b',
+          500: '#ce1126',
+          600: '#a90d1f',
+          700: '#830a18',
+          800: '#5c0711',
+          900: '#2e0409',
         },
         // Deep navy — matches the dark hero / navbar mock
         navy: {
@@ -36,7 +36,7 @@ export default {
           900: '#0a121e',
           950: '#050d12',
         },
-        // Republic red — hotline bars, emergency CTAs
+        // Republic red — hotline bars, emergency CTAs (alias of leaf, kept for landing page clarity)
         flagred: {
           50: '#fdf0f0',
           400: '#e14b4b',

@@ -95,13 +95,13 @@ export default function Login() {
           {/* subtle leaf-green radial glow behind the sign-in card */}
           <div
             className="absolute right-[-10%] top-1/2 h-[560px] w-[560px] -translate-y-1/2 rounded-full opacity-[0.12] blur-3xl"
-            style={{ background: 'radial-gradient(circle, #f0b52e 0%, transparent 70%)' }}
+            style={{ background: 'radial-gradient(circle, #dd4b4b 0%, transparent 70%)' }}
           />
           <div
             className="absolute inset-0 opacity-[0.06]"
             style={{
               backgroundImage:
-                'linear-gradient(to right, #f0b52e 1px, transparent 1px), linear-gradient(to bottom, #f0b52e 1px, transparent 1px)',
+                'linear-gradient(to right, #dd4b4b 1px, transparent 1px), linear-gradient(to bottom, #dd4b4b 1px, transparent 1px)',
               backgroundSize: '56px 56px',
             }}
           />
@@ -120,7 +120,7 @@ export default function Login() {
         className="pointer-events-none absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
-            'linear-gradient(to right, #f0b52e 1px, transparent 1px), linear-gradient(to bottom, #f0b52e 1px, transparent 1px)',
+            'linear-gradient(to right, #dd4b4b 1px, transparent 1px), linear-gradient(to bottom, #dd4b4b 1px, transparent 1px)',
           backgroundSize: '64px 64px',
           maskImage: 'linear-gradient(to bottom, black 0%, black 55%, transparent 100%)',
           WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 55%, transparent 100%)',
@@ -131,7 +131,7 @@ export default function Login() {
         {/* Header / brand bar */}
         <header className="flex items-center justify-between border-b border-leaf-400/20 px-6 py-5 sm:px-10">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-400 bg-white shadow-[0_0_18px_rgba(224,160,23,0.35)] transition-shadow duration-300 hover:shadow-[0_0_28px_rgba(224,160,23,0.55)]">
+            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-400 bg-white shadow-[0_0_18px_rgba(206,17,38,0.35)] transition-shadow duration-300 hover:shadow-[0_0_28px_rgba(206,17,38,0.55)]">
               <img src="/barangay-culiat-seal.png" alt="Barangay Culiat seal" className="h-full w-full object-cover" />
             </div>
             <div className="leading-tight">
@@ -176,7 +176,7 @@ export default function Login() {
           </div>
 
           {/* Right: sign-in card */}
-          <div className="w-full max-w-sm rounded-2xl border border-leaf-400/20 bg-navy-900/80 p-8 shadow-2xl shadow-black/50 backdrop-blur-xl transition-shadow duration-300 hover:shadow-[0_0_40px_rgba(224,160,23,0.08)]">
+          <div className="w-full max-w-sm rounded-2xl border border-leaf-400/20 bg-navy-900/80 p-8 shadow-2xl shadow-black/50 backdrop-blur-xl transition-shadow duration-300 hover:shadow-[0_0_40px_rgba(206,17,38,0.08)]">
             <h2 className="font-display text-xl font-bold text-white">Welcome Back</h2>
             <p className="mt-1 text-sm text-slate-400">Sign in to your console</p>
 
