@@ -31,7 +31,7 @@ const NAV_GROUPS: {
 }[] = [
   {
     label: 'Overview',
-    items: [{ to: '/', label: 'Dashboard', icon: LayoutDashboard }],
+    items: [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }],
   },
   {
     label: 'Operations',
@@ -147,7 +147,7 @@ export default function Layout() {
                     <NavLink
                       key={item.to}
                       to={item.to}
-                      end={item.to === '/'}
+                      end={item.to === '/dashboard'}
                       onClick={() => setMobileNavOpen(false)}
                       className={({ isActive }) =>
                         `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-300 ease-out ${

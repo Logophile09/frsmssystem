@@ -9,20 +9,20 @@ export default {
         sans: ['Georgia', 'Times New Roman', 'Times', 'serif'],
       },
       colors: {
-        // Mint / leaf green — matches the light-theme dashboard mock
+        // Gold / amber — Bagong Pilipinas accent, matches the official seal & hero mock
         leaf: {
-          50: '#f2fbf4',
-          100: '#e3f6e8',
-          200: '#cdeed6',
-          300: '#8ad3a1',
-          400: '#4ade80',
-          500: '#3fae5c',
-          600: '#2f9e44',
-          700: '#1f7a37',
-          800: '#16612c',
-          900: '#0d2416',
+          50: '#fffaf0',
+          100: '#fdf0d3',
+          200: '#fbe0a3',
+          300: '#f7cc66',
+          400: '#f0b52e',
+          500: '#e0a017',
+          600: '#c07f0d',
+          700: '#96600c',
+          800: '#6e4710',
+          900: '#3a2408',
         },
-        // Deep navy — matches the dark hero login mock
+        // Deep navy — matches the dark hero / navbar mock
         navy: {
           50: '#eef1f6',
           100: '#d3dae7',
@@ -36,10 +36,18 @@ export default {
           900: '#0a121e',
           950: '#050d12',
         },
+        // Republic red — hotline bars, emergency CTAs
+        flagred: {
+          50: '#fdf0f0',
+          400: '#e14b4b',
+          500: '#ce1126',
+          600: '#a90d1f',
+          700: '#830a18',
+        },
         ink: {
-          700: '#5b7065',
-          800: '#16612c',
-          900: '#0d2416',
+          700: '#4b5563',
+          800: '#1e293b',
+          900: '#0f1a2b',
         },
       },
       keyframes: {

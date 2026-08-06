@@ -54,7 +54,7 @@ function StatCard({
     amber: 'text-amber-600 dark:text-amber-400',
   };
   return (
-    <div className="rounded-2xl border border-leaf-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-leaf-200 hover:shadow-lg dark:border-white/10 dark:bg-navy-800">
+    <div className="rounded-2xl border border-leaf-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-leaf-200 hover:shadow-lg dark:border-white/10 dark:bg-ink-800">
       <p className="text-[11px] font-extrabold uppercase tracking-wider text-leaf-600/70 dark:text-slate-400">{label}</p>
       <p className={`mt-2.5 text-4xl font-extrabold ${valueColor[accent]}`}>{value}</p>
     </div>
