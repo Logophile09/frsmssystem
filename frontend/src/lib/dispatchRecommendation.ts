@@ -1,3 +1,29 @@
+/**
+ * Decision-tree-based emergency dispatch recommendation engine.
+ *
+ * Like the false-alarm scoring model (see falseAlarmScoring.ts), this is
+ * intentionally NOT a black-box ML model. It's an explicit, auditable
+ * decision tree: a fixed sequence of yes/no and multiple-choice questions
+ * about the incident, where each branch is documented in code and every
+ * traversal is returned as a step-by-step trace so a dispatcher can see
+ * exactly why the system recommended what it did — and override it.
+ *
+ * Tree shape (top-level branches by incident type, then refined by
+ * severity / occupant / hazard flags):
+ *
+ *   Incident Type?
+ *   ├─ Structure Fire        → Severity? → Occupants trapped? → units + priority
+ *   ├─ Grass / Brush Fire    → Severity? → units + priority
+ *   ├─ Vehicular Accident    → Severity? → Entrapment? → units + priority
+ *   ├─ Medical Emergency     → Severity? → units + priority
+ *   ├─ Hazmat / Chemical     → Severity? → units + priority
+ *   └─ Other / Unclassified  → Severity? → default engine response
+ *
+ * After the tree resolves a base unit list, a final availability-check
+ * node cross-references it against the live vehicle roster so the
+ * recommendation reflects what's actually in the yard right now.
+ */
+
 export type Severity = 'low' | 'moderate' | 'high' | 'critical';
 
 export const INCIDENT_TYPES = [

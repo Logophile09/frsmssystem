@@ -9,6 +9,7 @@ import {
   CalendarCheck,
   MapPin,
   ShieldAlert,
+  GitBranch,
   Building2,
   ClipboardCheck,
   FileCheck,
@@ -48,6 +49,7 @@ const NAV_GROUPS: {
     items: [
       { to: '/gps-tracker', label: 'GPS Tracker', icon: MapPin },
       { to: '/false-alarms', label: 'False Alarm Review', icon: ShieldAlert },
+      { to: '/dispatch-recommendation', label: 'Dispatch Recommendation', icon: GitBranch },
     ],
   },
   {

@@ -1,82 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { GitBranch, Truck, Users, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { api } from '../lib/api';
-// Local copies of the decision-tree utilities and types
-export const INCIDENT_TYPES = [
-  'Structure Fire',
-  'Vehicle Fire',
-  'Medical',
-  'Hazmat',
-  'Other',
-];
-
-export type Severity = 'low' | 'moderate' | 'high' | 'critical';
-
-export interface DispatchInput {
-  incidentType: string;
-  severity: Severity;
-  occupantsTrapped: boolean;
-  hazardousMaterials: boolean;
-  multipleCasualties: boolean;
-}
-
-export interface DispatchRecommendation {
-  priority: 'low' | 'moderate' | 'high' | 'immediate';
-  minPersonnel: number;
-  summary: string;
-  units: { vehicleType: string; quantity: number; availableNow: number; shortfall: number }[];
-  mutualAidAdvised: boolean;
-  trace: { depth: number; question: string; answer: string; reasoning: string }[];
-}
-
-// Very small, deterministic recommendation function used by the UI. Keeps logic local so
-// this component compiles even if an external module is absent.
-export function recommendDispatch(
-  input: DispatchInput,
-  vehicles: { id: number; unit_code: string; vehicle_type: string; status: string }[],
-  personnel: { id: number; status: string }[]
-): DispatchRecommendation {
-  // base requirements by incident type / severity (simplified)
-  const baseBySeverity: Record<Severity, number> = { low: 1, moderate: 2, high: 3, critical: 4 };
-  const neededEngines = baseBySeverity[input.severity];
-
-  const availableByType = vehicles.reduce<Record<string, number>>((acc, v) => {
-    if (v.status === 'available') acc[v.vehicle_type] = (acc[v.vehicle_type] || 0) + 1;
-    return acc;
-  }, {});
-
-  const units = [
-    { vehicleType: 'Engine', quantity: neededEngines },
-    { vehicleType: 'Ladder', quantity: input.occupantsTrapped ? 1 : 0 },
-    { vehicleType: 'Rescue', quantity: input.multipleCasualties ? 1 : 0 },
-    { vehicleType: 'Hazmat', quantity: input.hazardousMaterials ? 1 : 0 },
-  ].filter((u) => u.quantity > 0);
-
-  const unitsWithAvailability = units.map((u) => {
-    const availableNow = availableByType[u.vehicleType] ?? 0;
-    const shortfall = Math.max(0, u.quantity - availableNow);
-    return { ...u, availableNow, shortfall };
-  });
-
-  const personnelOnDuty = personnel.filter((p) => p.status === 'on_duty').length;
-  const minPersonnel = units.reduce((s, u) => s + u.quantity * 3, 0);
-
-  const mutualAidAdvised = unitsWithAvailability.some((u) => u.shortfall > 0);
-
-  const trace = [
-    { depth: 0, question: 'What is the incident type?', answer: input.incidentType, reasoning: 'User-selected or loaded from incident' },
-    { depth: 0, question: 'What is the severity?', answer: input.severity, reasoning: 'Severity maps to base unit counts' },
-  ];
-
-  return {
-    priority: input.severity === 'critical' ? 'immediate' : input.severity === 'high' ? 'high' : input.severity === 'moderate' ? 'moderate' : 'low',
-    minPersonnel: Math.min(personnelOnDuty, minPersonnel),
-    summary: `Dispatch ${unitsWithAvailability.length} unit types based on incident details.`,
-    units: unitsWithAvailability,
-    mutualAidAdvised,
-    trace,
-  };
-}
+import {
+  INCIDENT_TYPES,
+  recommendDispatch,
+  type DispatchInput,
+  type DispatchRecommendation,
+  type Severity,
+} from '../lib/dispatchRecommendation';
 
 interface IncidentRow {
   id: number;
@@ -97,10 +28,6 @@ interface PersonnelRow {
   id: number;
   status: string;
 }
-
-type RecommendedUnit = DispatchRecommendation['units'][number];
-
-type TraceStep = DispatchRecommendation['trace'][number];
 
 const SEVERITIES: Severity[] = ['low', 'moderate', 'high', 'critical'];
 

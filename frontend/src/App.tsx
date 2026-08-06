@@ -11,6 +11,7 @@ import Equipment from './pages/Equipment';
 import Attendance from './pages/Attendance';
 import GpsTracker from './pages/GpsTracker';
 import FalseAlarms from './pages/FalseAlarms';
+import DispatchRecommendation from './pages/DispatchRecommendation';
 import Establishments from './pages/Establishments';
 import Inspections from './pages/Inspections';
 import Certificates from './pages/Certificates';
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/gps-tracker" element={<GpsTracker />} />
         <Route path="/false-alarms" element={<FalseAlarms />} />
+        <Route path="/dispatch-recommendation" element={<DispatchRecommendation />} />
         <Route path="/establishments" element={<Establishments />} />
         <Route path="/inspections" element={<Inspections />} />
         <Route path="/certificates" element={<Certificates />} />
