@@ -24,7 +24,7 @@ create type personnel_status as enum ('on_duty', 'off_duty', 'on_leave');
 create type vehicle_status as enum ('available', 'dispatched', 'maintenance', 'out_of_service');
 create type equipment_condition as enum ('good', 'fair', 'poor', 'damaged');
 
-create type incident_severity as enum ('low', 'moderate', 'high', 'critical');
+create type incident_severity as enum ('1', '2', '3', '4', '5');
 create type incident_status as enum ('reported', 'dispatched', 'on_scene', 'resolved', 'closed');
 
 create type attendance_status as enum ('present', 'late', 'absent', 'on_leave');
@@ -106,7 +106,7 @@ create table incidents (
   incident_type               text not null,
   description                 text,
   location                    text not null,
-  severity                    incident_severity not null default 'moderate',
+  severity                    incident_severity not null default '3',
   status                      incident_status not null default 'reported',
   created_by                  uuid references profiles(id) on delete set null,
   created_at                  timestamptz not null default now(),
@@ -324,18 +324,18 @@ insert into equipment (name, category, quantity, condition_status, vehicle_id, l
 ('Ladder (10m extension)', 'Rescue', 2, 'fair', 6, 'LDR-01 compartment');
 
 insert into incidents (incident_number, incident_type, description, location, severity, status, created_at, resolved_at) values
-('INC-2026-0001', 'Structure Fire', 'Reported fire on the 2nd floor of a residential building.', 'Tandang Sora Ave., Brgy. Culiat, Quezon City', 'high', 'resolved', now() - interval '14 days', now() - interval '14 days' + interval '3 hours'),
-('INC-2026-0002', 'Vehicular Accident', 'Two-vehicle collision, one injured.', 'Visayas Ave., Brgy. Culiat, Quezon City', 'moderate', 'resolved', now() - interval '12 days', now() - interval '12 days' + interval '2 hours'),
-('INC-2026-0003', 'Grass Fire', 'Small grass fire near a vacant lot, contained quickly.', 'Culiat Road, Brgy. Culiat, Quezon City', 'low', 'resolved', now() - interval '11 days', now() - interval '11 days' + interval '1 hour'),
-('INC-2026-0004', 'Medical Emergency', 'Elderly patient with chest pains.', 'Kalayaan St., Brgy. Culiat, Quezon City', 'moderate', 'resolved', now() - interval '9 days', now() - interval '9 days' + interval '90 minutes'),
-('INC-2026-0005', 'Structure Fire', 'Possible false alarm - smoke detector triggered, no visible fire on arrival.', 'Brgy. Culiat, Quezon City', 'low', 'resolved', now() - interval '8 days', now() - interval '8 days' + interval '45 minutes'),
-('INC-2026-0006', 'Medical Emergency', 'Patient with chest pains.', 'Mabuhay St., Brgy. Culiat, Quezon City', 'moderate', 'reported', now() - interval '6 days', null),
-('INC-2026-0007', 'Medical Emergency', 'Fall injury, ambulance requested.', 'Tandang Sora Ave. corner Visayas Ave., Brgy. Culiat, Quezon City', 'moderate', 'reported', now() - interval '5 days', null),
-('INC-2026-0008', 'Grass Fire', 'Small brush fire spreading toward fence line.', 'Brgy. Culiat, Quezon City', 'low', 'reported', now() - interval '4 days', null),
-('INC-2026-0009', 'Vehicular Accident', 'Rear-end collision, minor injuries reported.', 'Visayas Ave. corner Tandang Sora Ave., Brgy. Culiat, Quezon City', 'low', 'reported', now() - interval '3 days', null),
-('INC-2026-0010', 'Structure Fire', 'Fire reported at commercial building, crews on site.', 'Brgy. Culiat, Quezon City', 'high', 'resolved', now() - interval '2 days', now() - interval '2 days' + interval '4 hours'),
-('INC-2026-0011', 'Structure Fire', 'Possible false alarm - smoke detector triggered, no visible fire on arrival.', 'Brgy. Culiat, Quezon City', 'low', 'dispatched', now() - interval '5 hours', null),
-('INC-2026-0012', 'Structure Fire', 'Active fire, occupants trapped on 3rd floor, multiple casualties reported.', 'Culiat Road, Brgy. Culiat, Quezon City', 'critical', 'on_scene', now() - interval '40 minutes', null);
+('INC-2026-0001', 'Structure Fire', 'Reported fire on the 2nd floor of a residential building.', 'Tandang Sora Ave., Brgy. Culiat, Quezon City', '4', 'resolved', now() - interval '14 days', now() - interval '14 days' + interval '3 hours'),
+('INC-2026-0002', 'Vehicular Accident', 'Two-vehicle collision, one injured.', 'Visayas Ave., Brgy. Culiat, Quezon City', '3', 'resolved', now() - interval '12 days', now() - interval '12 days' + interval '2 hours'),
+('INC-2026-0003', 'Grass Fire', 'Small grass fire near a vacant lot, contained quickly.', 'Culiat Road, Brgy. Culiat, Quezon City', '1', 'resolved', now() - interval '11 days', now() - interval '11 days' + interval '1 hour'),
+('INC-2026-0004', 'Medical Emergency', 'Elderly patient with chest pains.', 'Kalayaan St., Brgy. Culiat, Quezon City', '3', 'resolved', now() - interval '9 days', now() - interval '9 days' + interval '90 minutes'),
+('INC-2026-0005', 'Structure Fire', 'Possible false alarm - smoke detector triggered, no visible fire on arrival.', 'Brgy. Culiat, Quezon City', '1', 'resolved', now() - interval '8 days', now() - interval '8 days' + interval '45 minutes'),
+('INC-2026-0006', 'Medical Emergency', 'Patient with chest pains.', 'Mabuhay St., Brgy. Culiat, Quezon City', '3', 'reported', now() - interval '6 days', null),
+('INC-2026-0007', 'Medical Emergency', 'Fall injury, ambulance requested.', 'Tandang Sora Ave. corner Visayas Ave., Brgy. Culiat, Quezon City', '3', 'reported', now() - interval '5 days', null),
+('INC-2026-0008', 'Grass Fire', 'Small brush fire spreading toward fence line.', 'Brgy. Culiat, Quezon City', '1', 'reported', now() - interval '4 days', null),
+('INC-2026-0009', 'Vehicular Accident', 'Rear-end collision, minor injuries reported.', 'Visayas Ave. corner Tandang Sora Ave., Brgy. Culiat, Quezon City', '1', 'reported', now() - interval '3 days', null),
+('INC-2026-0010', 'Structure Fire', 'Fire reported at commercial building, crews on site.', 'Brgy. Culiat, Quezon City', '4', 'resolved', now() - interval '2 days', now() - interval '2 days' + interval '4 hours'),
+('INC-2026-0011', 'Structure Fire', 'Possible false alarm - smoke detector triggered, no visible fire on arrival.', 'Brgy. Culiat, Quezon City', '1', 'dispatched', now() - interval '5 hours', null),
+('INC-2026-0012', 'Structure Fire', 'Active fire, occupants trapped on 3rd floor, multiple casualties reported.', 'Culiat Road, Brgy. Culiat, Quezon City', '5', 'on_scene', now() - interval '40 minutes', null);
 
 insert into incident_personnel (incident_id, personnel_id) values
 (1,1),(1,2),(2,2),(3,1),(4,4),(5,3),

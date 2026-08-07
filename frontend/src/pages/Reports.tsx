@@ -18,7 +18,8 @@ interface Personnel {
   status: string;
 }
 
-const SEVERITY_COLORS: Record<string, string> = { low: '#10b981', moderate: '#f59e0b', high: '#f97316', critical: '#e11d48' };
+const SEVERITY_COLORS: Record<string, string> = { '1': '#10b981', '2': '#84cc16', '3': '#f59e0b', '4': '#f97316', '5': '#e11d48' };
+const SEVERITY_LABELS: Record<string, string> = { '1': 'Alert Level 1', '2': 'Alert Level 2', '3': 'Alert Level 3', '4': 'Alert Level 4', '5': 'Alert Level 5' };
 const VEHICLE_COLORS: Record<string, string> = { available: '#10b981', dispatched: '#3b82f6', maintenance: '#f59e0b', out_of_service: '#e11d48' };
 const PERSONNEL_COLORS: Record<string, string> = { on_duty: '#10b981', off_duty: '#94a3b8', on_leave: '#f59e0b' };
 
@@ -59,7 +60,7 @@ export default function ReportsPage() {
   const bySeverity = useMemo(() => {
     const out: Record<string, number> = {};
     incidents.forEach((i) => (out[i.severity] = (out[i.severity] ?? 0) + 1));
-    return Object.entries(out).map(([name, value]) => ({ name, value }));
+    return Object.entries(out).map(([key, value]) => ({ name: SEVERITY_LABELS[key] ?? key, key, value }));
   }, [incidents]);
 
   const byStatus = useMemo(() => {
@@ -107,7 +108,7 @@ export default function ReportsPage() {
             <PieChart>
               <Pie data={bySeverity} dataKey="value" nameKey="name" outerRadius={80} label>
                 {bySeverity.map((d) => (
-                  <Cell key={d.name} fill={SEVERITY_COLORS[d.name] ?? '#94a3b8'} />
+                  <Cell key={d.name} fill={SEVERITY_COLORS[d.key] ?? '#94a3b8'} />
                 ))}
               </Pie>
               <Tooltip />

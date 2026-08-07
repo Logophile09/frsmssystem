@@ -7,6 +7,7 @@ import {
   type DispatchInput,
   type DispatchRecommendation,
   type Severity,
+  SEVERITY_LABELS,
 } from '../lib/dispatchRecommendation';
 
 interface IncidentRow {
@@ -29,7 +30,7 @@ interface PersonnelRow {
   status: string;
 }
 
-const SEVERITIES: Severity[] = ['low', 'moderate', 'high', 'critical'];
+const SEVERITIES: Severity[] = ['1', '2', '3', '4', '5'];
 
 const PRIORITY_BADGE: Record<string, string> = {
   immediate: 'bg-rose-100 text-rose-800',
@@ -47,7 +48,7 @@ export default function DispatchRecommendationPage() {
   const [selectedIncidentId, setSelectedIncidentId] = useState<string>('');
   const [form, setForm] = useState<DispatchInput>({
     incidentType: 'Structure Fire',
-    severity: 'moderate',
+    severity: '3',
     occupantsTrapped: false,
     hazardousMaterials: false,
     multipleCasualties: false,
@@ -136,11 +137,11 @@ export default function DispatchRecommendationPage() {
           <select
             value={form.severity}
             onChange={(e) => setForm({ ...form, severity: e.target.value as Severity })}
-            className="mb-4 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm capitalize dark:border-white/10 dark:bg-navy-900 dark:text-slate-100"
+            className="mb-4 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm dark:border-white/10 dark:bg-navy-900 dark:text-slate-100"
           >
             {SEVERITIES.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {SEVERITY_LABELS[s]}
               </option>
             ))}
           </select>

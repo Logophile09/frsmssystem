@@ -26,7 +26,7 @@ router.get('/summary', async (_req, res) => {
     supabaseAdmin
       .from('incidents')
       .select('id', { count: 'exact', head: true })
-      .eq('severity', 'critical')
+      .in('severity', ['4', '5'])
       .in('status', ['reported', 'dispatched', 'on_scene']),
     supabaseAdmin.from('personnel').select('id', { count: 'exact', head: true }),
     supabaseAdmin.from('personnel').select('id', { count: 'exact', head: true }).eq('status', 'on_duty'),

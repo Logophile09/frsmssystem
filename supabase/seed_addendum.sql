@@ -38,11 +38,11 @@ insert into equipment (name, category, quantity, condition_status, vehicle_id, l
 ('Ladder (10m extension)', 'Rescue', 2, 'fair', (select id from vehicles where unit_code = 'LDR-01'), 'LDR-01 compartment');
 
 insert into incidents (incident_number, incident_type, description, location, severity, status, created_at, resolved_at) values
-('INC-2026-0006', 'Medical Emergency', 'Patient with chest pains.', 'Mabuhay St., Brgy. Culiat, Quezon City', 'moderate', 'reported', now() - interval '6 days', null),
-('INC-2026-0007', 'Medical Emergency', 'Fall injury, ambulance requested.', 'Tandang Sora Ave. corner Visayas Ave., Brgy. Culiat, Quezon City', 'moderate', 'reported', now() - interval '5 days', null),
-('INC-2026-0008', 'Grass Fire', 'Small brush fire spreading toward fence line.', 'Brgy. Culiat, Quezon City', 'low', 'reported', now() - interval '4 days', null),
-('INC-2026-0009', 'Vehicular Accident', 'Rear-end collision, minor injuries reported.', 'Visayas Ave. corner Tandang Sora Ave., Brgy. Culiat, Quezon City', 'low', 'reported', now() - interval '3 days', null),
-('INC-2026-0010', 'Structure Fire', 'Fire reported at commercial building, crews on site.', 'Brgy. Culiat, Quezon City', 'high', 'resolved', now() - interval '2 days', now() - interval '2 days' + interval '4 hours')
+('INC-2026-0006', 'Medical Emergency', 'Patient with chest pains.', 'Mabuhay St., Brgy. Culiat, Quezon City', '3', 'reported', now() - interval '6 days', null),
+('INC-2026-0007', 'Medical Emergency', 'Fall injury, ambulance requested.', 'Tandang Sora Ave. corner Visayas Ave., Brgy. Culiat, Quezon City', '3', 'reported', now() - interval '5 days', null),
+('INC-2026-0008', 'Grass Fire', 'Small brush fire spreading toward fence line.', 'Brgy. Culiat, Quezon City', '1', 'reported', now() - interval '4 days', null),
+('INC-2026-0009', 'Vehicular Accident', 'Rear-end collision, minor injuries reported.', 'Visayas Ave. corner Tandang Sora Ave., Brgy. Culiat, Quezon City', '1', 'reported', now() - interval '3 days', null),
+('INC-2026-0010', 'Structure Fire', 'Fire reported at commercial building, crews on site.', 'Brgy. Culiat, Quezon City', '4', 'resolved', now() - interval '2 days', now() - interval '2 days' + interval '4 hours')
 on conflict (incident_number) do nothing;
 
 insert into establishments (business_name, business_type, owner_name, barangay, address, occupancy_type, storeys, floor_area_sqm, contact_number, date_registered, status) values

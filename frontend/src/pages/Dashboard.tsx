@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell } from 'lucide-react';
+import { Bell, ExternalLink } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/Badge';
@@ -70,12 +70,62 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+// Curated links to public news coverage of Barangay Culiat. This is a static,
+// manually-curated list (not a live feed) — see the "View all coverage" link
+// for GMA News' full tracking page, which stays current on its own.
+const CULIAT_NEWS = [
+  {
+    date: 'Jul 28, 2026',
+    source: 'Manila Times / DPWH',
+    title: 'Culiat Bridge II reopens to light vehicles',
+    blurb: 'The bridge reopened for light vehicles after repairs following the July 11 fire that damaged it.',
+    url: 'https://www.manilatimes.net/2026/07/28/news/national/fire-hit-culiat-bridge-open-to-light-vehicles/2392323',
+  },
+  {
+    date: 'Jul 16, 2026',
+    source: 'Quezon City Government',
+    title: 'Clearing operations continue near Culiat Bridge',
+    blurb: "QC's Department of Engineering is continuing clean-up work under the bridge following the fire.",
+    url: 'https://quezoncity.gov.ph/clearing-operations-in-culiat-bridge-2/',
+  },
+  {
+    date: 'Jan 28, 2026',
+    source: 'GMA News',
+    title: 'Fire hits residential area in Brgy. Culiat',
+    blurb: 'An early-morning fire broke out in a residential area of the barangay and reached second alarm.',
+    url: 'https://www.gmanetwork.com/news/topstories/metro/974401/fire-hits-residential-area-in-bgy-culiat-quezon-city/story/',
+  },
+];
+
 export default function Dashboard() {
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
   const [summary, setSummary] = useState<Summary | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    try {
+      await signOut();
+    } finally {
+      setSigningOut(false);
+      setShowProfileMenu(false);
+    }
+  }
 
   useEffect(() => {
     Promise.all([api.get('/dashboard/summary'), api.get('/vehicles')])
@@ -147,8 +197,31 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-600 text-sm font-bold text-navy-950">
-            {initials(profile?.full_name ?? '?')}
+          <div className="relative" ref={profileMenuRef}>
+            <button
+              onClick={() => setShowProfileMenu((s) => !s)}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-600 text-sm font-bold text-navy-950 transition-transform duration-200 hover:scale-105"
+              aria-label="Account menu"
+            >
+              {initials(profile?.full_name ?? '?')}
+            </button>
+            {showProfileMenu && (
+              <div className="absolute right-0 z-10 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-leaf-400/10 dark:bg-navy-800">
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{profile?.full_name ?? 'Unknown user'}</p>
+                <p className="text-xs capitalize text-slate-500 dark:text-slate-400">{profile?.role ?? ''}</p>
+                {profile?.email && (
+                  <p className="mt-1 truncate text-xs text-slate-400 dark:text-slate-500">{profile.email}</p>
+                )}
+                <div className="my-2 h-px bg-slate-100 dark:bg-white/10" />
+                <button
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  className="w-full rounded-lg px-2 py-1.5 text-left text-sm font-medium text-rose-600 transition-colors duration-200 hover:bg-rose-50 disabled:opacity-60 dark:text-rose-400 dark:hover:bg-rose-500/10"
+                >
+                  {signingOut ? 'Signing out…' : 'Sign out'}
+                </button>
+              </div>
+            )}
           </div>
 
           <Link
@@ -239,6 +312,47 @@ export default function Dashboard() {
             ))}
           </ul>
         </div>
+      </div>
+
+      {/* Barangay Culiat news & updates */}
+      <div className="mt-6 rounded-2xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 dark:border-white/10">
+          <div>
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Barangay Culiat News &amp; Updates</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Curated from public news coverage</p>
+          </div>
+          <a
+            href="https://www.gmanetwork.com/news/tracking/barangayculiat/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-xs font-medium text-leaf-600 hover:underline"
+          >
+            View all coverage <ExternalLink size={12} />
+          </a>
+        </div>
+        <ul className="divide-y divide-slate-100 dark:divide-white/5">
+          {CULIAT_NEWS.map((n) => (
+            <li key={n.url} className="px-5 py-3.5">
+              <a
+                href={n.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-start justify-between gap-4"
+              >
+                <div>
+                  <p className="text-sm font-medium text-slate-800 group-hover:text-leaf-600 dark:text-slate-200 dark:group-hover:text-leaf-300">
+                    {n.title}
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{n.blurb}</p>
+                  <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                    {n.source} &middot; {n.date}
+                  </p>
+                </div>
+                <ExternalLink size={14} className="mt-0.5 shrink-0 text-slate-300 group-hover:text-leaf-500" />
+              </a>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

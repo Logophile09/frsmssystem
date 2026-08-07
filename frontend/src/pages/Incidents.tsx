@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import Modal from '../components/Modal';
 import Badge from '../components/Badge';
+import { SEVERITY_LABELS } from '../lib/dispatchRecommendation';
 
 interface Incident {
   id: number;
@@ -35,7 +36,7 @@ interface SimpleVehicle {
   vehicle_type: string;
 }
 
-const SEVERITIES = ['low', 'moderate', 'high', 'critical'];
+const SEVERITIES: Array<'1' | '2' | '3' | '4' | '5'> = ['1', '2', '3', '4', '5'];
 const STATUSES = ['reported', 'dispatched', 'on_scene', 'resolved', 'closed'];
 
 export default function IncidentsPage() {
@@ -71,7 +72,7 @@ export default function IncidentsPage() {
       incident_type: '',
       description: '',
       location: '',
-      severity: 'moderate',
+      severity: '3',
       personnel_ids: [],
       vehicle_ids: [],
       is_anonymous_caller: false,
@@ -241,13 +242,13 @@ export default function IncidentsPage() {
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Alert Level</label>
                 <select
-                  value={form.severity ?? 'moderate'}
+                  value={form.severity ?? '3'}
                   onChange={(e) => setForm({ ...form, severity: e.target.value })}
                   className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                 >
                   {SEVERITIES.map((s) => (
                     <option key={s} value={s}>
-                      {s}
+                      {SEVERITY_LABELS[s]}
                     </option>
                   ))}
                 </select>

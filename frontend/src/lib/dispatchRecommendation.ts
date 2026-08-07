@@ -24,7 +24,25 @@
  * recommendation reflects what's actually in the yard right now.
  */
 
-export type Severity = 'low' | 'moderate' | 'high' | 'critical';
+export type Severity = '1' | '2' | '3' | '4' | '5';
+
+export const SEVERITY_LABELS: Record<Severity, string> = {
+  '1': 'Alert Level 1',
+  '2': 'Alert Level 2',
+  '3': 'Alert Level 3',
+  '4': 'Alert Level 4',
+  '5': 'Alert Level 5',
+};
+
+/** Alert Level 4–5 is treated as the high/critical end of the scale. */
+function isHighSeverity(severity: Severity): boolean {
+  return Number(severity) >= 4;
+}
+
+/** Alert Level 3 is the mid-point of the scale (previously "moderate"). */
+function isMidSeverity(severity: Severity): boolean {
+  return Number(severity) === 3;
+}
 
 export const INCIDENT_TYPES = [
   'Structure Fire',
@@ -111,11 +129,11 @@ export function recommendDispatch(
 
   switch (input.incidentType) {
     case 'Structure Fire': {
-      const critical = input.severity === 'critical' || input.severity === 'high';
+      const critical = isHighSeverity(input.severity);
       step(
         trace,
         1,
-        'Is severity high or critical?',
+        'Is the alert level 4 or 5?',
         critical ? 'Yes' : 'No',
         critical
           ? 'High-heat / rapid-spread scenario — escalate to a multi-engine assignment.'
@@ -152,18 +170,18 @@ export function recommendDispatch(
           { vehicleType: 'Fire Engine', quantity: 1 },
           { vehicleType: 'Ambulance', quantity: 1 },
         ];
-        priority = input.severity === 'moderate' ? 'high' : 'moderate';
+        priority = isMidSeverity(input.severity) ? 'high' : 'moderate';
         step(trace, 2, 'Standby medical unit required?', 'Yes', 'One ambulance staged on-site as standard precaution for any structure fire.');
       }
       break;
     }
 
     case 'Grass Fire': {
-      const critical = input.severity === 'high' || input.severity === 'critical';
+      const critical = isHighSeverity(input.severity);
       step(
         trace,
         1,
-        'Is severity high or critical (fast spread risk)?',
+        'Is the alert level 4 or 5 (fast spread risk)?',
         critical ? 'Yes' : 'No',
         critical
           ? 'Fast-spreading brush fire — dispatch a second engine to establish a wider containment line.'
@@ -177,11 +195,11 @@ export function recommendDispatch(
     }
 
     case 'Vehicular Accident': {
-      const critical = input.severity === 'high' || input.severity === 'critical';
+      const critical = isHighSeverity(input.severity);
       step(
         trace,
         1,
-        'Is severity high or critical?',
+        'Is the alert level 4 or 5?',
         critical ? 'Yes' : 'No',
         critical ? 'Likely serious injuries — send rescue extraction alongside EMS.' : 'Minor collision — EMS response is typically sufficient.'
       );
@@ -207,11 +225,11 @@ export function recommendDispatch(
     }
 
     case 'Medical Emergency': {
-      const critical = input.severity === 'high' || input.severity === 'critical';
+      const critical = isHighSeverity(input.severity);
       step(
         trace,
         1,
-        'Is severity high or critical?',
+        'Is the alert level 4 or 5?',
         critical ? 'Yes' : 'No',
         critical
           ? 'Life-threatening presentation — send a first-responder engine alongside the ambulance.'
@@ -241,14 +259,14 @@ export function recommendDispatch(
           : 'Unconfirmed — still treat as hazmat-capable response until cleared on arrival.'
       );
       baseUnits = [{ vehicleType: 'Hazmat Unit', quantity: 1 }, { vehicleType: 'Fire Engine', quantity: 1 }];
-      priority = input.severity === 'critical' || input.severity === 'high' ? 'immediate' : 'high';
+      priority = isHighSeverity(input.severity) ? 'immediate' : 'high';
       break;
     }
 
     default: {
       step(trace, 1, 'Incident type not in a specialized branch.', 'Default response', 'Falling back to a standard single-engine assessment response.');
       baseUnits = [{ vehicleType: 'Fire Engine', quantity: 1 }];
-      priority = input.severity === 'critical' || input.severity === 'high' ? 'high' : 'low';
+      priority = isHighSeverity(input.severity) ? 'high' : 'low';
     }
   }
 

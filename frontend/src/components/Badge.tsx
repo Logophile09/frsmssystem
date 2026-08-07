@@ -24,10 +24,11 @@ const COLORS: Record<string, string> = {
   on_scene: 'bg-blue-100 text-blue-800',
   resolved: 'bg-emerald-100 text-emerald-800',
   closed: 'bg-slate-300 text-slate-800',
-  low: 'bg-emerald-100 text-emerald-800',
-  moderate: 'bg-amber-100 text-amber-800',
-  high: 'bg-orange-100 text-orange-800',
-  critical: 'bg-rose-100 text-rose-800',
+  '1': 'bg-emerald-100 text-emerald-800',
+  '2': 'bg-lime-100 text-lime-800',
+  '3': 'bg-amber-100 text-amber-800',
+  '4': 'bg-orange-100 text-orange-800',
+  '5': 'bg-rose-100 text-rose-800',
   // attendance
   present: 'bg-emerald-100 text-emerald-800',
   late: 'bg-amber-100 text-amber-800',
@@ -56,10 +57,19 @@ const COLORS: Record<string, string> = {
   confirmed_real: 'bg-rose-100 text-rose-800',
 };
 
+// Values that need custom display text instead of the raw stored value.
+const LABELS: Record<string, string> = {
+  '1': 'Alert Level 1',
+  '2': 'Alert Level 2',
+  '3': 'Alert Level 3',
+  '4': 'Alert Level 4',
+  '5': 'Alert Level 5',
+};
+
 export default function Badge({ value }: { value: string | null | undefined }) {
   if (!value) return <span className="text-slate-400">—</span>;
   const classes = COLORS[value] ?? 'bg-slate-200 text-slate-700';
-  const label = value.replace(/_/g, ' ');
+  const label = LABELS[value] ?? value.replace(/_/g, ' ');
   return (
     <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${classes}`}>
       {label}
