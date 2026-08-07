@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, ExternalLink } from 'lucide-react';
+import { Bell, ExternalLink, Flame, HardHat, Milestone, type LucideIcon } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/Badge';
@@ -73,13 +73,23 @@ function initials(name: string) {
 // Curated links to public news coverage of Barangay Culiat. This is a static,
 // manually-curated list (not a live feed) — see the "View all coverage" link
 // for GMA News' full tracking page, which stays current on its own.
-const CULIAT_NEWS = [
+// (News photos are copyrighted by their publishers, so each item gets a
+// simple topic icon here instead of a lifted photo from the source article.)
+const CULIAT_NEWS: {
+  date: string;
+  source: string;
+  title: string;
+  blurb: string;
+  url: string;
+  topic: 'bridge' | 'fire' | 'construction';
+}[] = [
   {
     date: 'Jul 28, 2026',
     source: 'Manila Times / DPWH',
     title: 'Culiat Bridge II reopens to light vehicles',
     blurb: 'The bridge reopened for light vehicles after repairs following the July 11 fire that damaged it.',
     url: 'https://www.manilatimes.net/2026/07/28/news/national/fire-hit-culiat-bridge-open-to-light-vehicles/2392323',
+    topic: 'bridge',
   },
   {
     date: 'Jul 16, 2026',
@@ -87,6 +97,7 @@ const CULIAT_NEWS = [
     title: 'Clearing operations continue near Culiat Bridge',
     blurb: "QC's Department of Engineering is continuing clean-up work under the bridge following the fire.",
     url: 'https://quezoncity.gov.ph/clearing-operations-in-culiat-bridge-2/',
+    topic: 'construction',
   },
   {
     date: 'Jan 28, 2026',
@@ -94,8 +105,15 @@ const CULIAT_NEWS = [
     title: 'Fire hits residential area in Brgy. Culiat',
     blurb: 'An early-morning fire broke out in a residential area of the barangay and reached second alarm.',
     url: 'https://www.gmanetwork.com/news/topstories/metro/974401/fire-hits-residential-area-in-bgy-culiat-quezon-city/story/',
+    topic: 'fire',
   },
 ];
+
+const NEWS_TOPIC_STYLE: Record<string, { icon: LucideIcon; classes: string }> = {
+  bridge: { icon: Milestone, classes: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300' },
+  construction: { icon: HardHat, classes: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' },
+  fire: { icon: Flame, classes: 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300' },
+};
 
 export default function Dashboard() {
   const { profile, signOut } = useAuth();
@@ -331,27 +349,33 @@ export default function Dashboard() {
           </a>
         </div>
         <ul className="divide-y divide-slate-100 dark:divide-white/5">
-          {CULIAT_NEWS.map((n) => (
-            <li key={n.url} className="px-5 py-3.5">
-              <a
-                href={n.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-start justify-between gap-4"
-              >
-                <div>
-                  <p className="text-sm font-medium text-slate-800 group-hover:text-leaf-600 dark:text-slate-200 dark:group-hover:text-leaf-300">
-                    {n.title}
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{n.blurb}</p>
-                  <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
-                    {n.source} &middot; {n.date}
-                  </p>
-                </div>
-                <ExternalLink size={14} className="mt-0.5 shrink-0 text-slate-300 group-hover:text-leaf-500" />
-              </a>
-            </li>
-          ))}
+          {CULIAT_NEWS.map((n) => {
+            const { icon: TopicIcon, classes } = NEWS_TOPIC_STYLE[n.topic];
+            return (
+              <li key={n.url} className="px-5 py-3.5">
+                <a
+                  href={n.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-start gap-4"
+                >
+                  <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${classes}`}>
+                    <TopicIcon size={22} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-slate-800 group-hover:text-leaf-600 dark:text-slate-200 dark:group-hover:text-leaf-300">
+                      {n.title}
+                    </p>
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{n.blurb}</p>
+                    <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                      {n.source} &middot; {n.date}
+                    </p>
+                  </div>
+                  <ExternalLink size={14} className="mt-0.5 shrink-0 text-slate-300 group-hover:text-leaf-500" />
+                </a>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>
