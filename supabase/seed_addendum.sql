@@ -38,18 +38,18 @@ insert into equipment (name, category, quantity, condition_status, vehicle_id, l
 ('Ladder (10m extension)', 'Rescue', 2, 'fair', (select id from vehicles where unit_code = 'LDR-01'), 'LDR-01 compartment');
 
 insert into incidents (incident_number, incident_type, description, location, severity, status, created_at, resolved_at) values
-('INC-2026-0006', 'Medical Emergency', 'Patient with chest pains.', 'Brgy. Sauyo', 'moderate', 'reported', now() - interval '6 days', null),
-('INC-2026-0007', 'Medical Emergency', 'Fall injury, ambulance requested.', 'Talipapa', 'moderate', 'reported', now() - interval '5 days', null),
-('INC-2026-0008', 'Grass Fire', 'Small brush fire spreading toward fence line.', 'Brgy. Fairview, Quezon City', 'low', 'reported', now() - interval '4 days', null),
-('INC-2026-0009', 'Vehicular Accident', 'Rear-end collision, minor injuries reported.', 'Commonwealth Ave. corner Regalado', 'low', 'reported', now() - interval '3 days', null),
-('INC-2026-0010', 'Structure Fire', 'Fire reported at commercial building, crews on site.', 'Brgy. Commonwealth, Quezon City', 'high', 'resolved', now() - interval '2 days', now() - interval '2 days' + interval '4 hours')
+('INC-2026-0006', 'Medical Emergency', 'Patient with chest pains.', 'Mabuhay St., Brgy. Culiat, Quezon City', 'moderate', 'reported', now() - interval '6 days', null),
+('INC-2026-0007', 'Medical Emergency', 'Fall injury, ambulance requested.', 'Tandang Sora Ave. corner Visayas Ave., Brgy. Culiat, Quezon City', 'moderate', 'reported', now() - interval '5 days', null),
+('INC-2026-0008', 'Grass Fire', 'Small brush fire spreading toward fence line.', 'Brgy. Culiat, Quezon City', 'low', 'reported', now() - interval '4 days', null),
+('INC-2026-0009', 'Vehicular Accident', 'Rear-end collision, minor injuries reported.', 'Visayas Ave. corner Tandang Sora Ave., Brgy. Culiat, Quezon City', 'low', 'reported', now() - interval '3 days', null),
+('INC-2026-0010', 'Structure Fire', 'Fire reported at commercial building, crews on site.', 'Brgy. Culiat, Quezon City', 'high', 'resolved', now() - interval '2 days', now() - interval '2 days' + interval '4 hours')
 on conflict (incident_number) do nothing;
 
 insert into establishments (business_name, business_type, owner_name, barangay, address, occupancy_type, storeys, floor_area_sqm, contact_number, date_registered, status) values
-('Talipapa Public Market', 'Public Market', 'Quezon City Market Board', 'Talipapa', 'Talipapa Rd., Quezon City', 'Mercantile', 1, 3200.00, '0917-100-1006', '2017-05-09', 'Active'),
-('Sauyo Elementary School', 'School', 'DepEd Quezon City', 'Sauyo', 'Sauyo Rd., Quezon City', 'Educational', 2, 2600.00, '0917-100-1007', '2016-06-01', 'Active'),
-('Regalado Business Center', 'Office Building', 'Regalado Properties Inc.', 'Fairview', 'Regalado Ave., Fairview, Quezon City', 'Business', 8, 9800.00, '0917-100-1008', '2020-01-14', 'Active'),
-('Payatas Cold Storage', 'Warehouse', 'ColdChain Logistics Corp.', 'Payatas', 'Payatas Rd., Quezon City', 'Storage', 1, 5400.00, '0917-100-1009', '2015-09-30', 'Inactive');
+('Culiat Public Market', 'Public Market', 'Quezon City Market Board', 'Culiat', 'Kalayaan St., Brgy. Culiat, Quezon City', 'Mercantile', 1, 3200.00, '0917-100-1006', '2017-05-09', 'Active'),
+('Culiat Elementary School', 'School', 'DepEd Quezon City', 'Culiat', 'Mabuhay St., Brgy. Culiat, Quezon City', 'Educational', 2, 2600.00, '0917-100-1007', '2016-06-01', 'Active'),
+('Culiat Business Center', 'Office Building', 'Regalado Properties Inc.', 'Culiat', 'Visayas Ave., Brgy. Culiat, Quezon City', 'Business', 8, 9800.00, '0917-100-1008', '2020-01-14', 'Active'),
+('Culiat Cold Storage', 'Warehouse', 'ColdChain Logistics Corp.', 'Culiat', 'Culiat Road, Brgy. Culiat, Quezon City', 'Storage', 1, 5400.00, '0917-100-1009', '2015-09-30', 'Inactive');
 
 insert into gps_devices (device_code, vehicle_id, status, last_lat, last_lng, last_speed_kph, last_heading, last_ping_at) values
 ('GPS-ENG-03', (select id from vehicles where unit_code = 'ENG-03'), 'online', 14.7012, 121.0521, 12.0, 180, now() - interval '3 minutes'),

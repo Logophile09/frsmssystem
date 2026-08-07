@@ -324,18 +324,18 @@ insert into equipment (name, category, quantity, condition_status, vehicle_id, l
 ('Ladder (10m extension)', 'Rescue', 2, 'fair', 6, 'LDR-01 compartment');
 
 insert into incidents (incident_number, incident_type, description, location, severity, status, created_at, resolved_at) values
-('INC-2026-0001', 'Structure Fire', 'Reported fire on the 2nd floor of a residential building.', 'Fairview, Quezon City', 'high', 'resolved', now() - interval '14 days', now() - interval '14 days' + interval '3 hours'),
-('INC-2026-0002', 'Vehicular Accident', 'Two-vehicle collision, one injured.', 'Commonwealth Ave.', 'moderate', 'resolved', now() - interval '12 days', now() - interval '12 days' + interval '2 hours'),
-('INC-2026-0003', 'Grass Fire', 'Small grass fire near a vacant lot, contained quickly.', 'Novaliches, Quezon City', 'low', 'resolved', now() - interval '11 days', now() - interval '11 days' + interval '1 hour'),
-('INC-2026-0004', 'Medical Emergency', 'Elderly patient with chest pains.', 'Batasan Hills', 'moderate', 'resolved', now() - interval '9 days', now() - interval '9 days' + interval '90 minutes'),
-('INC-2026-0005', 'Structure Fire', 'Possible false alarm - smoke detector triggered, no visible fire on arrival.', 'Culiat, Quezon City', 'low', 'resolved', now() - interval '8 days', now() - interval '8 days' + interval '45 minutes'),
-('INC-2026-0006', 'Medical Emergency', 'Patient with chest pains.', 'Brgy. Sauyo', 'moderate', 'reported', now() - interval '6 days', null),
-('INC-2026-0007', 'Medical Emergency', 'Fall injury, ambulance requested.', 'Talipapa', 'moderate', 'reported', now() - interval '5 days', null),
-('INC-2026-0008', 'Grass Fire', 'Small brush fire spreading toward fence line.', 'Brgy. Fairview, Quezon City', 'low', 'reported', now() - interval '4 days', null),
-('INC-2026-0009', 'Vehicular Accident', 'Rear-end collision, minor injuries reported.', 'Commonwealth Ave. corner Regalado', 'low', 'reported', now() - interval '3 days', null),
-('INC-2026-0010', 'Structure Fire', 'Fire reported at commercial building, crews on site.', 'Brgy. Commonwealth, Quezon City', 'high', 'resolved', now() - interval '2 days', now() - interval '2 days' + interval '4 hours'),
-('INC-2026-0011', 'Structure Fire', 'Possible false alarm - smoke detector triggered, no visible fire on arrival.', 'Culiat, Quezon City', 'low', 'dispatched', now() - interval '5 hours', null),
-('INC-2026-0012', 'Structure Fire', 'Active fire, occupants trapped on 3rd floor, multiple casualties reported.', 'Payatas, Quezon City', 'critical', 'on_scene', now() - interval '40 minutes', null);
+('INC-2026-0001', 'Structure Fire', 'Reported fire on the 2nd floor of a residential building.', 'Tandang Sora Ave., Brgy. Culiat, Quezon City', 'high', 'resolved', now() - interval '14 days', now() - interval '14 days' + interval '3 hours'),
+('INC-2026-0002', 'Vehicular Accident', 'Two-vehicle collision, one injured.', 'Visayas Ave., Brgy. Culiat, Quezon City', 'moderate', 'resolved', now() - interval '12 days', now() - interval '12 days' + interval '2 hours'),
+('INC-2026-0003', 'Grass Fire', 'Small grass fire near a vacant lot, contained quickly.', 'Culiat Road, Brgy. Culiat, Quezon City', 'low', 'resolved', now() - interval '11 days', now() - interval '11 days' + interval '1 hour'),
+('INC-2026-0004', 'Medical Emergency', 'Elderly patient with chest pains.', 'Kalayaan St., Brgy. Culiat, Quezon City', 'moderate', 'resolved', now() - interval '9 days', now() - interval '9 days' + interval '90 minutes'),
+('INC-2026-0005', 'Structure Fire', 'Possible false alarm - smoke detector triggered, no visible fire on arrival.', 'Brgy. Culiat, Quezon City', 'low', 'resolved', now() - interval '8 days', now() - interval '8 days' + interval '45 minutes'),
+('INC-2026-0006', 'Medical Emergency', 'Patient with chest pains.', 'Mabuhay St., Brgy. Culiat, Quezon City', 'moderate', 'reported', now() - interval '6 days', null),
+('INC-2026-0007', 'Medical Emergency', 'Fall injury, ambulance requested.', 'Tandang Sora Ave. corner Visayas Ave., Brgy. Culiat, Quezon City', 'moderate', 'reported', now() - interval '5 days', null),
+('INC-2026-0008', 'Grass Fire', 'Small brush fire spreading toward fence line.', 'Brgy. Culiat, Quezon City', 'low', 'reported', now() - interval '4 days', null),
+('INC-2026-0009', 'Vehicular Accident', 'Rear-end collision, minor injuries reported.', 'Visayas Ave. corner Tandang Sora Ave., Brgy. Culiat, Quezon City', 'low', 'reported', now() - interval '3 days', null),
+('INC-2026-0010', 'Structure Fire', 'Fire reported at commercial building, crews on site.', 'Brgy. Culiat, Quezon City', 'high', 'resolved', now() - interval '2 days', now() - interval '2 days' + interval '4 hours'),
+('INC-2026-0011', 'Structure Fire', 'Possible false alarm - smoke detector triggered, no visible fire on arrival.', 'Brgy. Culiat, Quezon City', 'low', 'dispatched', now() - interval '5 hours', null),
+('INC-2026-0012', 'Structure Fire', 'Active fire, occupants trapped on 3rd floor, multiple casualties reported.', 'Culiat Road, Brgy. Culiat, Quezon City', 'critical', 'on_scene', now() - interval '40 minutes', null);
 
 insert into incident_personnel (incident_id, personnel_id) values
 (1,1),(1,2),(2,2),(3,1),(4,4),(5,3),
@@ -371,15 +371,15 @@ insert into attendance (personnel_id, attendance_date, time_in, time_out, status
 on conflict do nothing;
 
 insert into establishments (business_name, business_type, owner_name, barangay, address, occupancy_type, storeys, floor_area_sqm, contact_number, date_registered, status) values
-('Fairview Grand Mall', 'Mall / Commercial Complex', 'Realty Holdings Corp.', 'Fairview', 'Maligaya St., Fairview, Quezon City', 'Mercantile', 4, 12500.00, '0917-100-1001', '2021-03-15', 'Active'),
-('Commonwealth Fuel Station', 'Gasoline Station', 'Petrolink Inc.', 'Commonwealth', 'Commonwealth Ave. corner Regalado', 'Hazardous', 1, 850.00, '0917-100-1002', '2020-06-02', 'Active'),
-('Batasan Hills Medical Center', 'Hospital / Clinic', 'Dra. Lourdes Aquino', 'Batasan Hills', 'Brgy. Batasan Hills, Quezon City', 'Institutional', 5, 6200.00, '0917-100-1003', '2019-01-20', 'Active'),
-('Novaliches Central School', 'School', 'DepEd Quezon City', 'Novaliches', 'Regalado Ave., Novaliches, Quezon City', 'Educational', 3, 4300.00, '0917-100-1004', '2018-08-10', 'Active'),
-('Culiat Grand Hotel', 'Hotel', 'Culiat Hospitality Group', 'Culiat', 'Tandang Sora Ave., Culiat, Quezon City', 'Residential', 6, 8900.00, '0917-100-1005', '2022-02-11', 'Active'),
-('Talipapa Public Market', 'Public Market', 'Quezon City Market Board', 'Talipapa', 'Talipapa Rd., Quezon City', 'Mercantile', 1, 3200.00, '0917-100-1006', '2017-05-09', 'Active'),
-('Sauyo Elementary School', 'School', 'DepEd Quezon City', 'Sauyo', 'Sauyo Rd., Quezon City', 'Educational', 2, 2600.00, '0917-100-1007', '2016-06-01', 'Active'),
-('Regalado Business Center', 'Office Building', 'Regalado Properties Inc.', 'Fairview', 'Regalado Ave., Fairview, Quezon City', 'Business', 8, 9800.00, '0917-100-1008', '2020-01-14', 'Active'),
-('Payatas Cold Storage', 'Warehouse', 'ColdChain Logistics Corp.', 'Payatas', 'Payatas Rd., Quezon City', 'Storage', 1, 5400.00, '0917-100-1009', '2015-09-30', 'Inactive');
+('Culiat Grand Mall', 'Mall / Commercial Complex', 'Realty Holdings Corp.', 'Culiat', 'Tandang Sora Ave., Brgy. Culiat, Quezon City', 'Mercantile', 4, 12500.00, '0917-100-1001', '2021-03-15', 'Active'),
+('Culiat Fuel Station', 'Gasoline Station', 'Petrolink Inc.', 'Culiat', 'Visayas Ave. corner Tandang Sora Ave., Brgy. Culiat, Quezon City', 'Hazardous', 1, 850.00, '0917-100-1002', '2020-06-02', 'Active'),
+('Culiat Medical Center', 'Hospital / Clinic', 'Dra. Lourdes Aquino', 'Culiat', 'Brgy. Culiat, Quezon City', 'Institutional', 5, 6200.00, '0917-100-1003', '2019-01-20', 'Active'),
+('Culiat Central School', 'School', 'DepEd Quezon City', 'Culiat', 'Culiat Road, Brgy. Culiat, Quezon City', 'Educational', 3, 4300.00, '0917-100-1004', '2018-08-10', 'Active'),
+('Culiat Grand Hotel', 'Hotel', 'Culiat Hospitality Group', 'Culiat', 'Tandang Sora Ave., Brgy. Culiat, Quezon City', 'Residential', 6, 8900.00, '0917-100-1005', '2022-02-11', 'Active'),
+('Culiat Public Market', 'Public Market', 'Quezon City Market Board', 'Culiat', 'Kalayaan St., Brgy. Culiat, Quezon City', 'Mercantile', 1, 3200.00, '0917-100-1006', '2017-05-09', 'Active'),
+('Culiat Elementary School', 'School', 'DepEd Quezon City', 'Culiat', 'Mabuhay St., Brgy. Culiat, Quezon City', 'Educational', 2, 2600.00, '0917-100-1007', '2016-06-01', 'Active'),
+('Culiat Business Center', 'Office Building', 'Regalado Properties Inc.', 'Culiat', 'Visayas Ave., Brgy. Culiat, Quezon City', 'Business', 8, 9800.00, '0917-100-1008', '2020-01-14', 'Active'),
+('Culiat Cold Storage', 'Warehouse', 'ColdChain Logistics Corp.', 'Culiat', 'Culiat Road, Brgy. Culiat, Quezon City', 'Storage', 1, 5400.00, '0917-100-1009', '2015-09-30', 'Inactive');
 
 insert into inspections (establishment_id, inspection_type, inspection_date, inspector_name, status, findings_summary, next_inspection_due) values
 (1, 'Annual', '2026-02-10', 'FO1 R. Santos', 'Compliant', 'All fire exits clear, extinguishers tagged and current.', '2027-02-10'),

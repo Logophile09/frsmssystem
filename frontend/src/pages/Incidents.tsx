@@ -148,7 +148,7 @@ export default function IncidentsPage() {
               <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">#</th>
               <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Type</th>
               <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Location</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Severity</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Alert Level</th>
               <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Status</th>
               <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">AI Score</th>
               <th className="px-4 py-2.5" />
@@ -239,7 +239,7 @@ export default function IncidentsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Severity</label>
+                <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Alert Level</label>
                 <select
                   value={form.severity ?? 'moderate'}
                   onChange={(e) => setForm({ ...form, severity: e.target.value })}

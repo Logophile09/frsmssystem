@@ -132,7 +132,7 @@ export default function DispatchRecommendationPage() {
             ))}
           </select>
 
-          <label className="mb-1 block text-xs font-medium text-slate-500">Severity</label>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Alert Level</label>
           <select
             value={form.severity}
             onChange={(e) => setForm({ ...form, severity: e.target.value as Severity })}

@@ -184,7 +184,7 @@ export default function Dashboard() {
                   <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Incident #</th>
                   <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Type</th>
                   <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Location</th>
-                  <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Severity</th>
+                  <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Alert Level</th>
                   <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Status</th>
                   <th className="px-5 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Reported</th>
                 </tr>

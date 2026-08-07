@@ -86,7 +86,7 @@ export default function ReportsPage() {
     <div>
       <div className="mb-5">
         <h1 className="text-xl font-semibold text-navy-900 dark:text-slate-100">Reports</h1>
-        <p className="text-sm text-slate-500">Incident trends, severity/status breakdown, and fleet &amp; personnel readiness.</p>
+        <p className="text-sm text-slate-500">Incident trends, alert level/status breakdown, and fleet &amp; personnel readiness.</p>
       </div>
 
       <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -102,7 +102,7 @@ export default function ReportsPage() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="Incidents by Severity">
+        <ChartCard title="Incidents by Alert Level">
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie data={bySeverity} dataKey="value" nameKey="name" outerRadius={80} label>
