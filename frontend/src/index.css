@@ -8,8 +8,6 @@ html {
 
 body {
   font-family: Georgia, 'Times New Roman', Times, serif;
-  font-variant: small-caps;
-  letter-spacing: 0.2px;
 }
 
 /* Smooth, consistent transitions across the whole interface */
