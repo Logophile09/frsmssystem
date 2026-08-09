@@ -5,8 +5,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Georgia', 'Times New Roman', 'Times', 'serif'],
-        sans: ['Georgia', 'Times New Roman', 'Times', 'serif'],
+        display: ['Limon', 'Georgia', 'Times New Roman', 'Times', 'serif'],
+        sans: ['Limon', 'Georgia', 'Times New Roman', 'Times', 'serif'],
       },
       colors: {
         // Republic red — primary accent, matches the landing page hotline bar & CTAs

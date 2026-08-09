@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell, ExternalLink, Flame, HardHat, Milestone, type LucideIcon } from 'lucide-react';
@@ -61,15 +61,6 @@ function StatCard({
   );
 }
 
-function initials(name: string) {
-  return name
-    .split(' ')
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
-
 // Curated links to public news coverage of Barangay Culiat. This is a static,
 // manually-curated list (not a live feed) — see the "View all coverage" link
 // for GMA News' full tracking page, which stays current on its own.
@@ -116,34 +107,11 @@ const NEWS_TOPIC_STYLE: Record<string, { icon: LucideIcon; classes: string }> = 
 };
 
 export default function Dashboard() {
-  const { profile, signOut } = useAuth();
+  const { profile } = useAuth();
   const [summary, setSummary] = useState<Summary | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
-        setShowProfileMenu(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  async function handleSignOut() {
-    setSigningOut(true);
-    try {
-      await signOut();
-    } finally {
-      setSigningOut(false);
-      setShowProfileMenu(false);
-    }
-  }
 
   useEffect(() => {
     Promise.all([api.get('/dashboard/summary'), api.get('/vehicles')])
@@ -211,33 +179,6 @@ export default function Dashboard() {
                     ))}
                   </ul>
                 )}
-              </div>
-            )}
-          </div>
-
-          <div className="relative" ref={profileMenuRef}>
-            <button
-              onClick={() => setShowProfileMenu((s) => !s)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf-600 text-sm font-bold text-navy-950 transition-transform duration-200 hover:scale-105"
-              aria-label="Account menu"
-            >
-              {initials(profile?.full_name ?? '?')}
-            </button>
-            {showProfileMenu && (
-              <div className="absolute right-0 z-10 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-leaf-400/10 dark:bg-navy-800">
-                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{profile?.full_name ?? 'Unknown user'}</p>
-                <p className="text-xs capitalize text-slate-500 dark:text-slate-400">{profile?.role ?? ''}</p>
-                {profile?.email && (
-                  <p className="mt-1 truncate text-xs text-slate-400 dark:text-slate-500">{profile.email}</p>
-                )}
-                <div className="my-2 h-px bg-slate-100 dark:bg-white/10" />
-                <button
-                  onClick={handleSignOut}
-                  disabled={signingOut}
-                  className="w-full rounded-lg px-2 py-1.5 text-left text-sm font-medium text-rose-600 transition-colors duration-200 hover:bg-rose-50 disabled:opacity-60 dark:text-rose-400 dark:hover:bg-rose-500/10"
-                >
-                  {signingOut ? 'Signing out…' : 'Sign out'}
-                </button>
               </div>
             )}
           </div>

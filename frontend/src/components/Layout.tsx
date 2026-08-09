@@ -18,7 +18,6 @@ import {
   UserCog,
   Menu,
   X,
-  Bell,
   Moon,
   Sun,
   type LucideIcon,
@@ -246,16 +245,6 @@ export default function Layout() {
               aria-label="Toggle theme"
             >
               {dark ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-            <button
-              title="Notifications"
-              className="relative rounded-lg border border-leaf-100 p-2 text-ink-900 transition-colors duration-300 hover:bg-leaf-50 dark:border-leaf-400/15 dark:text-slate-300 dark:hover:bg-white/5"
-              aria-label="Notifications"
-            >
-              <Bell size={16} />
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-flagred-500 text-[10px] font-bold text-white">
-                1
-              </span>
             </button>
             <div className="hidden text-right sm:block">
               <p className="text-sm font-bold text-ink-900 dark:text-slate-100">{profile?.full_name ?? 'Demo Administrator'}</p>
