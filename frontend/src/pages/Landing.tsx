@@ -19,6 +19,8 @@ import {
   UserCog,
   CheckCircle2,
   ArrowRight,
+  UserRound,
+  UserPlus,
 } from 'lucide-react';
 
 const NAV_LINKS = [
@@ -141,15 +143,15 @@ export default function Landing() {
           <div className="flex items-center gap-3">
             <Link
               to="/login"
-              className="hidden text-sm font-semibold text-white transition-colors duration-300 hover:text-leaf-300 sm:block"
+              className="hidden items-center gap-2 rounded-lg border border-white/25 px-4 py-2 text-sm font-semibold text-white transition-colors duration-300 hover:border-leaf-400/50 hover:bg-white/10 sm:flex"
             >
-              Sign In
+              <UserRound size={15} /> Sign In
             </Link>
             <Link
               to="/login"
-              className="rounded-lg bg-flagred-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-flagred-500/20 transition-colors duration-300 hover:bg-flagred-600"
+              className="flex items-center gap-2 rounded-lg bg-flagred-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-flagred-500/20 transition-colors duration-300 hover:bg-flagred-600"
             >
-              Register
+              <UserPlus size={15} /> Register
             </Link>
           </div>
         </div>

@@ -18,6 +18,9 @@ import {
   UserCog,
   Menu,
   X,
+  Bell,
+  Moon,
+  Sun,
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -69,6 +72,15 @@ const NAV_GROUPS: {
     ],
   },
 ];
+
+function initials(name: string) {
+  return name
+    .split(' ')
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+}
 
 export default function Layout() {
   const { profile, signOut, demoMode } = useAuth();
@@ -225,18 +237,32 @@ export default function Layout() {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <LiveClock />
             <button
               onClick={toggle}
               title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="rounded-lg border border-leaf-100 px-3 py-1.5 text-sm text-ink-900 transition-colors duration-300 hover:bg-leaf-50 dark:border-leaf-400/15 dark:text-slate-300 dark:hover:bg-white/5"
+              className="rounded-lg border border-leaf-100 p-2 text-ink-900 transition-colors duration-300 hover:bg-leaf-50 dark:border-leaf-400/15 dark:text-slate-300 dark:hover:bg-white/5"
+              aria-label="Toggle theme"
             >
-              {dark ? '☀️ Light' : '🌙 Dark'}
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+            <button
+              title="Notifications"
+              className="relative rounded-lg border border-leaf-100 p-2 text-ink-900 transition-colors duration-300 hover:bg-leaf-50 dark:border-leaf-400/15 dark:text-slate-300 dark:hover:bg-white/5"
+              aria-label="Notifications"
+            >
+              <Bell size={16} />
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-flagred-500 text-[10px] font-bold text-white">
+                1
+              </span>
             </button>
             <div className="hidden text-right sm:block">
-              <p className="text-sm font-bold text-ink-900 dark:text-slate-100">{profile?.full_name ?? '—'}</p>
-              <p className="text-xs capitalize text-ink-700 dark:text-slate-400">{profile?.role ?? ''}</p>
+              <p className="text-sm font-bold text-ink-900 dark:text-slate-100">{profile?.full_name ?? 'Demo Administrator'}</p>
+              <p className="text-xs capitalize text-ink-700 dark:text-slate-400">{profile?.role ?? 'Admin'}</p>
+            </div>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-flagred-500 text-xs font-bold text-white">
+              {initials(profile?.full_name ?? 'Demo Administrator')}
             </div>
             <button
               onClick={() => setConfirmingLogout(true)}
