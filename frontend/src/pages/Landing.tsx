@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import type { MouseEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Flame,
   Radio,
@@ -112,8 +114,23 @@ const MODULES = [
 ];
 
 export default function Landing() {
+  const navigate = useNavigate();
+  const [leaving, setLeaving] = useState(false);
+
+  function goToLogin(e: MouseEvent) {
+    e.preventDefault();
+    if (leaving) return;
+    setLeaving(true);
+    window.setTimeout(() => navigate('/login'), 380);
+  }
+
   return (
     <div className="min-h-screen bg-white">
+      <div
+        className={`transition-all duration-500 ease-smooth ${
+          leaving ? '-translate-y-2 opacity-0' : 'translate-y-0 opacity-100'
+        }`}
+      >
       {/* Navbar */}
       <header className="sticky top-0 z-50 border-b border-navy-700/40 bg-navy-900">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
@@ -143,12 +160,14 @@ export default function Landing() {
           <div className="flex items-center gap-3">
             <Link
               to="/login"
+              onClick={goToLogin}
               className="hidden items-center gap-2 rounded-lg border border-white/25 px-4 py-2 text-sm font-semibold text-white transition-colors duration-300 hover:border-leaf-400/50 hover:bg-white/10 sm:flex"
             >
               <UserRound size={15} /> Sign In
             </Link>
             <Link
               to="/login"
+              onClick={goToLogin}
               className="flex items-center gap-2 rounded-lg bg-flagred-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-flagred-500/20 transition-colors duration-300 hover:bg-flagred-600"
             >
               <UserPlus size={15} /> Register
@@ -207,6 +226,7 @@ export default function Landing() {
               </a>
               <Link
                 to="/login"
+              onClick={goToLogin}
                 className="flex items-center gap-2 rounded-lg border border-white/25 bg-white/5 px-5 py-3 text-sm font-bold text-white backdrop-blur transition-colors duration-300 hover:border-leaf-400/50 hover:bg-white/10"
               >
                 <ShieldCheck size={16} /> Admin / Responder Login
@@ -396,6 +416,7 @@ export default function Landing() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
               to="/login"
+              onClick={goToLogin}
               className="flex items-center gap-2 rounded-lg bg-leaf-400 px-6 py-3 text-sm font-bold text-navy-950 shadow-lg shadow-leaf-500/20 transition-colors duration-300 hover:bg-leaf-300"
             >
               Admin / Responder Login <ArrowRight size={16} />
@@ -425,6 +446,16 @@ export default function Landing() {
           <p className="text-xs text-navy-400">Bagong Pilipinas &middot; AI-Enhanced Emergency Response</p>
         </div>
       </footer>
+      </div>
+
+      {leaving && (
+        <div className="fixed inset-0 z-[2000] flex flex-col items-center justify-center gap-4 bg-navy-900 animate-page-in">
+          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-400 bg-white shadow-[0_0_30px_rgba(206,17,38,0.4)]">
+            <img src="/barangay-culiat-seal.png" alt="" className="h-full w-full object-cover" />
+          </div>
+          <p className="font-display text-lg font-semibold text-white">Taking you to sign in&hellip;</p>
+        </div>
+      )}
     </div>
   );
 }

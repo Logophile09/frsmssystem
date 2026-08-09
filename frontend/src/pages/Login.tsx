@@ -87,7 +87,11 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className={`transition-opacity duration-500 ${transitioning ? 'pointer-events-none opacity-0' : 'opacity-100'}`}>
+      <div
+        className={`animate-page-in transition-opacity duration-500 ${
+          transitioning ? 'pointer-events-none opacity-0' : 'opacity-100'
+        }`}
+      >
         {/* Navbar — same as the home page so Sign In / Register are always reachable */}
         <header className="sticky top-0 z-50 border-b border-navy-700/40 bg-navy-900">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
