@@ -57,10 +57,6 @@ export default function Login() {
     }, 700);
   }
 
-  function handleDemoEntry() {
-    window.location.href = 'https://www.google.com';
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
@@ -276,14 +272,6 @@ export default function Login() {
                   {submitting ? 'Signing in…' : 'Sign In'} <ArrowRight size={15} />
                 </button>
               </form>
-
-              <button
-                type="button"
-                onClick={handleDemoEntry}
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-leaf-400/30 bg-leaf-400/5 py-2.5 text-sm font-semibold text-leaf-200 transition-colors duration-300 hover:bg-leaf-400/15"
-              >
-                View Demo
-              </button>
 
               <div className="my-5 flex items-center gap-3">
                 <div className="h-px flex-1 bg-white/10" />
