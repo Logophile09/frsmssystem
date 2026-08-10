@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   Flame,
   Radio,
@@ -115,7 +116,18 @@ const MODULES = [
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { session, demoMode } = useAuth();
   const [leaving, setLeaving] = useState(false);
+
+  // Supabase OAuth (Google/Facebook) redirects back to the site's root URL
+  // after login, not to /login. If a session is already present when this
+  // page loads -- e.g. right after that OAuth round-trip -- skip the
+  // marketing page and go straight to the dashboard instead of stranding
+  // the user here.
+  
+  useEffect(() => {
+    if (session || demoMode) navigate('/dashboard', { replace: true });
+  }, [session, demoMode, navigate]);
 
   function goToLogin(e: MouseEvent) {
     e.preventDefault();
