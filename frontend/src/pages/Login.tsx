@@ -34,7 +34,7 @@ const HERO_FEATURES = [
 ];
 
 export default function Login() {
-  const { session, demoMode, signIn, signInDemo } = useAuth();
+  const { session, demoMode, signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -58,8 +58,7 @@ export default function Login() {
   }
 
   function handleDemoEntry() {
-    signInDemo();
-    goToDashboard();
+    window.location.href = 'https://www.google.com';
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -283,7 +282,7 @@ export default function Login() {
                 onClick={handleDemoEntry}
                 className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-leaf-400/30 bg-leaf-400/5 py-2.5 text-sm font-semibold text-leaf-200 transition-colors duration-300 hover:bg-leaf-400/15"
               >
-                View Demo (no account needed)
+                View Demo
               </button>
 
               <div className="my-5 flex items-center gap-3">
