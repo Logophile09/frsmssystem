@@ -43,6 +43,14 @@ export default function CrudPage<T extends { id: number | string }>({
   const [form, setForm] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Auto-dismiss the success toast after a few seconds so it doesn't linger.
+  useEffect(() => {
+    if (!successMessage) return;
+    const t = setTimeout(() => setSuccessMessage(null), 3000);
+    return () => clearTimeout(t);
+  }, [successMessage]);
 
   async function load() {
     setLoading(true);
@@ -79,12 +87,14 @@ export default function CrudPage<T extends { id: number | string }>({
     setError(null);
     try {
       const payload = onBeforeSave ? onBeforeSave(form) : form;
+      const wasNew = editing === 'new';
       if (editing === 'new') {
         await api.post(endpoint, payload);
       } else if (editing) {
         await api.put(`${endpoint}/${(editing as T).id}`, payload);
       }
       setEditing(null);
+      setSuccessMessage(wasNew ? 'Successfully logged.' : 'Successfully updated.');
       await load();
     } catch (e: any) {
       setError(e.message);
@@ -131,6 +141,11 @@ export default function CrudPage<T extends { id: number | string }>({
       </div>
 
       {error && <div className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">{error}</div>}
+      {successMessage && (
+        <div className="mb-4 rounded-lg bg-leaf-50 px-4 py-2 text-sm font-medium text-leaf-700 dark:bg-leaf-950 dark:text-leaf-300">
+          ✓ {successMessage}
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">
         <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-white/10">
