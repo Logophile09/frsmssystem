@@ -118,7 +118,6 @@ export default function Landing() {
   const navigate = useNavigate();
   const { session, demoMode } = useAuth();
   const [leaving, setLeaving] = useState(false);
-  const [oauthError, setOauthError] = useState<string | null>(null);
 
   // Supabase OAuth (Google/Facebook) redirects back to the site's root URL
   // after login, not to /login. If a session is already present when this
@@ -129,23 +128,6 @@ export default function Landing() {
   useEffect(() => {
     if (session || demoMode) navigate('/dashboard', { replace: true });
   }, [session, demoMode, navigate]);
-
-  // If the OAuth round-trip itself failed (e.g. Supabase couldn't exchange
-  // the code with Google), Supabase redirects back here with ?error=... in
-  // the query string. That was previously discarded silently -- the user
-  // just saw the normal homepage with no clue anything went wrong. Surface
-  // it instead, and clean the params out of the URL once read.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const description = params.get('error_description');
-    const error = params.get('error');
-    if (error || description) {
-      setOauthError(
-        description ? description.replace(/\+/g, ' ') : `Sign-in failed (${error}).`
-      );
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, []);
 
   function goToLogin(e: MouseEvent) {
     e.preventDefault();
@@ -246,12 +228,6 @@ export default function Landing() {
               The official emergency response system of Barangay Culiat, Quezon City — connecting citizens
               with responders through an AI-powered platform under the Bagong Pilipinas governance agenda.
             </p>
-
-            {oauthError && (
-              <div className="mt-6 max-w-xl rounded-lg border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-                <span className="font-semibold">Sign-in failed:</span> {oauthError}
-              </div>
-            )}
 
             <div className="mt-8 flex flex-wrap gap-3">
               <a

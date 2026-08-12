@@ -70,28 +70,12 @@ export default function Login() {
   async function handleOAuth(provider: 'google' | 'facebook') {
     setError(null);
     setOauthLoading(provider);
-    try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo: window.location.origin },
-      });
-      if (oauthError) {
-        setError(oauthError.message);
-        setOauthLoading(null);
-      }
-      // On success, signInWithOAuth navigates the browser away on its own --
-      // nothing else to do here, and we deliberately leave oauthLoading
-      // true so the button doesn't flicker back before the redirect fires.
-    } catch (err) {
-      // Supabase client misconfigured/unreachable (e.g. missing or wrong
-      // VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY on this deployment) --
-      // without this catch, the failure was silently swallowed and the
-      // button just sat there looking like nothing happened.
-      setError(
-        err instanceof Error
-          ? `Could not start Google sign-in: ${err.message}`
-          : 'Could not start Google sign-in. The authentication service may be unreachable.'
-      );
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: window.location.origin },
+    });
+    if (oauthError) {
+      setError(oauthError.message);
       setOauthLoading(null);
     }
   }

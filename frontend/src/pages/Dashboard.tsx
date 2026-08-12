@@ -41,13 +41,11 @@ function StatCard({
   label,
   value,
   accent,
-  to,
 }: {
   label: string;
   value: ReactNode;
   icon?: string;
   accent: 'emerald' | 'rose' | 'blue' | 'amber';
-  to?: string;
 }) {
   const valueColor: Record<string, string> = {
     emerald: 'text-leaf-700 dark:text-leaf-300',
@@ -55,22 +53,12 @@ function StatCard({
     blue: 'text-ink-900 dark:text-slate-100',
     amber: 'text-amber-600 dark:text-amber-400',
   };
-  const cardClass =
-    'block rounded-2xl border border-leaf-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-leaf-200 hover:shadow-lg dark:border-white/10 dark:bg-ink-800';
-  const content = (
-    <>
+  return (
+    <div className="rounded-2xl border border-leaf-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-leaf-200 hover:shadow-lg dark:border-white/10 dark:bg-ink-800">
       <p className="text-[11px] font-extrabold uppercase tracking-wider text-leaf-600/70 dark:text-slate-400">{label}</p>
       <p className={`mt-2.5 text-4xl font-extrabold ${valueColor[accent]}`}>{value}</p>
-    </>
+    </div>
   );
-  if (to) {
-    return (
-      <Link to={to} className={`${cardClass} cursor-pointer`}>
-        {content}
-      </Link>
-    );
-  }
-  return <div className={cardClass}>{content}</div>;
 }
 
 // Curated links to public news coverage of Barangay Culiat. This is a static,
@@ -206,10 +194,10 @@ export default function Dashboard() {
 
       {/* Stat cards */}
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Active Incidents" value={summary.activeIncidents} icon="⚠️" accent="rose" to="/incidents" />
-        <StatCard label="Critical & Unresolved" value={summary.criticalUnresolved} icon="🔥" accent="rose" to="/incidents" />
-        <StatCard label="Vehicles Available" value={summary.availableVehicles} icon="🚒" accent="emerald" to="/vehicles" />
-        <StatCard label="Personnel On Duty" value={summary.onDutyPersonnel} icon="👥" accent="amber" to="/personnel" />
+        <StatCard label="Active Incidents" value={summary.activeIncidents} icon="⚠️" accent="rose" />
+        <StatCard label="Critical & Unresolved" value={summary.criticalUnresolved} icon="🔥" accent="rose" />
+        <StatCard label="Vehicles Available" value={summary.availableVehicles} icon="🚒" accent="emerald" />
+        <StatCard label="Personnel On Duty" value={summary.onDutyPersonnel} icon="👥" accent="amber" />
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">

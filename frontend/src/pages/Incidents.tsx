@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import Modal from '../components/Modal';
 import Badge from '../components/Badge';
-import { SEVERITY_LABELS } from '../lib/dispatchRecommendation';
+import { SEVERITY_LABELS, INCIDENT_TYPES } from '../lib/dispatchRecommendation';
 
 interface Incident {
   id: number;
@@ -213,12 +213,20 @@ export default function IncidentsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Incident Type</label>
-                <input
+                <select
                   value={form.incident_type ?? ''}
                   onChange={(e) => setForm({ ...form, incident_type: e.target.value })}
                   className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
-                  placeholder="Structure Fire, Medical Emergency, …"
-                />
+                >
+                  <option value="" disabled>
+                    Select incident type…
+                  </option>
+                  {INCIDENT_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Location</label>
