@@ -1,7 +1,7 @@
-import { Session } from '@supabase/supabase-js';
+import { Session, User } from '@supabase/supabase-js';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { api } from '../lib/api';
+import { api, isBackendUnreachable } from '../lib/api';
 import { demoProfile } from '../lib/demoData';
 
 export interface Profile {
@@ -24,6 +24,27 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+// When the backend (and its `profiles` table) can't be reached, we still
+// have the signed-in Supabase Auth user available on the client -- so we
+// build a display profile straight from *their* account (Google display
+// name, or the local part of their email) instead of showing the generic
+// "Demo Administrator" placeholder for a real person.
+function profileFromSupabaseUser(user: User): Profile {
+  const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
+  const metaName = [meta.full_name, meta.name, meta.display_name].find(
+    (v): v is string => typeof v === 'string' && v.trim().length > 0
+  );
+  const fallbackName = user.email ? user.email.split('@')[0] : 'User';
+
+  return {
+    id: user.id,
+    email: user.email ?? null,
+    role: 'admin',
+    username: fallbackName,
+    full_name: metaName ?? fallbackName,
+  };
+}
+
 // Loading the real Supabase session should never take more than this --
 // if Supabase itself is unreachable (wrong project URL, offline, etc.)
 // we stop waiting and show the login screen instead of a stuck spinner.
@@ -35,12 +56,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [demoMode, setDemoMode] = useState(false);
 
-  async function loadProfile() {
+  async function loadProfile(currentUser: User | null | undefined) {
     try {
       const me = await api.get('/me');
-      setProfile(me);
+      // api.get('/me') never throws when the backend is unreachable -- it
+      // silently resolves with the offline demo profile instead. That's
+      // correct for genuine Demo Mode, but a *real* signed-in user should
+      // see their own Supabase account name, not "Demo Administrator".
+      if (isBackendUnreachable() && currentUser) {
+        setProfile(profileFromSupabaseUser(currentUser));
+      } else {
+        setProfile(me);
+      }
     } catch {
-      setProfile(null);
+      setProfile(currentUser ? profileFromSupabaseUser(currentUser) : null);
     }
   }
 
@@ -57,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .getSession()
       .then(async ({ data }) => {
         setSession(data.session);
-        if (data.session) await loadProfile();
+        if (data.session) await loadProfile(data.session.user);
       })
       .catch(() => {
         // Supabase project unreachable/misconfigured -- fall through to
@@ -75,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(newSession);
       if (newSession) {
         setDemoMode(false);
-        await loadProfile();
+        await loadProfile(newSession.user);
       } else {
         setProfile(null);
       }
