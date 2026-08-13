@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, GeoJSON, Popup, useMap } from 'react-leaflet';
-import type { Layer, LeafletMouseEvent } from 'leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { api } from '../lib/api';
 import Badge from '../components/Badge';
 import Modal from '../components/Modal';
 import qcBarangays from '../lib/qcBarangays.json';
-import { getBarangayRisk, riskColor, riskLabel, RISK_LEGEND } from '../lib/barangayRisk';
 
 interface GpsDevice {
   id: number;
@@ -93,32 +91,8 @@ export default function GpsTrackerPage() {
 
   const located = devices.filter((d) => d.last_lat != null && d.last_lng != null);
 
-  // Quezon City's 142 barangay boundaries, colored by an estimated fire-risk
-  // score (real for Culiat, deterministic demo estimates elsewhere -- see
-  // lib/barangayRisk.ts). Computed once since the underlying dataset is static.
+  // Quezon City's 142 barangay boundaries, used only to fit/center the map.
   const qcBounds = useMemo(() => L.geoJSON(qcBarangays as any).getBounds(), []);
-
-  function styleBarangay(feature: any) {
-    const { score } = getBarangayRisk(feature.properties.name);
-    return {
-      color: '#ffffff',
-      weight: 1,
-      fillColor: riskColor(score),
-      fillOpacity: 0.75,
-    };
-  }
-
-  function onEachBarangay(feature: any, layer: Layer) {
-    const { score, isReal } = getBarangayRisk(feature.properties.name);
-    layer.bindTooltip(
-      `<strong>${feature.properties.name}</strong><br/>${riskLabel(score)} fire-risk${isReal ? '' : ' &middot; estimated'}`,
-      { sticky: true }
-    );
-    layer.on({
-      mouseover: (e: LeafletMouseEvent) => (e.target as any).setStyle({ weight: 2.5, fillOpacity: 0.9 }),
-      mouseout: (e: LeafletMouseEvent) => (e.target as any).setStyle({ weight: 1, fillOpacity: 0.75 }),
-    });
-  }
 
   return (
     <div>
@@ -126,7 +100,7 @@ export default function GpsTrackerPage() {
         <div>
           <h1 className="text-xl font-semibold text-navy-900 dark:text-slate-100">GPS Tracker</h1>
           <p className="text-sm text-slate-500">
-            Live device map over a Quezon City barangay fire-risk choropleth, dark basemap by CARTO (free, no API key required).
+            Live device map, dark basemap by CARTO (free, no API key required).
           </p>
         </div>
         <button onClick={() => setAdding(true)} className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600">
@@ -140,7 +114,6 @@ export default function GpsTrackerPage() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
-          <GeoJSON data={qcBarangays as any} style={styleBarangay} onEachFeature={onEachBarangay} />
           <FitToBounds bounds={qcBounds} />
           {located.map((d) => (
             <CircleMarker
@@ -167,19 +140,6 @@ export default function GpsTrackerPage() {
             </CircleMarker>
           ))}
         </MapContainer>
-
-        <div className="pointer-events-none absolute bottom-3 left-3 z-[1000] rounded-lg border border-slate-200 bg-white/95 px-3 py-2 text-[11px] shadow-md backdrop-blur dark:border-white/10 dark:bg-navy-900/95">
-          <p className="mb-1 font-semibold text-slate-600 dark:text-slate-300">Fire-risk by barangay</p>
-          <div className="flex items-center gap-2">
-            {RISK_LEGEND.map((s) => (
-              <span key={s.label} className="flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: s.color }} />
-                <span className="text-slate-500 dark:text-slate-400">{s.label}</span>
-              </span>
-            ))}
-          </div>
-          <p className="mt-1 text-slate-400 dark:text-slate-500">Culiat is live; other barangays are estimated demo data.</p>
-        </div>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">
