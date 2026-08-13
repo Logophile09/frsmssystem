@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import { useEffect, useMemo, useState } from 'react';
+import { MapContainer, TileLayer, CircleMarker, GeoJSON, Popup, useMap } from 'react-leaflet';
+import type { Layer, LeafletMouseEvent } from 'leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { api } from '../lib/api';
 import Badge from '../components/Badge';
 import Modal from '../components/Modal';
+import qcBarangays from '../lib/qcBarangays.json';
+import { getBarangayRisk, riskColor, riskLabel, RISK_LEGEND } from '../lib/barangayRisk';
 
 interface GpsDevice {
   id: number;
@@ -29,19 +33,15 @@ const STATUS_COLOR: Record<string, string> = {
 // devices have reported a position yet.
 const DEFAULT_CENTER: [number, number] = [14.676, 121.045];
 
-// Keeps the map framed around whichever devices currently have a known
-// position, without forcing the person to manually pan/zoom on load.
-function FitToMarkers({ points }: { points: [number, number][] }) {
+// Frames the map around the full Quezon City barangay layer on load, so
+// the choropleth is fully visible without the person needing to manually
+// zoom out first.
+function FitToBounds({ bounds }: { bounds: L.LatLngBounds }) {
   const map = useMap();
   useEffect(() => {
-    if (points.length === 0) return;
-    if (points.length === 1) {
-      map.setView(points[0], 14);
-    } else {
-      map.fitBounds(points, { padding: [30, 30] });
-    }
+    if (bounds.isValid()) map.fitBounds(bounds, { padding: [16, 16] });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(points)]);
+  }, []);
   return null;
 }
 
@@ -92,27 +92,56 @@ export default function GpsTrackerPage() {
   }
 
   const located = devices.filter((d) => d.last_lat != null && d.last_lng != null);
-  const points: [number, number][] = located.map((d) => [Number(d.last_lat), Number(d.last_lng)]);
+
+  // Quezon City's 142 barangay boundaries, colored by an estimated fire-risk
+  // score (real for Culiat, deterministic demo estimates elsewhere -- see
+  // lib/barangayRisk.ts). Computed once since the underlying dataset is static.
+  const qcBounds = useMemo(() => L.geoJSON(qcBarangays as any).getBounds(), []);
+
+  function styleBarangay(feature: any) {
+    const { score } = getBarangayRisk(feature.properties.name);
+    return {
+      color: '#ffffff',
+      weight: 1,
+      fillColor: riskColor(score),
+      fillOpacity: 0.75,
+    };
+  }
+
+  function onEachBarangay(feature: any, layer: Layer) {
+    const { score, isReal } = getBarangayRisk(feature.properties.name);
+    layer.bindTooltip(
+      `<strong>${feature.properties.name}</strong><br/>${riskLabel(score)} fire-risk${isReal ? '' : ' &middot; estimated'}`,
+      { sticky: true }
+    );
+    layer.on({
+      mouseover: (e: LeafletMouseEvent) => (e.target as any).setStyle({ weight: 2.5, fillOpacity: 0.9 }),
+      mouseout: (e: LeafletMouseEvent) => (e.target as any).setStyle({ weight: 1, fillOpacity: 0.75 }),
+    });
+  }
 
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-navy-900 dark:text-slate-100">GPS Tracker</h1>
-          <p className="text-sm text-slate-500">Live map + device roster, powered by OpenStreetMap (free, no API key required).</p>
+          <p className="text-sm text-slate-500">
+            Live device map over a Quezon City barangay fire-risk choropleth, powered by OpenStreetMap (free, no API key required).
+          </p>
         </div>
         <button onClick={() => setAdding(true)} className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600">
           + Register Device
         </button>
       </div>
 
-      <div className="isolate mb-6 overflow-hidden rounded-xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
-        <MapContainer center={DEFAULT_CENTER} zoom={12} scrollWheelZoom style={{ height: '18rem', width: '100%' }}>
+      <div className="relative isolate mb-6 overflow-hidden rounded-xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
+        <MapContainer center={DEFAULT_CENTER} zoom={12} scrollWheelZoom style={{ height: '24rem', width: '100%' }}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <FitToMarkers points={points} />
+          <GeoJSON data={qcBarangays as any} style={styleBarangay} onEachFeature={onEachBarangay} />
+          <FitToBounds bounds={qcBounds} />
           {located.map((d) => (
             <CircleMarker
               key={d.id}
@@ -138,6 +167,19 @@ export default function GpsTrackerPage() {
             </CircleMarker>
           ))}
         </MapContainer>
+
+        <div className="pointer-events-none absolute bottom-3 left-3 z-[1000] rounded-lg border border-slate-200 bg-white/95 px-3 py-2 text-[11px] shadow-md backdrop-blur dark:border-white/10 dark:bg-navy-900/95">
+          <p className="mb-1 font-semibold text-slate-600 dark:text-slate-300">Fire-risk by barangay</p>
+          <div className="flex items-center gap-2">
+            {RISK_LEGEND.map((s) => (
+              <span key={s.label} className="flex items-center gap-1">
+                <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: s.color }} />
+                <span className="text-slate-500 dark:text-slate-400">{s.label}</span>
+              </span>
+            ))}
+          </div>
+          <p className="mt-1 text-slate-400 dark:text-slate-500">Culiat is live; other barangays are estimated demo data.</p>
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">
