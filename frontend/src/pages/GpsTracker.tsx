@@ -126,7 +126,7 @@ export default function GpsTrackerPage() {
         <div>
           <h1 className="text-xl font-semibold text-navy-900 dark:text-slate-100">GPS Tracker</h1>
           <p className="text-sm text-slate-500">
-            Live device map over a Quezon City barangay fire-risk choropleth, powered by OpenStreetMap (free, no API key required).
+            Live device map over a Quezon City barangay fire-risk choropleth, dark basemap by CARTO (free, no API key required).
           </p>
         </div>
         <button onClick={() => setAdding(true)} className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600">
@@ -137,8 +137,8 @@ export default function GpsTrackerPage() {
       <div className="relative isolate mb-6 overflow-hidden rounded-xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
         <MapContainer center={DEFAULT_CENTER} zoom={12} scrollWheelZoom style={{ height: '24rem', width: '100%' }}>
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
           <GeoJSON data={qcBarangays as any} style={styleBarangay} onEachFeature={onEachBarangay} />
           <FitToBounds bounds={qcBounds} />
