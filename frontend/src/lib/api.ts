@@ -14,6 +14,55 @@ const TIMEOUT_MS = 7000;
 // data (keeps navigation snappy instead of re-timing-out on every page).
 let backendUnreachable = false;
 
+// While backendUnreachable is true, quietly poll the lightweight /health
+// route in the background so the app can recover on its own -- e.g. a
+// Render free-tier instance that was asleep on the first request usually
+// finishes waking up within 30-60s. Without this, the app would stay on
+// demo data for the rest of the browser tab's life even after the real
+// backend comes back, since normal requests skip straight past it once
+// the sticky flag is set (see withFallback below).
+const RECOVERY_POLL_MS = 8000;
+const RECOVERY_TIMEOUT_MS = 12000;
+const RECOVERY_MAX_ATTEMPTS = 60; // ~8 minutes, then give up until the next real request fails again
+let recoveryTimer: ReturnType<typeof setInterval> | null = null;
+let recoveryAttempts = 0;
+
+function stopRecoveryWatcher() {
+  if (recoveryTimer) {
+    clearInterval(recoveryTimer);
+    recoveryTimer = null;
+  }
+  recoveryAttempts = 0;
+}
+
+function startRecoveryWatcher() {
+  if (recoveryTimer) return; // already watching
+  recoveryTimer = setInterval(async () => {
+    recoveryAttempts += 1;
+    if (recoveryAttempts > RECOVERY_MAX_ATTEMPTS) {
+      // Stop trying for now -- a future failed request will call
+      // startRecoveryWatcher() again and give it another window.
+      stopRecoveryWatcher();
+      return;
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), RECOVERY_TIMEOUT_MS);
+    try {
+      const res = await fetch(`${API_URL}/health`, { signal: controller.signal });
+      if (res.ok) {
+        backendUnreachable = false;
+        stopRecoveryWatcher();
+        // eslint-disable-next-line no-console
+        console.info('[FRSMS] Backend reachable again -- switching back to live data.');
+      }
+    } catch {
+      // Still down -- keep watching.
+    } finally {
+      clearTimeout(timer);
+    }
+  }, RECOVERY_POLL_MS);
+}
+
 async function authHeaders(): Promise<HeadersInit> {
   try {
     const { data } = await supabase.auth.getSession();
@@ -59,6 +108,7 @@ async function realFetch(path: string, init: RequestInit) {
     // reachable -- clear the sticky flag before handle() potentially
     // throws on a non-2xx response.
     backendUnreachable = false;
+    stopRecoveryWatcher();
     return await handle(res);
   } finally {
     clearTimeout(timer);
@@ -80,8 +130,10 @@ async function withFallback(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: str
     }
     // fetch() itself failed (network error, timeout/AbortError, CORS,
     // DNS, wrong VITE_API_URL, cold-starting host, etc) -- the backend
-    // genuinely can't be reached, so fall back to the offline dataset.
+    // genuinely can't be reached, so fall back to the offline dataset
+    // and start quietly watching for it to come back.
     backendUnreachable = true;
+    startRecoveryWatcher();
     // eslint-disable-next-line no-console
     console.warn(`[FRSMS] Backend unreachable for ${method} ${path} -- showing offline demo data instead.`);
     return demoRequest(method, path, body);
