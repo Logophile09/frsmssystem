@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { GitBranch, Truck, Users, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { GitBranch, Truck, Users, ShieldAlert, CheckCircle2, Sparkles } from 'lucide-react';
 import { api } from '../lib/api';
 import {
   INCIDENT_TYPES,
@@ -54,6 +54,9 @@ export default function DispatchRecommendationPage() {
     multipleCasualties: false,
   });
   const [result, setResult] = useState<DispatchRecommendation | null>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -84,6 +87,26 @@ export default function DispatchRecommendationPage() {
   function run() {
     const rec = recommendDispatch(form, vehicles, personnel);
     setResult(rec);
+    setAiAnalysis(null);
+    setAiError(null);
+  }
+
+  // Claude API-driven decision-tree analysis: the tree above is always
+  // what actually gets recommended -- this just asks Claude to read the
+  // same trace and narrate it for the dispatcher. See
+  // backend/src/routes/ai.ts for the human-in-the-loop framing.
+  async function runAiAnalysis() {
+    if (!result) return;
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const res = await api.post('/ai/dispatch-analysis', { input: form, result });
+      setAiAnalysis(res?.analysis ?? null);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'AI analysis failed');
+    } finally {
+      setAiLoading(false);
+    }
   }
 
   return (
@@ -96,6 +119,7 @@ export default function DispatchRecommendationPage() {
           <p className="text-sm text-slate-500">
             A transparent, decision-tree AI — every recommendation shows the exact path of questions and
             branches it took to get there, cross-checked against live fleet &amp; personnel availability.
+            Optionally, Claude can narrate that trace in plain language for the dispatcher.
           </p>
         </div>
       </div>
@@ -241,6 +265,31 @@ export default function DispatchRecommendationPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              <div className="mt-5 border-t border-slate-200 pt-4 dark:border-white/10">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <Sparkles size={14} className="text-leaf-500" /> Claude AI analysis
+                  </p>
+                  <button
+                    onClick={runAiAnalysis}
+                    disabled={aiLoading}
+                    className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
+                  >
+                    {aiLoading ? 'Analyzing…' : aiAnalysis ? 'Re-run' : 'Explain this recommendation'}
+                  </button>
+                </div>
+                <p className="mb-2 text-xs text-slate-400">
+                  Claude reads this same decision-tree trace and narrates it in plain language -- it never changes
+                  which units get recommended; the tree above remains the authoritative output.
+                </p>
+                {aiError && <p className="text-sm text-rose-600">{aiError}</p>}
+                {aiAnalysis && (
+                  <p className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                    {aiAnalysis}
+                  </p>
+                )}
               </div>
             </div>
           )}

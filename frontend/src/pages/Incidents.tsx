@@ -48,6 +48,8 @@ export default function IncidentsPage() {
   const [editing, setEditing] = useState<Incident | 'new' | null>(null);
   const [form, setForm] = useState<any>({});
   const [saving, setSaving] = useState(false);
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+  const [aiSummaryError, setAiSummaryError] = useState<string | null>(null);
 
   async function loadAll() {
     setLoading(true);
@@ -238,13 +240,46 @@ export default function IncidentsPage() {
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Description</label>
+              <div className="mb-1 flex items-center justify-between">
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400">Description</label>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setAiSummaryLoading(true);
+                    setAiSummaryError(null);
+                    try {
+                      const res = await api.post('/ai/incident-summary', {
+                        incident_number: (editing !== 'new' && (editing as Incident)?.incident_number) || undefined,
+                        incident_type: form.incident_type,
+                        location: form.location,
+                        severity: form.severity,
+                        status: form.status,
+                        description: form.description,
+                      });
+                      if (res?.summary) setForm((f: any) => ({ ...f, description: res.summary }));
+                    } catch (e: any) {
+                      setAiSummaryError(e?.message ?? 'AI summary failed');
+                    } finally {
+                      setAiSummaryLoading(false);
+                    }
+                  }}
+                  disabled={aiSummaryLoading || !form.incident_type || !form.location}
+                  className="text-xs font-medium text-leaf-600 hover:underline disabled:cursor-not-allowed disabled:opacity-40 dark:text-leaf-400"
+                >
+                  {aiSummaryLoading ? 'Drafting with Claude…' : 'Draft with Claude (AI)'}
+                </button>
+              </div>
               <textarea
                 rows={3}
                 value={form.description ?? ''}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
               />
+              {aiSummaryError && <p className="mt-1 text-xs text-rose-600">{aiSummaryError}</p>}
+              <p className="mt-1 text-xs text-slate-400">
+                Claude drafts a report-style paragraph from the fields above; review and edit before saving --
+                nothing is written automatically.
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { requireAuth } from '../middleware/auth';
+import { barangayCentroid, computeGeofencedEta, listBarangayNames } from '../lib/geofenceEta';
 
 const router = Router();
 
@@ -134,6 +135,58 @@ router.post('/devices/:id/simulate-ping', requireAuth, async (req, res) => {
 
   if (updateError) return res.status(400).json({ error: updateError.message });
   res.json(updated);
+});
+
+/**
+ * Geofenced ETA calculations for real-time fleet management.
+ *
+ * GET /api/gps/eta?targetLat=&targetLng=              -> ETA from every
+ *   online device's last known position to an explicit point.
+ * GET /api/gps/eta?barangay=Culiat                     -> same, but the
+ *   target point is that barangay's centroid instead of raw coordinates.
+ *
+ * Returns devices sorted by ETA ascending so the fastest-arriving unit
+ * for a given incident is first -- this is what feeds the "nearest
+ * available unit" hint on the Dispatch Recommendation page.
+ */
+router.get('/eta', requireAuth, async (req, res) => {
+  const { targetLat, targetLng, barangay } = req.query as { targetLat?: string; targetLng?: string; barangay?: string };
+
+  let target: { lat: number; lng: number } | null = null;
+  if (barangay) {
+    target = barangayCentroid(barangay);
+    if (!target) return res.status(400).json({ error: `Unknown barangay: ${barangay}` });
+  } else if (targetLat && targetLng) {
+    target = { lat: Number(targetLat), lng: Number(targetLng) };
+  }
+  if (!target || Number.isNaN(target.lat) || Number.isNaN(target.lng)) {
+    return res.status(400).json({ error: 'Provide either ?barangay=<name> or ?targetLat=&targetLng=' });
+  }
+
+  await flagStaleDevices();
+  const { data: devices, error } = await supabaseAdmin
+    .from('gps_devices')
+    .select('*, vehicles(id, unit_code, vehicle_type, status)')
+    .not('last_lat', 'is', null)
+    .not('last_lng', 'is', null);
+  if (error) return res.status(400).json({ error: error.message });
+
+  const results = (devices ?? [])
+    .map((d) => ({
+      device_id: d.id,
+      device_code: d.device_code,
+      vehicle: d.vehicles ?? null,
+      status: d.status,
+      ...computeGeofencedEta({ lat: Number(d.last_lat), lng: Number(d.last_lng), speedKph: d.last_speed_kph }, target as { lat: number; lng: number }),
+    }))
+    .sort((a, b) => a.etaMinutes - b.etaMinutes);
+
+  res.json({ target, results });
+});
+
+/** List of QC barangay names, for the ETA-target dropdown on the GPS Tracker page. */
+router.get('/barangays', requireAuth, async (_req, res) => {
+  res.json(listBarangayNames());
 });
 
 export default router;

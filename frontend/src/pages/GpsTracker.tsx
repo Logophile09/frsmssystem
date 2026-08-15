@@ -51,6 +51,12 @@ export default function GpsTrackerPage() {
   const [adding, setAdding] = useState(false);
   const [newCode, setNewCode] = useState('');
   const [newVehicle, setNewVehicle] = useState('');
+  const [barangayNames, setBarangayNames] = useState<string[]>([]);
+  const [etaTarget, setEtaTarget] = useState('');
+  const [etaLoading, setEtaLoading] = useState(false);
+  const [etaResults, setEtaResults] = useState<
+    { device_id: number; device_code: string; vehicle: { unit_code: string; vehicle_type: string } | null; status: string; distanceKm: number; etaMinutes: number; withinGeofence: boolean }[] | null
+  >(null);
 
   async function load() {
     setLoading(true);
@@ -62,7 +68,22 @@ export default function GpsTrackerPage() {
 
   useEffect(() => {
     load();
+    api.get('/gps/barangays').then((names) => setBarangayNames(names ?? []));
   }, []);
+
+  // Geofenced ETA: for real-time fleet management, ranks every located
+  // vehicle by estimated time of arrival at a target barangay, and flags
+  // which ones are already physically inside that barangay's boundary.
+  async function computeEta() {
+    if (!etaTarget) return;
+    setEtaLoading(true);
+    try {
+      const res = await api.get(`/gps/eta?barangay=${encodeURIComponent(etaTarget)}`);
+      setEtaResults(res?.results ?? []);
+    } finally {
+      setEtaLoading(false);
+    }
+  }
 
   async function simulatePing(id: number) {
     setPinging(id);
@@ -140,6 +161,78 @@ export default function GpsTrackerPage() {
             </CircleMarker>
           ))}
         </MapContainer>
+      </div>
+
+      <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-navy-800">
+        <p className="mb-1 text-sm font-semibold text-navy-900 dark:text-slate-100">Geofenced ETA — real-time fleet management</p>
+        <p className="mb-3 text-xs text-slate-500">
+          Pick a barangay and every located vehicle is ranked by estimated time of arrival (haversine distance ÷
+          live/average speed), with a flag for units already inside that barangay's boundary.
+        </p>
+        <div className="flex flex-wrap items-end gap-2">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Target barangay</label>
+            <select
+              value={etaTarget}
+              onChange={(e) => setEtaTarget(e.target.value)}
+              className="w-56 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-900 dark:text-slate-100"
+            >
+              <option value="">Select…</option>
+              {barangayNames.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={computeEta}
+            disabled={!etaTarget || etaLoading}
+            className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600 disabled:opacity-50"
+          >
+            {etaLoading ? 'Calculating…' : 'Compute ETA'}
+          </button>
+        </div>
+
+        {etaResults && (
+          <div className="mt-3 overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-white/10">
+              <thead>
+                <tr>
+                  <th className="px-3 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Vehicle</th>
+                  <th className="px-3 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Distance</th>
+                  <th className="px-3 py-2 text-left font-medium text-slate-500 dark:text-slate-400">ETA</th>
+                  <th className="px-3 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Geofence</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                {etaResults.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-3 py-4 text-center text-slate-400">
+                      No located vehicles yet.
+                    </td>
+                  </tr>
+                )}
+                {etaResults.map((r) => (
+                  <tr key={r.device_id}>
+                    <td className="px-3 py-2 text-slate-700 dark:text-slate-300">
+                      {r.vehicle?.unit_code ?? r.device_code} {r.vehicle?.vehicle_type ? `· ${r.vehicle.vehicle_type}` : ''}
+                    </td>
+                    <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{r.distanceKm} km</td>
+                    <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-200">~{r.etaMinutes} min</td>
+                    <td className="px-3 py-2">
+                      {r.withinGeofence ? (
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">Inside</span>
+                      ) : (
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">Outside</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">

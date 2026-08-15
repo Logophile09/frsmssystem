@@ -13,6 +13,31 @@
 // ---------------------------------------------------------------------
 
 import { computeFalseAlarmScore } from './falseAlarmScoring';
+import qcBarangays from './qcBarangays.json';
+
+// Lightweight demo-mode mirrors of backend/src/lib/geofenceEta.ts --
+// just enough to keep the ETA panel populated while offline, without
+// duplicating the full point-in-polygon geofence check.
+function haversineKmDemo(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
+  const R = 6371;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+function barangayCentroidDemo(name: string): { lat: number; lng: number } | null {
+  const feature: any = (qcBarangays as any).features.find((f: any) => f.properties?.name?.toLowerCase() === name.toLowerCase());
+  const ring = feature?.geometry?.type === 'Polygon' ? feature.geometry.coordinates[0] : feature?.geometry?.type === 'MultiPolygon' ? feature.geometry.coordinates[0][0] : null;
+  if (!ring) return null;
+  let sumLat = 0;
+  let sumLng = 0;
+  for (const [lng, lat] of ring) {
+    sumLat += lat;
+    sumLng += lng;
+  }
+  return { lat: sumLat / ring.length, lng: sumLng / ring.length };
+}
 
 const daysAgo = (n: number) => new Date(Date.now() - n * 86400000).toISOString();
 const hoursAgo = (n: number) => new Date(Date.now() - n * 3600000).toISOString();
@@ -370,6 +395,44 @@ export function demoRequest(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: str
     return { ok: true };
   }
   if (clean === 'me') return demoProfile;
+
+  // AI-assist endpoints (Claude API) need a live backend + ANTHROPIC_API_KEY,
+  // so in offline demo mode they return a clearly-labeled placeholder
+  // instead of pretending to have called the model.
+  if (clean === 'ai/dispatch-analysis') {
+    return { analysis: '(Offline demo mode) Connect to the live backend with ANTHROPIC_API_KEY set to see Claude\'s plain-language analysis of this decision-tree result.' };
+  }
+  if (clean === 'ai/incident-summary') {
+    return { summary: '(Offline demo mode) Connect to the live backend with ANTHROPIC_API_KEY set to generate a Claude-drafted incident summary.' };
+  }
+
+  if (clean === 'gps/barangays') {
+    return Array.from(new Set(qcBarangays.features.map((f: any) => f.properties?.name).filter(Boolean))).sort();
+  }
+  if (clean.startsWith('gps/eta')) {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const barangayName = params.get('barangay');
+    const target = barangayName ? barangayCentroidDemo(barangayName) : { lat: Number(params.get('targetLat')), lng: Number(params.get('targetLng')) };
+    if (!target || Number.isNaN(target.lat) || Number.isNaN(target.lng)) return { error: 'Provide ?barangay= or ?targetLat=&targetLng=' };
+    const results = gpsDevices
+      .filter((d: any) => d.last_lat != null && d.last_lng != null)
+      .map((d: any) => {
+        const distanceKm = haversineKmDemo({ lat: Number(d.last_lat), lng: Number(d.last_lng) }, target as any);
+        const speed = d.last_speed_kph && d.last_speed_kph > 5 ? d.last_speed_kph : 30;
+        const etaMinutes = Math.max(1, Math.round((distanceKm / speed) * 60 + 1.5));
+        return {
+          device_id: d.id,
+          device_code: d.device_code,
+          vehicle: d.vehicles ?? null,
+          status: d.status,
+          distanceKm: Math.round(distanceKm * 100) / 100,
+          etaMinutes,
+          withinGeofence: distanceKm < 1.5,
+        };
+      })
+      .sort((a: any, b: any) => a.etaMinutes - b.etaMinutes);
+    return { target, results };
+  }
 
   // Incidents carry nested incident_personnel / incident_vehicles joins
   // (built from personnel_ids / vehicle_ids on the form) that the

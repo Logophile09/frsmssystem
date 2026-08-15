@@ -16,6 +16,7 @@ import violationRoutes from './routes/violations';
 import gpsRoutes from './routes/gps';
 import falseAlarmRoutes from './routes/falseAlarms';
 import dashboardRoutes from './routes/dashboard';
+import aiRoutes from './routes/ai';
 
 const app = express();
 
@@ -39,9 +40,18 @@ app.use('/api/violations', violationRoutes);
 app.use('/api/gps', gpsRoutes);
 app.use('/api/false-alarms', falseAlarmRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/ai', aiRoutes);
 
-const port = Number(process.env.PORT ?? 4000);
-app.listen(port, () => {
-  // eslint-disable-next-line no-console
-  console.log(`FRSMS backend listening on http://localhost:${port}`);
-});
+// Vercel imports this module and calls `app` directly as a serverless
+// function per request -- it must NOT also bind a persistent port in
+// that environment. Everywhere else (local dev, or a standalone Node
+// host) this is a normal long-running Express server.
+if (!process.env.VERCEL) {
+  const port = Number(process.env.PORT ?? 4000);
+  app.listen(port, () => {
+    // eslint-disable-next-line no-console
+    console.log(`FRSMS backend listening on http://localhost:${port}`);
+  });
+}
+
+export default app;
