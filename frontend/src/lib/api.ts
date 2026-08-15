@@ -29,10 +29,23 @@ async function authHeaders(): Promise<HeadersInit> {
   }
 }
 
+// Thrown when the backend was actually reached and answered, just with
+// a non-2xx status (bad request, missing server-side config like
+// ANTHROPIC_API_KEY, auth failure, etc). This is distinct from the
+// backend being unreachable -- see withFallback below.
+class HttpError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'HttpError';
+    this.status = status;
+  }
+}
+
 async function handle(res: Response) {
   if (res.status === 204) return null;
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
+  if (!res.ok) throw new HttpError(body.error ?? `Request failed (${res.status})`, res.status);
   return body;
 }
 
@@ -42,9 +55,11 @@ async function realFetch(path: string, init: RequestInit) {
   try {
     const headers = { ...(await authHeaders()), ...(init.headers ?? {}) };
     const res = await fetch(`${API_URL}${path}`, { ...init, headers, signal: controller.signal });
-    const result = await handle(res);
+    // The backend answered at all (even with an error status), so it's
+    // reachable -- clear the sticky flag before handle() potentially
+    // throws on a non-2xx response.
     backendUnreachable = false;
-    return result;
+    return await handle(res);
   } finally {
     clearTimeout(timer);
   }
@@ -54,7 +69,18 @@ async function withFallback(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: str
   if (backendUnreachable) return demoRequest(method, path, body);
   try {
     return await realFetch(path, init);
-  } catch {
+  } catch (err) {
+    if (err instanceof HttpError) {
+      // Backend is reachable and responded -- this is a real application
+      // error (e.g. ANTHROPIC_API_KEY not configured, bad input, expired
+      // session), not a connectivity problem. Let it propagate so the
+      // calling page can show the actual message instead of silently
+      // masking it behind offline demo data.
+      throw err;
+    }
+    // fetch() itself failed (network error, timeout/AbortError, CORS,
+    // DNS, wrong VITE_API_URL, cold-starting host, etc) -- the backend
+    // genuinely can't be reached, so fall back to the offline dataset.
     backendUnreachable = true;
     // eslint-disable-next-line no-console
     console.warn(`[FRSMS] Backend unreachable for ${method} ${path} -- showing offline demo data instead.`);

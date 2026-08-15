@@ -41,7 +41,7 @@ export default function Login() {
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<'google' | 'facebook' | null>(null);
+  const [oauthLoading, setOauthLoading] = useState<'google' | null>(null);
   const [transitioning, setTransitioning] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -67,7 +67,7 @@ export default function Login() {
     else goToDashboard();
   }
 
-  async function handleOAuth(provider: 'google' | 'facebook') {
+  async function handleOAuth(provider: 'google') {
     setError(null);
     setOauthLoading(provider);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
@@ -289,15 +289,6 @@ export default function Login() {
                   <GoogleIcon />
                   {oauthLoading === 'google' ? 'Redirecting…' : 'Continue with Google'}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => handleOAuth('facebook')}
-                  disabled={oauthLoading !== null}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-navy-100 transition-colors duration-300 hover:border-leaf-400/30 hover:bg-white/10 disabled:opacity-60"
-                >
-                  <FacebookIcon />
-                  {oauthLoading === 'facebook' ? 'Redirecting…' : 'Continue with Facebook'}
-                </button>
               </div>
 
               <p className="mt-6 text-center text-[11px] leading-relaxed text-navy-400">
@@ -355,13 +346,3 @@ function GoogleIcon() {
   );
 }
 
-function FacebookIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="#1877F2"
-        d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.09 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.32l-.53 3.49h-2.79V24C19.61 23.09 24 18.1 24 12.07z"
-      />
-    </svg>
-  );
-}
