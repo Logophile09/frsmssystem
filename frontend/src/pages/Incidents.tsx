@@ -39,6 +39,22 @@ interface SimpleVehicle {
 const SEVERITIES: Array<'1' | '2' | '3' | '4' | '5'> = ['1', '2', '3', '4', '5'];
 const STATUSES = ['reported', 'dispatched', 'on_scene', 'resolved', 'closed'];
 
+// Known streets / landmarks within Brgy. Culiat's jurisdiction, matching the
+// addresses already used across Establishments and past incident records.
+// Keeping this as a fixed list (instead of free text) means every incident
+// location is one of a known, dispatchable set of places -- no typos, no
+// ambiguous street names, and it stays consistent with the map/GPS data.
+const KNOWN_LOCATIONS = [
+  'Tandang Sora Ave., Brgy. Culiat, Quezon City',
+  'Visayas Ave., Brgy. Culiat, Quezon City',
+  'Tandang Sora Ave. corner Visayas Ave., Brgy. Culiat, Quezon City',
+  'Culiat Road, Brgy. Culiat, Quezon City',
+  'Kalayaan St., Brgy. Culiat, Quezon City',
+  'Mabuhay St., Brgy. Culiat, Quezon City',
+  'Brgy. Culiat, Quezon City',
+  'Other (specify below)',
+] as const;
+
 export default function IncidentsPage() {
   const [rows, setRows] = useState<Incident[]>([]);
   const [personnel, setPersonnel] = useState<SimplePersonnel[]>([]);
@@ -50,6 +66,7 @@ export default function IncidentsPage() {
   const [saving, setSaving] = useState(false);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
   const [aiSummaryError, setAiSummaryError] = useState<string | null>(null);
+  const [otherLocation, setOtherLocation] = useState(false);
 
   async function loadAll() {
     setLoading(true);
@@ -82,6 +99,7 @@ export default function IncidentsPage() {
       smoke_sensor_triggered: false,
       fire_personnel_confirmed_smoke: false,
     });
+    setOtherLocation(false);
     setEditing('new');
   }
 
@@ -99,6 +117,7 @@ export default function IncidentsPage() {
       smoke_sensor_triggered: row.smoke_sensor_triggered ?? false,
       fire_personnel_confirmed_smoke: row.fire_personnel_confirmed_smoke ?? false,
     });
+    setOtherLocation(!(KNOWN_LOCATIONS as readonly string[]).includes(row.location));
     setEditing(row);
   }
 
@@ -232,11 +251,37 @@ export default function IncidentsPage() {
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Location</label>
-                <input
-                  value={form.location ?? ''}
-                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                <select
+                  value={otherLocation ? 'Other (specify below)' : form.location ?? ''}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === 'Other (specify below)') {
+                      setOtherLocation(true);
+                      setForm({ ...form, location: '' });
+                    } else {
+                      setOtherLocation(false);
+                      setForm({ ...form, location: val });
+                    }
+                  }}
                   className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
-                />
+                >
+                  <option value="" disabled>
+                    Select location…
+                  </option>
+                  {KNOWN_LOCATIONS.map((loc) => (
+                    <option key={loc} value={loc}>
+                      {loc}
+                    </option>
+                  ))}
+                </select>
+                {otherLocation && (
+                  <input
+                    value={form.location ?? ''}
+                    onChange={(e) => setForm({ ...form, location: e.target.value })}
+                    placeholder="Enter the exact address"
+                    className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                  />
+                )}
               </div>
             </div>
             <div>
