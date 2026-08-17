@@ -9,7 +9,9 @@ interface StaffAccount {
   username: string;
   full_name: string;
   role: 'admin' | 'staff';
-  status: 'active' | 'disabled';
+  status: 'active' | 'disabled' | 'pending';
+  position?: string | null;
+  station?: string | null;
   last_login_at: string | null;
   created_at: string;
 }
@@ -54,7 +56,8 @@ export default function StaffAccountsPage() {
   }
 
   async function toggleStatus(row: StaffAccount) {
-    await api.put(`/staff-accounts/${row.id}`, { status: row.status === 'active' ? 'disabled' : 'active' });
+    const nextStatus = row.status === 'active' ? 'disabled' : 'active';
+    await api.put(`/staff-accounts/${row.id}`, { status: nextStatus });
     await load();
   }
 
@@ -90,6 +93,7 @@ export default function StaffAccountsPage() {
               <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Username</th>
               <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Full Name</th>
               <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Role</th>
+              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Position</th>
               <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Status</th>
               <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Last Login</th>
               <th className="px-4 py-2.5" />
@@ -98,7 +102,7 @@ export default function StaffAccountsPage() {
           <tbody className="divide-y divide-slate-100 dark:divide-white/5">
             {loading && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-6 text-center text-slate-400">
                   Loading…
                 </td>
               </tr>
@@ -110,6 +114,9 @@ export default function StaffAccountsPage() {
                 <td className="px-4 py-2.5">
                   <Badge value={r.role} />
                 </td>
+                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">
+                  {r.position ? `${r.position}${r.station ? ` · ${r.station}` : ''}` : '—'}
+                </td>
                 <td className="px-4 py-2.5">
                   <Badge value={r.status} />
                 </td>
@@ -119,7 +126,7 @@ export default function StaffAccountsPage() {
                     Make {r.role === 'admin' ? 'Staff' : 'Admin'}
                   </button>
                   <button onClick={() => toggleStatus(r)} className="mr-3 text-leaf-500 hover:underline" disabled={r.id === profile?.id}>
-                    {r.status === 'active' ? 'Disable' : 'Re-enable'}
+                    {r.status === 'active' ? 'Disable' : r.status === 'pending' ? 'Approve' : 'Re-enable'}
                   </button>
                   <button onClick={() => remove(r)} className="text-rose-600 hover:underline" disabled={r.id === profile?.id}>
                     Delete

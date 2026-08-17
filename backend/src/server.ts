@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 
 import meRoutes from './routes/me';
+import registerRoutes from './routes/register';
 import personnelRoutes from './routes/personnel';
 import vehicleRoutes from './routes/vehicles';
 import equipmentRoutes from './routes/equipment';
@@ -27,6 +28,7 @@ app.use(express.json());
 app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'frsms-backend' }));
 
 app.use('/api/me', meRoutes);
+app.use('/api/register', registerRoutes);
 app.use('/api/personnel', personnelRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/equipment', equipmentRoutes);

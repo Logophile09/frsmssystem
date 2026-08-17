@@ -8,6 +8,7 @@ export interface AuthedRequest extends Request {
     role: 'admin' | 'staff';
     username: string;
     full_name: string;
+    status: 'active' | 'pending' | 'disabled';
   };
 }
 
@@ -44,8 +45,19 @@ export async function requireAuth(req: AuthedRequest, res: Response, next: NextF
     return res.status(403).json({ error: 'No profile found for this account' });
   }
 
-  if (profile.status === 'disabled') {
-    return res.status(403).json({ error: 'This account has been disabled' });
+  // /api/me is the one route a pending/disabled account is still allowed
+  // to hit -- the frontend needs to read its own status to show the
+  // "Awaiting Approval" or "account disabled" screen instead of a dead end.
+  // Every other protected route stays locked until an admin sets status
+  // back to 'active' in Staff Accounts.
+  const isMeRoute = req.baseUrl === '/api/me';
+  if (!isMeRoute && profile.status !== 'active') {
+    const code = profile.status === 'pending' ? 'ACCOUNT_PENDING' : 'ACCOUNT_DISABLED';
+    const message =
+      profile.status === 'pending'
+        ? 'Your account is awaiting administrator approval.'
+        : 'This account has been disabled.';
+    return res.status(403).json({ error: code, message });
   }
 
   req.user = {
@@ -54,6 +66,7 @@ export async function requireAuth(req: AuthedRequest, res: Response, next: NextF
     role: profile.role,
     username: profile.username,
     full_name: profile.full_name,
+    status: profile.status,
   };
 
   next();

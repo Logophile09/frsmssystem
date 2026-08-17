@@ -9,7 +9,7 @@ router.use(requireAuth);
 router.get('/', async (_req, res) => {
   const { data, error } = await supabaseAdmin
     .from('profiles')
-    .select('id, username, full_name, role, status, last_login_at, created_at')
+    .select('id, username, full_name, role, status, position, station, phone, notes, last_login_at, created_at')
     .order('full_name', { ascending: true });
   if (error) return res.status(400).json({ error: error.message });
   res.json(data);

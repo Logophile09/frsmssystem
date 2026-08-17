@@ -154,3 +154,34 @@ export const api = {
 export function isBackendUnreachable() {
   return backendUnreachable;
 }
+
+// Self-registration always talks to the real backend -- creating an
+// account isn't something the offline demo dataset can meaningfully
+// fake, so this deliberately skips withFallback()/demoRequest().
+export async function registerAccount(payload: {
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  position: string;
+  station: string;
+  notes?: string;
+}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${API_URL}/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    return await handle(res);
+  } catch (err) {
+    if (err instanceof HttpError) throw err;
+    throw new Error('Could not reach the registration server. Please try again in a moment.');
+  } finally {
+    clearTimeout(timer);
+  }
+}

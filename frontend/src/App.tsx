@@ -3,6 +3,8 @@ import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
+import Register from './pages/Register';
+import PendingApproval from './pages/PendingApproval';
 import Dashboard from './pages/Dashboard';
 import Incidents from './pages/Incidents';
 import Personnel from './pages/Personnel';
@@ -24,6 +26,8 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/pending-approval" element={<PendingApproval />} />
 
       <Route
         element={

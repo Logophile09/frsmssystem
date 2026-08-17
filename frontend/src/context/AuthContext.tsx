@@ -10,6 +10,7 @@ export interface Profile {
   role: 'admin' | 'staff';
   username: string;
   full_name: string;
+  status?: 'active' | 'pending' | 'disabled';
 }
 
 interface AuthContextValue {

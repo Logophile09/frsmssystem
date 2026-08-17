@@ -45,6 +45,7 @@ export default function Login() {
   const [transitioning, setTransitioning] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const justRegistered = Boolean((location.state as any)?.registered);
 
   // `transitioning` intentionally holds off the redirect for a beat so the
   // success overlay below gets to play instead of an instant jump-cut.
@@ -118,7 +119,7 @@ export default function Login() {
                 <UserRound size={15} /> Sign In
               </span>
               <Link
-                to="/login"
+                to="/register"
                 className="flex items-center gap-2 rounded-lg bg-flagred-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-flagred-500/20 transition-colors duration-300 hover:bg-flagred-600"
               >
                 <UserPlus size={15} /> Register
@@ -208,6 +209,12 @@ export default function Login() {
                 <h2 className="mt-4 font-display text-xl font-bold text-white">Welcome Back</h2>
                 <p className="mt-1 text-sm text-navy-300">Sign in to your console</p>
               </div>
+
+              {justRegistered && (
+                <p className="mt-4 rounded-lg bg-leaf-400/10 px-3 py-2 text-center text-sm text-leaf-300">
+                  Registration received! Sign in below once your account is approved.
+                </p>
+              )}
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                 <div>

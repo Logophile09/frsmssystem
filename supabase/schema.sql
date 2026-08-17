@@ -18,7 +18,7 @@ create extension if not exists pgcrypto;
 -- Enums
 -- ---------------------------------------------------------------------
 create type user_role as enum ('admin', 'staff');
-create type account_status as enum ('active', 'disabled');
+create type account_status as enum ('active', 'disabled', 'pending');
 
 create type personnel_status as enum ('on_duty', 'off_duty', 'on_leave');
 create type vehicle_status as enum ('available', 'dispatched', 'maintenance', 'out_of_service');
@@ -50,6 +50,10 @@ create table profiles (
   full_name       text not null,
   role            user_role not null default 'staff',
   status          account_status not null default 'active',
+  phone           text,
+  position        text,
+  station         text,
+  notes           text,
   last_login_at   timestamptz,
   created_at      timestamptz not null default now()
 );
