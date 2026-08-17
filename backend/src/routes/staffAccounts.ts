@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { AuthedRequest, requireAdmin, requireAuth } from '../middleware/auth';
+import { ensurePersonnelRecord } from '../lib/personnelSync';
 
 const router = Router();
 router.use(requireAuth);
@@ -51,10 +52,18 @@ router.post('/', requireAdmin, async (req: AuthedRequest, res) => {
     return res.status(400).json({ error: profileError.message });
   }
 
+  // Staff accounts are responders/roster staff -- give them a matching
+  // Personnel row right away, same as approving a self-registration does.
+  if (profile.role === 'staff') {
+    await ensurePersonnelRecord(profile, email);
+  }
+
   res.status(201).json(profile);
 });
 
-// Toggle active/disabled, or change role.
+// Toggle active/disabled, or change role. Approving a pending
+// self-registration (status -> active) also gives the account a
+// linked Personnel roster row, if it doesn't have one yet.
 router.put('/:id', requireAdmin, async (req: AuthedRequest, res) => {
   const { role, status, full_name } = req.body ?? {};
   const patch: Record<string, unknown> = {};
@@ -69,6 +78,12 @@ router.put('/:id', requireAdmin, async (req: AuthedRequest, res) => {
     .select()
     .single();
   if (error) return res.status(400).json({ error: error.message });
+
+  if (data.status === 'active' && data.role === 'staff') {
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(data.id);
+    await ensurePersonnelRecord(data, authUser?.user?.email ?? null);
+  }
+
   res.json(data);
 });
 

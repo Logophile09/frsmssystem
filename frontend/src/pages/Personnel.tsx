@@ -10,6 +10,7 @@ interface Personnel {
   email: string;
   status: string;
   hire_date: string;
+  profile_id: string | null;
 }
 
 export default function PersonnelPage() {
@@ -25,6 +26,18 @@ export default function PersonnelPage() {
         { key: 'phone', label: 'Phone' },
         { key: 'status', label: 'Status', render: (r) => <Badge value={r.status} /> },
         { key: 'hire_date', label: 'Hire Date' },
+        {
+          key: 'profile_id',
+          label: 'Portal Access',
+          render: (r) =>
+            r.profile_id ? (
+              <span className="inline-block rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+                Linked account
+              </span>
+            ) : (
+              <span className="text-slate-400">No login</span>
+            ),
+        },
       ]}
       fields={[
         { name: 'employee_no', label: 'Employee No.', type: 'text', required: true },

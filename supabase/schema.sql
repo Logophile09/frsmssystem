@@ -70,6 +70,7 @@ create table personnel (
   email        text,
   status       personnel_status not null default 'off_duty',
   hire_date    date not null,
+  profile_id   uuid unique references profiles(id) on delete set null,
   created_at   timestamptz not null default now()
 );
 

@@ -48,18 +48,18 @@ const offset = (iso: string, hours: number) => new Date(new Date(iso).getTime() 
 // Personnel
 // ---------------------------------------------------------------------
 export const personnel = [
-  { id: 1, employee_no: 'EMP-1001', full_name: 'Ramon Santos', rank_title: 'Fire Officer 1', phone: '0917-200-1001', email: 'r.santos@frsms.gov', status: 'on_duty', hire_date: '2019-06-01' },
-  { id: 2, employee_no: 'EMP-1002', full_name: 'Marites Cruz', rank_title: 'Fire Officer 2', phone: '0917-200-1002', email: 'm.cruz@frsms.gov', status: 'on_duty', hire_date: '2018-03-14' },
-  { id: 3, employee_no: 'EMP-1003', full_name: 'Jericho Reyes', rank_title: 'Fire Officer 3', phone: '0917-200-1003', email: 'j.reyes@frsms.gov', status: 'off_duty', hire_date: '2020-11-20' },
-  { id: 4, employee_no: 'EMP-1004', full_name: 'Angelo Bautista', rank_title: 'Fire Inspector', phone: '0917-200-1004', email: 'a.bautista@frsms.gov', status: 'on_duty', hire_date: '2021-01-10' },
-  { id: 5, employee_no: 'EMP-1005', full_name: 'Liza Fernandez', rank_title: 'Fire Officer 1', phone: '0917-200-1005', email: 'l.fernandez@frsms.gov', status: 'on_leave', hire_date: '2022-07-05' },
-  { id: 6, employee_no: 'EMP-1006', full_name: 'Carlo Villanueva', rank_title: 'Senior Fire Officer', phone: '0917-200-1006', email: 'c.villanueva@frsms.gov', status: 'on_duty', hire_date: '2016-02-18' },
-  { id: 7, employee_no: 'EMP-1007', full_name: 'Dennis Ocampo', rank_title: 'Fire Officer 2', phone: '0917-200-1007', email: 'd.ocampo@frsms.gov', status: 'off_duty', hire_date: '2019-09-09' },
-  { id: 8, employee_no: 'EMP-1008', full_name: 'Grace Manalo', rank_title: 'Fire Inspector', phone: '0917-200-1008', email: 'g.manalo@frsms.gov', status: 'on_duty', hire_date: '2020-05-22' },
-  { id: 9, employee_no: 'EMP-1009', full_name: 'Paolo Diaz', rank_title: 'Fire Officer 1', phone: '0917-200-1009', email: 'p.diaz@frsms.gov', status: 'on_duty', hire_date: '2023-01-30' },
-  { id: 10, employee_no: 'EMP-1010', full_name: 'Christine Aguilar', rank_title: 'Fire Officer 3', phone: '0917-200-1010', email: 'c.aguilar@frsms.gov', status: 'off_duty', hire_date: '2017-11-02' },
-  { id: 11, employee_no: 'EMP-1011', full_name: 'Miguel Torres', rank_title: 'Station Chief', phone: '0917-200-1011', email: 'm.torres@frsms.gov', status: 'on_duty', hire_date: '2014-04-01' },
-  { id: 12, employee_no: 'EMP-1012', full_name: 'Bea Salonga-Cruz', rank_title: 'Fire Officer 2', phone: '0917-200-1012', email: 'b.cruz@frsms.gov', status: 'on_leave', hire_date: '2021-08-19' },
+  { id: 1, employee_no: 'EMP-1001', full_name: 'Ramon Santos', rank_title: 'Fire Officer 1', phone: '0917-200-1001', email: 'r.santos@frsms.gov', status: 'on_duty', hire_date: '2019-06-01' , profile_id: null },
+  { id: 2, employee_no: 'EMP-1002', full_name: 'Marites Cruz', rank_title: 'Fire Officer 2', phone: '0917-200-1002', email: 'm.cruz@frsms.gov', status: 'on_duty', hire_date: '2018-03-14' , profile_id: null },
+  { id: 3, employee_no: 'EMP-1003', full_name: 'Jericho Reyes', rank_title: 'Fire Officer 3', phone: '0917-200-1003', email: 'j.reyes@frsms.gov', status: 'off_duty', hire_date: '2020-11-20' , profile_id: null },
+  { id: 4, employee_no: 'EMP-1004', full_name: 'Angelo Bautista', rank_title: 'Fire Inspector', phone: '0917-200-1004', email: 'a.bautista@frsms.gov', status: 'on_duty', hire_date: '2021-01-10' , profile_id: null },
+  { id: 5, employee_no: 'EMP-1005', full_name: 'Liza Fernandez', rank_title: 'Fire Officer 1', phone: '0917-200-1005', email: 'l.fernandez@frsms.gov', status: 'on_leave', hire_date: '2022-07-05' , profile_id: null },
+  { id: 6, employee_no: 'EMP-1006', full_name: 'Carlo Villanueva', rank_title: 'Senior Fire Officer', phone: '0917-200-1006', email: 'c.villanueva@frsms.gov', status: 'on_duty', hire_date: '2016-02-18' , profile_id: null },
+  { id: 7, employee_no: 'EMP-1007', full_name: 'Dennis Ocampo', rank_title: 'Fire Officer 2', phone: '0917-200-1007', email: 'd.ocampo@frsms.gov', status: 'off_duty', hire_date: '2019-09-09' , profile_id: null },
+  { id: 8, employee_no: 'EMP-1008', full_name: 'Grace Manalo', rank_title: 'Fire Inspector', phone: '0917-200-1008', email: 'g.manalo@frsms.gov', status: 'on_duty', hire_date: '2020-05-22' , profile_id: null },
+  { id: 9, employee_no: 'EMP-1009', full_name: 'Paolo Diaz', rank_title: 'Fire Officer 1', phone: '0917-200-1009', email: 'p.diaz@frsms.gov', status: 'on_duty', hire_date: '2023-01-30' , profile_id: null },
+  { id: 10, employee_no: 'EMP-1010', full_name: 'Christine Aguilar', rank_title: 'Fire Officer 3', phone: '0917-200-1010', email: 'c.aguilar@frsms.gov', status: 'off_duty', hire_date: '2017-11-02' , profile_id: null },
+  { id: 11, employee_no: 'EMP-1011', full_name: 'Miguel Torres', rank_title: 'Station Chief', phone: '0917-200-1011', email: 'm.torres@frsms.gov', status: 'on_duty', hire_date: '2014-04-01' , profile_id: null },
+  { id: 12, employee_no: 'EMP-1012', full_name: 'Bea Salonga-Cruz', rank_title: 'Fire Officer 2', phone: '0917-200-1012', email: 'b.cruz@frsms.gov', status: 'on_leave', hire_date: '2021-08-19' , profile_id: null },
 ];
 
 // ---------------------------------------------------------------------
