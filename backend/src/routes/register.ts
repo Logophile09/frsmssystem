@@ -35,28 +35,19 @@ router.post('/', async (req, res) => {
 
   // Username must be unique -- if the natural one is taken, suffix it
   // with a short slice of the new user's id rather than failing outright.
+  // Use upsert (not insert) keyed on id: creating the auth user above
+  // fires the on_auth_user_created trigger (added for Google OAuth
+  // sign-ins), which already inserts a bare-bones pending profile row
+  // for this id a moment before we get here. A plain insert would
+  // collide with that row and fail with "duplicate key value violates
+  // unique constraint profiles_pkey" -- upsert overwrites it with the
+  // fuller registration-form details instead. If the trigger doesn't
+  // exist/didn't fire, this still behaves like a normal insert.
   let username = baseUsername;
   let { data: profile, error: profileError } = await supabaseAdmin
     .from('profiles')
-    .insert({
-      id: created.user.id,
-      username,
-      full_name,
-      role: 'staff',
-      status: 'pending',
-      phone,
-      position,
-      station,
-      notes: notes && String(notes).trim() ? String(notes).trim() : null,
-    })
-    .select()
-    .single();
-
-  if (profileError && profileError.code === '23505') {
-    username = `${baseUsername}-${created.user.id.slice(0, 4)}`;
-    ({ data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .insert({
+    .upsert(
+      {
         id: created.user.id,
         username,
         full_name,
@@ -66,7 +57,33 @@ router.post('/', async (req, res) => {
         position,
         station,
         notes: notes && String(notes).trim() ? String(notes).trim() : null,
-      })
+      },
+      { onConflict: 'id' }
+    )
+    .select()
+    .single();
+
+  // This 23505 now only ever means the *username* (not id) collided
+  // with a different, unrelated account -- retry once with a suffixed
+  // username.
+  if (profileError && profileError.code === '23505') {
+    username = `${baseUsername}-${created.user.id.slice(0, 4)}`;
+    ({ data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .upsert(
+        {
+          id: created.user.id,
+          username,
+          full_name,
+          role: 'staff',
+          status: 'pending',
+          phone,
+          position,
+          station,
+          notes: notes && String(notes).trim() ? String(notes).trim() : null,
+        },
+        { onConflict: 'id' }
+      )
       .select()
       .single());
   }
