@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { AuthModeSwitch, AuthFlipTransition } from '../components/AuthModeSwitch';
 
 const NAV_LINKS = [
   { href: '/#features', label: 'Features' },
@@ -201,6 +202,7 @@ export default function Login() {
             </div>
 
             {/* Sign-in card */}
+            <AuthFlipTransition>
             <div className="w-full max-w-sm justify-self-center rounded-2xl border border-white/10 bg-navy-950/90 p-7 shadow-2xl shadow-black/50 backdrop-blur-xl">
               <div className="flex flex-col items-center text-center">
                 <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-400 bg-white shadow-[0_0_18px_rgba(206,17,38,0.35)]">
@@ -208,6 +210,10 @@ export default function Login() {
                 </div>
                 <h2 className="mt-4 font-display text-xl font-bold text-white">Welcome Back</h2>
                 <p className="mt-1 text-sm text-navy-300">Sign in to your console</p>
+              </div>
+
+              <div className="mt-5">
+                <AuthModeSwitch active="signin" />
               </div>
 
               {justRegistered && (
@@ -304,6 +310,7 @@ export default function Login() {
                 Authentication is handled by Supabase Auth.
               </p>
             </div>
+            </AuthFlipTransition>
           </div>
 
           {/* Flag-colored divider */}
