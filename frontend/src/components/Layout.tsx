@@ -25,6 +25,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { api, isBackendUnreachable } from '../lib/api';
+import AmbientGlow from './AmbientGlow';
 import LiveClock from './LiveClock';
 import Modal from './Modal';
 
@@ -262,7 +263,8 @@ export default function Layout() {
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 dark:bg-navy-900 sm:p-6">
-          <div key={location.pathname} className="animate-page-in">
+          <div key={location.pathname} className="relative animate-page-in">
+            <AmbientGlow />
             <Outlet />
           </div>
         </main>

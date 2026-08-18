@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { AuthBackgroundFX } from '../components/AuthBackgroundFX';
 import {
   Flame,
   Radio,
@@ -209,6 +210,10 @@ export default function Landing() {
               'linear-gradient(115deg, rgba(10,18,30,0.97) 20%, rgba(10,18,30,0.85) 55%, rgba(10,18,30,0.6) 100%)',
           }}
         />
+        {/* Same drifting glow + ember effect that carries through
+            Login/Register and every dashboard page after sign-in, so the
+            visual identity is continuous from the very first screen. */}
+        <AuthBackgroundFX variant="dark" />
         <div className="relative mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:py-28">
           <div>
             <div className="mb-5 flex flex-wrap items-center gap-2">
@@ -415,7 +420,8 @@ export default function Landing() {
 
       {/* About / CTA */}
       <section id="about" className="relative overflow-hidden bg-navy-900">
-        <div className="mx-auto max-w-4xl px-6 py-20 text-center">
+        <AuthBackgroundFX variant="dark" />
+        <div className="relative mx-auto max-w-4xl px-6 py-20 text-center">
           <p className="text-xs font-bold uppercase tracking-widest text-leaf-300">About</p>
           <h2 className="mt-2 font-display text-3xl font-bold text-white sm:text-4xl">
             Serving Barangay Culiat, District 6, Quezon City
