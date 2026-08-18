@@ -67,15 +67,20 @@ export function AuthFlipTransition({ children }: { children: React.ReactNode }) 
 
   // key={dir + pathname} forces a remount on every switch so the
   // animation replays each time instead of only on first mount.
-  // [transform-style:preserve-3d] + style-perspective keep the rotation
-  // reading as a genuine 3D flip instead of a flat squash.
+  //
+  // `perspective` has to live on a *parent* of the element that carries
+  // the rotateY transform — putting it on the same element as the
+  // animation (as before) is a no-op in CSS, so the "flip" rendered as a
+  // flat fade/squash instead of a genuine 3D page-turn. Splitting into an
+  // outer perspective wrapper + inner rotating wrapper fixes that.
   return (
-    <div
-      key={`${dir ?? 'initial'}-${location.pathname}`}
-      className={`[backface-visibility:hidden] [transform-style:preserve-3d] ${animationClass}`}
-      style={{ perspective: '1400px' }}
-    >
-      {children}
+    <div className="[perspective:1400px]">
+      <div
+        key={`${dir ?? 'initial'}-${location.pathname}`}
+        className={`[backface-visibility:hidden] [transform-style:preserve-3d] ${animationClass}`}
+      >
+        {children}
+      </div>
     </div>
   );
 }
