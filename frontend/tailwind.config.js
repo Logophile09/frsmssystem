@@ -71,6 +71,18 @@ export default {
           '0%': { opacity: '0', transform: 'translateX(-24px)' },
           '100%': { opacity: '1', transform: 'translateX(0)' },
         },
+        glowDriftA: {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '50%': { transform: 'translate(40px, 30px) scale(1.15)' },
+        },
+        glowDriftB: {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '50%': { transform: 'translate(-35px, -25px) scale(1.1)' },
+        },
+        glowPulse: {
+          '0%, 100%': { opacity: '0.35' },
+          '50%': { opacity: '0.55' },
+        },
       },
       animation: {
         'page-in': 'pageIn 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -78,6 +90,9 @@ export default {
         'leaf-pulse': 'shimmerLeaf 2.4s ease-in-out infinite',
         'auth-slide-from-right': 'authSlideFromRight 0.32s cubic-bezier(0.16, 1, 0.3, 1)',
         'auth-slide-from-left': 'authSlideFromLeft 0.32s cubic-bezier(0.16, 1, 0.3, 1)',
+        'glow-drift-a': 'glowDriftA 14s ease-in-out infinite',
+        'glow-drift-b': 'glowDriftB 18s ease-in-out infinite',
+        'glow-pulse': 'glowPulse 6s ease-in-out infinite',
       },
       transitionTimingFunction: {
         smooth: 'cubic-bezier(0.16, 1, 0.3, 1)',
