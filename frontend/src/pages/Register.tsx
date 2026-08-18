@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { registerAccount } from '../lib/api';
+import { AuthModeSwitch, AuthFlipTransition } from '../components/AuthModeSwitch';
+import { AuthBackgroundFX } from '../components/AuthBackgroundFX';
 
 const inputClass =
   'w-full rounded-lg border-0 border-b-2 border-transparent bg-navy-50 px-3.5 py-2.5 text-sm text-navy-900 placeholder:text-navy-300 focus:border-leaf-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-leaf-500/15 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500';
@@ -77,8 +79,9 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-white py-10 dark:bg-navy-950">
-      <div className="mx-auto w-full max-w-2xl px-6">
+    <div className="relative min-h-screen overflow-hidden bg-white py-10 dark:bg-navy-950">
+      <AuthBackgroundFX variant="light" />
+      <div className="relative mx-auto w-full max-w-2xl px-6">
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-400 bg-white shadow-[0_0_18px_rgba(206,17,38,0.25)]">
             <img src="/barangay-culiat-seal.png" alt="Barangay Culiat seal" className="h-full w-full object-cover" />
@@ -91,8 +94,12 @@ export default function Register() {
             Register for access as a responder or staff member. An administrator will review and approve your
             account before you can sign in.
           </p>
+          <div className="mt-5 w-full max-w-xs rounded-full bg-navy-900 p-1 dark:bg-black/20">
+            <AuthModeSwitch active="register" />
+          </div>
         </div>
 
+        <AuthFlipTransition>
         <form
           onSubmit={handleSubmit}
           className="rounded-2xl border border-navy-100 bg-white p-7 shadow-xl shadow-navy-900/5 dark:border-white/10 dark:bg-navy-900 sm:p-9"
@@ -241,13 +248,7 @@ export default function Register() {
             </div>
           </div>
         </form>
-
-        <p className="mt-6 text-center text-sm text-navy-500 dark:text-navy-300">
-          Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-leaf-500 hover:text-leaf-600">
-            Sign in
-          </Link>
-        </p>
+        </AuthFlipTransition>
       </div>
     </div>
   );

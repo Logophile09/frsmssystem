@@ -63,11 +63,55 @@ export default {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.6' },
         },
+        authSlideFromRight: {
+          '0%': { opacity: '0', transform: 'translateX(24px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        authSlideFromLeft: {
+          '0%': { opacity: '0', transform: 'translateX(-24px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        authFlipFromRight: {
+          '0%': { opacity: '0', transform: 'perspective(1400px) rotateY(78deg) scale(0.94)' },
+          '55%': { opacity: '1' },
+          '100%': { opacity: '1', transform: 'perspective(1400px) rotateY(0deg) scale(1)' },
+        },
+        authFlipFromLeft: {
+          '0%': { opacity: '0', transform: 'perspective(1400px) rotateY(-78deg) scale(0.94)' },
+          '55%': { opacity: '1' },
+          '100%': { opacity: '1', transform: 'perspective(1400px) rotateY(0deg) scale(1)' },
+        },
+        glowDriftA: {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '50%': { transform: 'translate(40px, 30px) scale(1.15)' },
+        },
+        glowDriftB: {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '50%': { transform: 'translate(-35px, -25px) scale(1.1)' },
+        },
+        glowPulse: {
+          '0%, 100%': { opacity: '0.35' },
+          '50%': { opacity: '0.55' },
+        },
+        emberRise: {
+          '0%': { transform: 'translate(0, 0) scale(0.6)', opacity: '0' },
+          '12%': { opacity: '0.9' },
+          '80%': { opacity: '0.5' },
+          '100%': { transform: 'translate(var(--ember-drift, 12px), -160px) scale(1)', opacity: '0' },
+        },
       },
       animation: {
         'page-in': 'pageIn 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         'modal-in': 'fadeScaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         'leaf-pulse': 'shimmerLeaf 2.4s ease-in-out infinite',
+        'auth-slide-from-right': 'authSlideFromRight 0.32s cubic-bezier(0.16, 1, 0.3, 1)',
+        'auth-slide-from-left': 'authSlideFromLeft 0.32s cubic-bezier(0.16, 1, 0.3, 1)',
+        'auth-flip-from-right': 'authFlipFromRight 0.55s cubic-bezier(0.16, 1, 0.3, 1)',
+        'auth-flip-from-left': 'authFlipFromLeft 0.55s cubic-bezier(0.16, 1, 0.3, 1)',
+        'glow-drift-a': 'glowDriftA 14s ease-in-out infinite',
+        'glow-drift-b': 'glowDriftB 18s ease-in-out infinite',
+        'glow-pulse': 'glowPulse 6s ease-in-out infinite',
+        'ember-rise': 'emberRise linear infinite',
       },
       transitionTimingFunction: {
         smooth: 'cubic-bezier(0.16, 1, 0.3, 1)',
