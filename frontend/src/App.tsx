@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Landing from './pages/Landing';
@@ -23,44 +24,47 @@ import StaffAccounts from './pages/StaffAccounts';
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/pending-approval" element={<PendingApproval />} />
+    <>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/pending-approval" element={<PendingApproval />} />
 
-      <Route
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/incidents" element={<Incidents />} />
-        <Route path="/personnel" element={<Personnel />} />
-        <Route path="/vehicles" element={<Vehicles />} />
-        <Route path="/equipment" element={<Equipment />} />
-        <Route path="/attendance" element={<Attendance />} />
-        <Route path="/gps-tracker" element={<GpsTracker />} />
-        <Route path="/false-alarms" element={<FalseAlarms />} />
-        <Route path="/dispatch-recommendation" element={<DispatchRecommendation />} />
-        <Route path="/establishments" element={<Establishments />} />
-        <Route path="/inspections" element={<Inspections />} />
-        <Route path="/certificates" element={<Certificates />} />
-        <Route path="/violations" element={<Violations />} />
-        <Route path="/reports" element={<Reports />} />
         <Route
-          path="/staff-accounts"
           element={
-            <ProtectedRoute adminOnly>
-              <StaffAccounts />
+            <ProtectedRoute>
+              <Layout />
             </ProtectedRoute>
           }
-        />
-      </Route>
+        >
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/incidents" element={<Incidents />} />
+          <Route path="/personnel" element={<Personnel />} />
+          <Route path="/vehicles" element={<Vehicles />} />
+          <Route path="/equipment" element={<Equipment />} />
+          <Route path="/attendance" element={<Attendance />} />
+          <Route path="/gps-tracker" element={<GpsTracker />} />
+          <Route path="/false-alarms" element={<FalseAlarms />} />
+          <Route path="/dispatch-recommendation" element={<DispatchRecommendation />} />
+          <Route path="/establishments" element={<Establishments />} />
+          <Route path="/inspections" element={<Inspections />} />
+          <Route path="/certificates" element={<Certificates />} />
+          <Route path="/violations" element={<Violations />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route
+            path="/staff-accounts"
+            element={
+              <ProtectedRoute adminOnly>
+                <StaffAccounts />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
 
-      <Route path="*" element={<div className="p-6 text-slate-600">Page not found.</div>} />
-    </Routes>
+        <Route path="*" element={<div className="p-6 text-slate-600">Page not found.</div>} />
+      </Routes>
+      <SpeedInsights />
+    </>
   );
 }
