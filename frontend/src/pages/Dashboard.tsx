@@ -173,9 +173,14 @@ export default function Dashboard() {
       {/* Ambient background glow now lives in Layout (behind every page,
           not just this one) — see components/AmbientGlow.tsx */}
 
-      {/* Page header — navy hero band, same visual language as the Landing hero */}
-      <div className="relative mb-6 overflow-hidden rounded-2xl bg-navy-900 px-5 py-6 shadow-lg sm:px-7">
-        <AuthBackgroundFX variant="dark" />
+      {/* Page header — navy hero band, same visual language as the Landing hero.
+          Note: overflow-hidden lives on the glow-effect wrapper below, not
+          on this outer card — otherwise it clips the notifications
+          dropdown, which needs to pop out past the card's edge. */}
+      <div className="relative mb-6 rounded-2xl bg-navy-900 px-5 py-6 shadow-lg sm:px-7">
+        <div className="absolute inset-0 overflow-hidden rounded-2xl">
+          <AuthBackgroundFX variant="dark" />
+        </div>
         <div className="relative flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-leaf-300">
@@ -201,7 +206,7 @@ export default function Dashboard() {
                 )}
               </button>
               {showNotifications && (
-                <div className="absolute right-0 z-10 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-3 text-left shadow-xl dark:border-leaf-400/10 dark:bg-navy-800">
+                <div className="absolute right-0 z-30 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-3 text-left shadow-2xl dark:border-leaf-400/10 dark:bg-navy-800">
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Notifications
                   </p>
