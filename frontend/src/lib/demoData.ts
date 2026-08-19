@@ -396,14 +396,14 @@ export function demoRequest(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: str
   }
   if (clean === 'me') return demoProfile;
 
-  // AI-assist endpoints (Claude API) need a live backend + ANTHROPIC_API_KEY,
+  // AI-assist endpoints (Groq API) need a live backend + GROQ_API_KEY,
   // so in offline demo mode they return a clearly-labeled placeholder
   // instead of pretending to have called the model.
   if (clean === 'ai/dispatch-analysis') {
-    return { analysis: '(Offline demo mode) Connect to the live backend with ANTHROPIC_API_KEY set to see Claude\'s plain-language analysis of this decision-tree result.' };
+    return { analysis: '(Offline demo mode) Connect to the live backend with GROQ_API_KEY set to see Groq\'s plain-language analysis of this decision-tree result.' };
   }
   if (clean === 'ai/incident-summary') {
-    return { summary: '(Offline demo mode) Connect to the live backend with ANTHROPIC_API_KEY set to generate a Claude-drafted incident summary.' };
+    return { summary: '(Offline demo mode) Connect to the live backend with GROQ_API_KEY set to generate a Groq-drafted incident summary.' };
   }
 
   if (clean === 'gps/barangays') {

@@ -4,7 +4,7 @@ Rebuild of the original PHP/MySQL FRSMS on the target stack:
 
 - **Frontend:** React + Vite + TypeScript + TailwindCSS
 - **Backend:** Node.js / Express (REST API)
-- **AI-assist:** Claude API (Anthropic) — decision-tree analysis narration + incident summary drafting
+- **AI-assist:** Groq API — decision-tree analysis narration + incident summary drafting
 - **Database:** Supabase (PostgreSQL)
 - **Auth:** Supabase Auth
 - **Version control:** Git / GitHub
@@ -14,7 +14,7 @@ Rebuild of the original PHP/MySQL FRSMS on the target stack:
   Netlify + Render deployment is also documented as an alternative)
 
 Modules covered: Dashboard, Incidents & Dispatch, Decision-Tree Dispatch
-Recommendation (with optional Claude-narrated analysis), Personnel, Vehicles,
+Recommendation (with optional Groq-narrated analysis), Personnel, Vehicles,
 Equipment, Attendance, Staff Accounts (RBAC), GPS Tracker with geofenced ETA
 (IoT), AI False-Alarm Detection (transparent rule-based scoring), Reports, and
 the Fire Safety Compliance suite (Establishments, Inspections, Certificates,
@@ -43,7 +43,7 @@ Browser ── static SPA ──▶│  frontend/dist  (React build)       │
    ▼                     │        ├─ decision-tree dispatch     │
 Supabase Auth             │        ├─ false-alarm scoring        │
 (login only)               │        ├─ geofenced ETA              │
-                          │        └─ Claude API (AI-assist)      │
+                          │        └─ Groq API (AI-assist)        │
                          └──────────────┬──────────────────────┘
                                         │ service-role key, bypasses RLS
                                         ▼
@@ -152,7 +152,7 @@ build, one URL for both the frontend and the API.
    - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (frontend, build-time)
    - `VITE_API_URL=/api` (relative — same project serves both, no separate host)
    - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (backend function, server-side only)
-   - `ANTHROPIC_API_KEY` (backend function — enables the two Claude AI-assist
+   - `GROQ_API_KEY` (backend function — enables the two Groq AI-assist
      buttons; the rest of the system works without it)
    - `CORS_ORIGIN` — optional here since same-origin requests don't need CORS,
      but harmless to set to the deployed URL
@@ -211,20 +211,22 @@ same QC barangay GeoJSON used for the map. Surfaced on the GPS Tracker page
 as the "Geofenced ETA" panel, for picking the nearest available unit for a
 given incident.
 
-## Notes on the Claude API AI-assist features
+## Notes on the Groq API AI-assist features
 
-`ANTHROPIC_API_KEY` on the backend enables two assistive (never autonomous)
-features, calling the Claude API directly via `backend/src/lib/claudeClient.ts`:
+`GROQ_API_KEY` on the backend enables two assistive (never autonomous)
+features, calling the Groq API directly via `backend/src/lib/groqClient.ts`
+(OpenAI-compatible chat completions, model defaults to
+`llama-3.3-70b-versatile`, overridable with `GROQ_MODEL`):
 
 - **Dispatch decision-tree analysis** (`POST /api/ai/dispatch-analysis`,
   wired into the "Explain this recommendation" button on the Dispatch
-  Recommendation page): Claude reads the *same* trace the deterministic
+  Recommendation page): Groq reads the *same* trace the deterministic
   decision tree (`dispatchRecommendation.ts`) already produced and writes a
   short plain-language explanation for the dispatcher. It never changes which
   units get recommended — the tree's own output stays authoritative; this is
   a narration layer on top of it.
 - **Incident summary drafting** (`POST /api/ai/incident-summary`, wired into
-  the "Draft with Claude (AI)" button on the Incidents page): drafts a
+  the "Draft with Groq (AI)" button on the Incidents page): drafts a
   report-style paragraph from an incident's fields, for the user to review
   and edit before saving. Nothing is written to the database automatically.
 

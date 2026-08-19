@@ -91,8 +91,8 @@ export default function DispatchRecommendationPage() {
     setAiError(null);
   }
 
-  // Claude API-driven decision-tree analysis: the tree above is always
-  // what actually gets recommended -- this just asks Claude to read the
+  // Groq API-driven decision-tree analysis: the tree above is always
+  // what actually gets recommended -- this just asks Groq to read the
   // same trace and narrate it for the dispatcher. See
   // backend/src/routes/ai.ts for the human-in-the-loop framing.
   async function runAiAnalysis() {
@@ -119,7 +119,7 @@ export default function DispatchRecommendationPage() {
           <p className="text-sm text-slate-500">
             A transparent, decision-tree AI — every recommendation shows the exact path of questions and
             branches it took to get there, cross-checked against live fleet &amp; personnel availability.
-            Optionally, Claude can narrate that trace in plain language for the dispatcher.
+            Optionally, Groq can narrate that trace in plain language for the dispatcher.
           </p>
         </div>
       </div>
@@ -270,7 +270,7 @@ export default function DispatchRecommendationPage() {
               <div className="mt-5 border-t border-slate-200 pt-4 dark:border-white/10">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    <Sparkles size={14} className="text-leaf-500" /> Claude AI analysis
+                    <Sparkles size={14} className="text-leaf-500" /> Groq AI analysis
                   </p>
                   <button
                     onClick={runAiAnalysis}
@@ -281,7 +281,7 @@ export default function DispatchRecommendationPage() {
                   </button>
                 </div>
                 <p className="mb-2 text-xs text-slate-400">
-                  Claude reads this same decision-tree trace and narrates it in plain language -- it never changes
+                  Groq reads this same decision-tree trace and narrates it in plain language -- it never changes
                   which units get recommended; the tree above remains the authoritative output.
                 </p>
                 {aiError && <p className="text-sm text-rose-600">{aiError}</p>}

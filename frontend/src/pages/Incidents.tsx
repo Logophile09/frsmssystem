@@ -311,7 +311,7 @@ export default function IncidentsPage() {
                   disabled={aiSummaryLoading || !form.incident_type || !form.location}
                   className="text-xs font-medium text-leaf-600 hover:underline disabled:cursor-not-allowed disabled:opacity-40 dark:text-leaf-400"
                 >
-                  {aiSummaryLoading ? 'Drafting with Claude…' : 'Draft with Claude (AI)'}
+                  {aiSummaryLoading ? 'Drafting with Groq…' : 'Draft with Groq (AI)'}
                 </button>
               </div>
               <textarea
@@ -322,7 +322,7 @@ export default function IncidentsPage() {
               />
               {aiSummaryError && <p className="mt-1 text-xs text-rose-600">{aiSummaryError}</p>}
               <p className="mt-1 text-xs text-slate-400">
-                Claude drafts a report-style paragraph from the fields above; review and edit before saving --
+                Groq drafts a report-style paragraph from the fields above; review and edit before saving --
                 nothing is written automatically.
               </p>
             </div>

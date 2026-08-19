@@ -80,7 +80,7 @@ async function authHeaders(): Promise<HeadersInit> {
 
 // Thrown when the backend was actually reached and answered, just with
 // a non-2xx status (bad request, missing server-side config like
-// ANTHROPIC_API_KEY, auth failure, etc). This is distinct from the
+// GROQ_API_KEY, auth failure, etc). This is distinct from the
 // backend being unreachable -- see withFallback below.
 class HttpError extends Error {
   status: number;
@@ -122,7 +122,7 @@ async function withFallback(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: str
   } catch (err) {
     if (err instanceof HttpError) {
       // Backend is reachable and responded -- this is a real application
-      // error (e.g. ANTHROPIC_API_KEY not configured, bad input, expired
+      // error (e.g. GROQ_API_KEY not configured, bad input, expired
       // session), not a connectivity problem. Let it propagate so the
       // calling page can show the actual message instead of silently
       // masking it behind offline demo data.

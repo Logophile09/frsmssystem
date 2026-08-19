@@ -1,16 +1,16 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/auth';
-import { callClaude, ClaudeNotConfiguredError } from '../lib/claudeClient';
+import { callGroq, GroqNotConfiguredError } from '../lib/groqClient';
 
 const router = Router();
 router.use(requireAuth);
 
-function handleClaudeError(err: unknown, res: import('express').Response) {
-  if (err instanceof ClaudeNotConfiguredError) {
+function handleGroqError(err: unknown, res: import('express').Response) {
+  if (err instanceof GroqNotConfiguredError) {
     return res.status(503).json({ error: err.message });
   }
   // eslint-disable-next-line no-console
-  console.error('[AI route] Claude API error:', err);
+  console.error('[AI route] Groq API error:', err);
   return res.status(502).json({ error: 'AI-assist request failed. The decision tree / manual workflow is unaffected.' });
 }
 
@@ -20,7 +20,7 @@ function handleClaudeError(err: unknown, res: import('express').Response) {
  * Body: { input: DispatchInput, result: DispatchRecommendation }
  * (both objects as produced by frontend/src/lib/dispatchRecommendation.ts)
  *
- * Claude never sees raw incident PII beyond what's already in the
+ * The model never sees raw incident PII beyond what's already in the
  * decision-tree input/output, and it never picks the units itself -- it
  * reads the tree's own trace and explains it in plain language, plus
  * flags anything a dispatcher should double-check. The deterministic
@@ -44,10 +44,10 @@ router.post('/dispatch-analysis', async (req, res) => {
   const userPrompt = `Incident input:\n${JSON.stringify(input, null, 2)}\n\nDecision tree result:\n${JSON.stringify(result, null, 2)}`;
 
   try {
-    const analysis = await callClaude(systemPrompt, userPrompt, 400);
+    const analysis = await callGroq(systemPrompt, userPrompt, 400);
     res.json({ analysis });
   } catch (err) {
-    handleClaudeError(err, res);
+    handleGroqError(err, res);
   }
 });
 
@@ -77,10 +77,10 @@ router.post('/incident-summary', async (req, res) => {
   const userPrompt = `Incident record:\n${JSON.stringify(incident, null, 2)}`;
 
   try {
-    const summary = await callClaude(systemPrompt, userPrompt, 300);
+    const summary = await callGroq(systemPrompt, userPrompt, 300);
     res.json({ summary });
   } catch (err) {
-    handleClaudeError(err, res);
+    handleGroqError(err, res);
   }
 });
 
