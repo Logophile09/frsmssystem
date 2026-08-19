@@ -17,6 +17,8 @@ projects:
         sync: false
       - key: SUPABASE_URL
         sync: false
+      - key: GROQ_API_KEY
+        sync: false
       region: ohio
       buildCommand: npm install && npm run build
       startCommand: npm start

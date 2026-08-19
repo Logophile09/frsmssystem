@@ -21,7 +21,11 @@
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 // Overridable via GROQ_MODEL so this can be swapped (e.g. for a smaller/
 // faster or larger/higher-quality Groq-hosted model) without a code change.
-const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
+// openai/gpt-oss-120b is Groq's current recommended production model (their
+// prior default, llama-3.3-70b-versatile, was deprecated by Groq in June
+// 2026 and fully shut down mid-August 2026 -- see
+// https://console.groq.com/docs/deprecations).
+const DEFAULT_MODEL = 'openai/gpt-oss-120b';
 
 export class GroqNotConfiguredError extends Error {
   constructor() {

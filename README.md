@@ -216,7 +216,7 @@ given incident.
 `GROQ_API_KEY` on the backend enables two assistive (never autonomous)
 features, calling the Groq API directly via `backend/src/lib/groqClient.ts`
 (OpenAI-compatible chat completions, model defaults to
-`llama-3.3-70b-versatile`, overridable with `GROQ_MODEL`):
+`openai/gpt-oss-120b`, overridable with `GROQ_MODEL`):
 
 - **Dispatch decision-tree analysis** (`POST /api/ai/dispatch-analysis`,
   wired into the "Explain this recommendation" button on the Dispatch
