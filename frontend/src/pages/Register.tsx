@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { ArrowRight, Radio, ShieldCheck, UserPlus, UserRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { registerAccount } from '../lib/api';
+import { registerAccount, completeOAuthRegistration } from '../lib/api';
 import { AuthModeSwitch, AuthFlipTransition } from '../components/AuthModeSwitch';
 import { AuthBackgroundFX } from '../components/AuthBackgroundFX';
 
@@ -17,21 +17,60 @@ const NAV_LINKS = [
   { href: '/#about', label: 'About' },
 ];
 
+// Fixed choices instead of free text -- keeps the values consistent with
+// what Personnel/Staff Accounts expect, and avoids typos ("Fire Officer 1"
+// vs "Fire Officer I" vs "FO1") turning into inconsistent records down the
+// line. "Other" reveals a follow-up text input, same pattern as the
+// Location field on the Incidents page.
+const OTHER = 'Other (specify below)';
+const POSITION_OPTIONS = [
+  'Fire Officer 1',
+  'Fire Officer 2',
+  'Fire Officer 3',
+  'Senior Fire Officer',
+  'Station Chief',
+  'Fire Inspector',
+  'EMT',
+  'Paramedic',
+  'Dispatcher',
+  'Administrative Staff',
+  'Volunteer Responder',
+  OTHER,
+];
+const STATION_OPTIONS = [
+  'Culiat Fire Sub-Station',
+  'BFP Quezon City – District 6',
+  'Tandang Sora Fire Sub-Station',
+  'Rescue QC – Culiat Unit',
+  OTHER,
+];
+
 // Dark-glass input/label styling — matches the sign-in card on Login.tsx
 // exactly, so the two auth screens read as one continuous experience.
 const inputClass =
   'w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder:text-navy-400 focus:border-leaf-400 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-leaf-400/20';
+const selectClass = `${inputClass} disabled:opacity-60`;
 const labelClass = 'mb-1.5 block text-xs font-semibold text-navy-200';
 
 export default function Register() {
-  const { session, demoMode } = useAuth();
+  const { session, demoMode, profile, loading } = useAuth();
   const navigate = useNavigate();
+
+  // A session with no *approved* profile yet means "Continue with Google"
+  // brought them here (see Login.tsx's handleOAuth redirectTo) -- they're
+  // already authenticated, just missing the position/station/phone fields
+  // the email/password form below collects. Show a shorter completion
+  // form instead of asking them to invent a password for an account they
+  // already signed into with Google.
+  const oauthCompletion = !loading && Boolean(session) && !demoMode && profile?.status !== 'active';
 
   const [form, setForm] = useState({
     first_name: '',
     last_name: '',
     position: '',
+    position_other: '',
     station: '',
+    station_other: '',
     email: '',
     phone: '',
     password: '',
@@ -41,8 +80,26 @@ export default function Register() {
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [prefilled, setPrefilled] = useState(false);
 
-  if (session || demoMode) return <Navigate to="/dashboard" replace />;
+  // Prefill name/email from the Google account once, the first time we
+  // detect an OAuth session -- still fully editable afterward.
+  useEffect(() => {
+    if (!oauthCompletion || prefilled || !session) return;
+    const meta = (session.user.user_metadata ?? {}) as Record<string, unknown>;
+    const fullName = [meta.full_name, meta.name].find((v): v is string => typeof v === 'string' && v.trim().length > 0);
+    const [first, ...rest] = (fullName ?? '').trim().split(/\s+/);
+    setForm((f) => ({
+      ...f,
+      first_name: first ?? f.first_name,
+      last_name: rest.join(' ') || f.last_name,
+      email: session.user.email ?? f.email,
+    }));
+    setPrefilled(true);
+  }, [oauthCompletion, prefilled, session]);
+
+  if (demoMode) return <Navigate to="/dashboard" replace />;
+  if (!loading && profile?.status === 'active') return <Navigate to="/dashboard" replace />;
 
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -53,19 +110,40 @@ export default function Register() {
     setError(null);
 
     if (!agreed) return setError('You must agree to the terms and conditions to register.');
-    if (form.password.length < 8) return setError('Password must be at least 8 characters.');
-    if (form.password !== form.confirm_password) return setError('Passwords do not match.');
+    const position = form.position === OTHER ? form.position_other.trim() : form.position;
+    const station = form.station === OTHER ? form.station_other.trim() : form.station;
+    if (!position) return setError('Please select (or specify) a position / rank.');
+    if (!station) return setError('Please select (or specify) a station / unit.');
+
+    if (!oauthCompletion) {
+      if (form.password.length < 8) return setError('Password must be at least 8 characters.');
+      if (form.password !== form.confirm_password) return setError('Passwords do not match.');
+    }
 
     setSubmitting(true);
     try {
+      if (oauthCompletion) {
+        await completeOAuthRegistration({
+          full_name: `${form.first_name} ${form.last_name}`.trim(),
+          phone: form.phone,
+          position,
+          station,
+          notes: form.notes,
+        });
+        // Already signed in via Google -- no need to sign in again, the
+        // account is just 'pending' until an admin approves it.
+        navigate('/pending-approval', { replace: true });
+        return;
+      }
+
       await registerAccount({
         email: form.email,
         password: form.password,
         first_name: form.first_name,
         last_name: form.last_name,
         phone: form.phone,
-        position: form.position,
-        station: form.station,
+        position,
+        station,
         notes: form.notes,
       });
 
@@ -88,6 +166,17 @@ export default function Register() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  // A session exists but we don't know its status yet (profile still
+  // loading) -- wait rather than briefly flashing the full password-based
+  // signup form at someone who just finished signing in with Google.
+  if (loading && session) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-navy-900 text-sm text-navy-300">
+        Loading your account…
+      </div>
+    );
   }
 
   return (
@@ -164,14 +253,19 @@ export default function Register() {
               </div>
               <p className="mt-4 text-[11px] font-bold uppercase tracking-widest text-leaf-300">Barangay Culiat &middot; Quezon City</p>
               <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-white sm:text-4xl">
-                FRSMS Staff Registration
+                {oauthCompletion ? 'Complete Your Registration' : 'FRSMS Staff Registration'}
               </h1>
               <p className="mt-2 max-w-md text-sm text-navy-200">
-                Register for access as a responder or staff member. An administrator will review and approve your
-                account before you can sign in.
+                {oauthCompletion
+                  ? "You're signed in with Google -- just a few more details and an administrator will review your account."
+                  : 'Register for access as a responder or staff member. An administrator will review and approve your account before you can sign in.'}
               </p>
               <div className="mt-5 w-full max-w-xs">
-                <AuthModeSwitch active="register" />
+                {oauthCompletion ? (
+                  <OAuthSignedInBadge email={session?.user.email ?? null} />
+                ) : (
+                  <AuthModeSwitch active="register" />
+                )}
               </div>
             </div>
 
@@ -204,23 +298,57 @@ export default function Register() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className={labelClass}>Position / Rank</label>
-                <input
+                <select
                   required
                   value={form.position}
                   onChange={(e) => set('position', e.target.value)}
-                  placeholder="e.g. Firefighter I, EMT"
-                  className={inputClass}
-                />
+                  className={selectClass}
+                >
+                  <option value="" disabled>
+                    Select position / rank…
+                  </option>
+                  {POSITION_OPTIONS.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+                {form.position === OTHER && (
+                  <input
+                    required
+                    value={form.position_other}
+                    onChange={(e) => set('position_other', e.target.value)}
+                    placeholder="Specify position / rank"
+                    className={`${inputClass} mt-2`}
+                  />
+                )}
               </div>
               <div>
                 <label className={labelClass}>Station / Unit</label>
-                <input
+                <select
                   required
                   value={form.station}
                   onChange={(e) => set('station', e.target.value)}
-                  placeholder="e.g. Culiat Fire Sub-Station"
-                  className={inputClass}
-                />
+                  className={selectClass}
+                >
+                  <option value="" disabled>
+                    Select station / unit…
+                  </option>
+                  {STATION_OPTIONS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+                {form.station === OTHER && (
+                  <input
+                    required
+                    value={form.station_other}
+                    onChange={(e) => set('station_other', e.target.value)}
+                    placeholder="Specify station / unit"
+                    className={`${inputClass} mt-2`}
+                  />
+                )}
               </div>
             </div>
 
@@ -230,11 +358,13 @@ export default function Register() {
                 <input
                   required
                   type="email"
+                  disabled={oauthCompletion}
                   value={form.email}
                   onChange={(e) => set('email', e.target.value)}
                   placeholder="you@agency.gov"
-                  className={inputClass}
+                  className={`${inputClass} ${oauthCompletion ? 'opacity-60' : ''}`}
                 />
+                {oauthCompletion && <p className="mt-1 text-[11px] text-navy-400">Linked to your Google account.</p>}
               </div>
               <div>
                 <label className={labelClass}>Phone Number</label>
@@ -249,30 +379,32 @@ export default function Register() {
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={labelClass}>Password</label>
-                <input
-                  required
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => set('password', e.target.value)}
-                  placeholder="At least 8 characters"
-                  className={inputClass}
-                />
+            {!oauthCompletion && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className={labelClass}>Password</label>
+                  <input
+                    required
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => set('password', e.target.value)}
+                    placeholder="At least 8 characters"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Confirm Password</label>
+                  <input
+                    required
+                    type="password"
+                    value={form.confirm_password}
+                    onChange={(e) => set('confirm_password', e.target.value)}
+                    placeholder="Re-enter password"
+                    className={inputClass}
+                  />
+                </div>
               </div>
-              <div>
-                <label className={labelClass}>Confirm Password</label>
-                <input
-                  required
-                  type="password"
-                  value={form.confirm_password}
-                  onChange={(e) => set('confirm_password', e.target.value)}
-                  placeholder="Re-enter password"
-                  className={inputClass}
-                />
-              </div>
-            </div>
+            )}
 
             <div>
               <label className={labelClass}>
@@ -315,7 +447,7 @@ export default function Register() {
               disabled={submitting}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-flagred-500 py-3 text-sm font-bold uppercase tracking-wide text-white shadow-lg shadow-flagred-500/25 transition-colors duration-300 hover:bg-flagred-600 disabled:opacity-60"
             >
-              {submitting ? 'Submitting…' : 'Register'} <ArrowRight size={15} />
+              {submitting ? 'Submitting…' : oauthCompletion ? 'Complete Registration' : 'Register'} <ArrowRight size={15} />
             </button>
 
             <div className="flex items-start gap-2 rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-navy-200">
@@ -335,6 +467,30 @@ export default function Register() {
           </div>
         </section>
       </div>
+    </div>
+  );
+}
+
+// Small "signed in as ... via Google" pill shown instead of the Sign
+// in/Register toggle when completing an OAuth registration -- with an
+// escape hatch in case they authenticated with the wrong Google account.
+function OAuthSignedInBadge({ email }: { email: string | null }) {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  async function switchAccount() {
+    await signOut();
+    navigate('/login', { replace: true });
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-navy-200">
+      <span className="truncate">
+        Signed in as <span className="font-semibold text-white">{email ?? 'your Google account'}</span>
+      </span>
+      <button type="button" onClick={switchAccount} className="shrink-0 font-semibold text-leaf-300 hover:text-leaf-200">
+        Not you?
+      </button>
     </div>
   );
 }

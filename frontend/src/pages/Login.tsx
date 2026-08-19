@@ -75,7 +75,15 @@ export default function Login() {
     setOauthLoading(provider);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: window.location.origin },
+      // Land back on /register, not the site root. A first-time Google
+      // sign-in only has a bare-bones 'pending' profile at this point (see
+      // supabase/add_google_oauth_profile_trigger.sql) -- Register.tsx
+      // detects that existing session and shows a shorter "complete your
+      // profile" form (position/station/phone) instead of the full
+      // signup form, so Google sign-ins go through the same
+      // administrator-approval gate as manual registrants instead of
+      // landing straight on the dashboard.
+      options: { redirectTo: `${window.location.origin}/register` },
     });
     if (oauthError) {
       setError(oauthError.message);

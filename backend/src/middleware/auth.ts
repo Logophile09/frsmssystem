@@ -48,10 +48,15 @@ export async function requireAuth(req: AuthedRequest, res: Response, next: NextF
   // /api/me is the one route a pending/disabled account is still allowed
   // to hit -- the frontend needs to read its own status to show the
   // "Awaiting Approval" or "account disabled" screen instead of a dead end.
-  // Every other protected route stays locked until an admin sets status
-  // back to 'active' in Staff Accounts.
+  // /api/register/complete-oauth is the other exception: a brand-new
+  // Google OAuth sign-in lands with a bare-bones 'pending' profile (see
+  // supabase/add_google_oauth_profile_trigger.sql) that's missing the
+  // position/station/phone fields the email/password path collects on
+  // /register -- this route lets a still-pending account fill those in.
+  // It still can't reach anything else until an admin approves it.
   const isMeRoute = req.baseUrl === '/api/me';
-  if (!isMeRoute && profile.status !== 'active') {
+  const isOAuthCompleteRoute = req.baseUrl === '/api/register' && req.path === '/complete-oauth';
+  if (!isMeRoute && !isOAuthCompleteRoute && profile.status !== 'active') {
     const code = profile.status === 'pending' ? 'ACCOUNT_PENDING' : 'ACCOUNT_DISABLED';
     const message =
       profile.status === 'pending'

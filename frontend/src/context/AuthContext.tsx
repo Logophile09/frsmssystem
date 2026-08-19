@@ -30,6 +30,17 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 // build a display profile straight from *their* account (Google display
 // name, or the local part of their email) instead of showing the generic
 // "Demo Administrator" placeholder for a real person.
+//
+// Deliberately defaults to 'staff', never 'admin'. This fallback exists
+// purely so an already-signed-in person isn't dumped on a blank screen
+// during a brief backend hiccup (e.g. a Render free-tier cold start) --
+// it must never be the thing that hands out elevated access. `status` is
+// intentionally left unset (not forced to 'pending') so a returning,
+// already-*approved* user reloading mid-hiccup isn't wrongly bounced to
+// the pending-approval screen; the actual gate against brand-new,
+// never-approved sign-ins reaching the dashboard is the OAuth ->
+// /register -> complete-oauth routing in Login.tsx/Register.tsx, which
+// doesn't depend on the backend responding at sign-in time at all.
 function profileFromSupabaseUser(user: User): Profile {
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
   const metaName = [meta.full_name, meta.name, meta.display_name].find(
@@ -40,7 +51,7 @@ function profileFromSupabaseUser(user: User): Profile {
   return {
     id: user.id,
     email: user.email ?? null,
-    role: 'admin',
+    role: 'staff',
     username: fallbackName,
     full_name: metaName ?? fallbackName,
   };

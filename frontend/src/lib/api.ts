@@ -185,3 +185,37 @@ export async function registerAccount(payload: {
     clearTimeout(timer);
   }
 }
+
+// Completes registration for a "Continue with Google" sign-in -- fills in
+// the position/station/phone fields Google OAuth never provided, on the
+// bare-bones 'pending' profile the on_auth_user_created trigger already
+// created. Same reasoning as registerAccount() above: this must either
+// genuinely reach the backend or clearly fail, never silently pretend to
+// succeed via the offline demo fallback, so it also bypasses
+// withFallback()/demoRequest() and talks to the real backend directly.
+// Unlike registerAccount, the caller already has a Supabase session (from
+// the OAuth round-trip), so this attaches its bearer token.
+export async function completeOAuthRegistration(payload: {
+  full_name?: string;
+  phone: string;
+  position: string;
+  station: string;
+  notes?: string;
+}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${API_URL}/register/complete-oauth`, {
+      method: 'POST',
+      headers: await authHeaders(),
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    return await handle(res);
+  } catch (err) {
+    if (err instanceof HttpError) throw err;
+    throw new Error('Could not reach the registration server. Please try again in a moment.');
+  } finally {
+    clearTimeout(timer);
+  }
+}

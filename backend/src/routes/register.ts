@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase';
+import { AuthedRequest, requireAuth } from '../middleware/auth';
 
 const router = Router();
 
@@ -95,6 +96,58 @@ router.post('/', async (req, res) => {
   }
 
   res.status(201).json({
+    message: 'Registration received. An administrator will review your account shortly.',
+    profile,
+  });
+});
+
+// Completes registration for a "Continue with Google" sign-in. Google
+// OAuth gives us an authenticated identity but none of the FRSMS-specific
+// fields (position, station, phone) that /api/register above collects --
+// and supabase/add_google_oauth_profile_trigger.sql already dropped a
+// bare-bones `status = 'pending'` profile row in place the moment the
+// Google sign-in created their auth.users row. This route lets that
+// still-pending account fill in the rest, same as a manual registrant,
+// before an administrator ever sees it in Staff Accounts.
+//
+// requireAuth (via the isOAuthCompleteRoute exception) lets a 'pending'
+// account reach this one route despite not being 'active' yet -- but
+// role/status are always forced server-side below, never taken from the
+// request body, so there's no way for someone to grant themselves admin
+// or active status through this endpoint. The extra .eq('status',
+// 'pending') guard below also means a *disabled* account can't use this
+// route to quietly reinstate itself.
+router.post('/complete-oauth', requireAuth, async (req: AuthedRequest, res) => {
+  const { full_name, position, station, phone, notes } = req.body ?? {};
+
+  const missing = ['position', 'station', 'phone'].filter((field) => !String(req.body?.[field] ?? '').trim());
+  if (missing.length) {
+    return res.status(400).json({ error: `Missing required field(s): ${missing.join(', ')}` });
+  }
+
+  const { data: profile, error } = await supabaseAdmin
+    .from('profiles')
+    .update({
+      ...(full_name && String(full_name).trim() ? { full_name: String(full_name).trim() } : {}),
+      position,
+      station,
+      phone,
+      notes: notes && String(notes).trim() ? String(notes).trim() : null,
+      // Forced regardless of anything in the request body -- completing
+      // this form can never itself grant admin or active access.
+      role: 'staff',
+      status: 'pending',
+    })
+    .eq('id', req.user!.id)
+    .eq('status', 'pending')
+    .select()
+    .single();
+
+  if (error || !profile) {
+    return res.status(403).json({ error: 'Only a pending account can complete registration this way.' });
+  }
+
+  res.status(200).json({
     message: 'Registration received. An administrator will review your account shortly.',
     profile,
   });
