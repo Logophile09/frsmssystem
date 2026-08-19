@@ -1,10 +1,21 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, ExternalLink, Flame, HardHat, Milestone, type LucideIcon } from 'lucide-react';
+import {
+  AlertTriangle,
+  Bell,
+  ExternalLink,
+  Flame,
+  HardHat,
+  Milestone,
+  Truck,
+  Users,
+  type LucideIcon,
+} from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/Badge';
+import { AuthBackgroundFX } from '../components/AuthBackgroundFX';
 
 interface Summary {
   totalIncidents: number;
@@ -40,12 +51,13 @@ interface Vehicle {
 function StatCard({
   label,
   value,
+  icon: Icon,
   accent,
   to,
 }: {
   label: string;
   value: ReactNode;
-  icon?: string;
+  icon: LucideIcon;
   accent: 'emerald' | 'rose' | 'blue' | 'amber';
   to?: string;
 }) {
@@ -55,12 +67,21 @@ function StatCard({
     blue: 'text-ink-900 dark:text-slate-100',
     amber: 'text-amber-600 dark:text-amber-400',
   };
+  const iconColor: Record<string, string> = {
+    emerald: 'text-leaf-400',
+    rose: 'text-flagred-400',
+    blue: 'text-navy-200',
+    amber: 'text-amber-400',
+  };
   const cardClass =
-    'block rounded-2xl border border-leaf-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-leaf-200 hover:shadow-lg dark:border-white/10 dark:bg-ink-800';
+    'group relative block overflow-hidden rounded-2xl border border-leaf-100 bg-white/80 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-leaf-300/60 hover:shadow-xl hover:shadow-leaf-500/10 dark:border-white/10 dark:bg-navy-800/70';
   const content = (
     <>
-      <p className="text-[11px] font-extrabold uppercase tracking-wider text-leaf-600/70 dark:text-slate-400">{label}</p>
-      <p className={`mt-2.5 text-4xl font-extrabold ${valueColor[accent]}`}>{value}</p>
+      <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-navy-900 shadow-sm transition-transform duration-300 group-hover:scale-105 dark:bg-navy-950`}>
+        <Icon size={18} className={iconColor[accent]} />
+      </div>
+      <p className="mt-3 text-[11px] font-extrabold uppercase tracking-wider text-leaf-600/70 dark:text-slate-400">{label}</p>
+      <p className={`mt-1 text-4xl font-extrabold ${valueColor[accent]}`}>{value}</p>
     </>
   );
   if (to) {
@@ -152,72 +173,75 @@ export default function Dashboard() {
       {/* Ambient background glow now lives in Layout (behind every page,
           not just this one) — see components/AmbientGlow.tsx */}
 
-      {/* Page header strip */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-leaf-600">
-            FRSMS / Dashboard &middot; {summary.activeIncidents} Active
-          </p>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">Dashboard</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Real-time snapshot of incidents, fleet, and personnel readiness.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <button
-              onClick={() => setShowNotifications((s) => !s)}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition-colors duration-300 hover:bg-slate-100 hover:text-leaf-600 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-leaf-300"
-            >
-              <Bell size={19} />
-              {notifications.length > 0 && (
-                <span className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
-                  {notifications.length}
-                </span>
-              )}
-            </button>
-            {showNotifications && (
-              <div className="absolute right-0 z-10 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-leaf-400/10 dark:bg-navy-800">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                  Notifications
-                </p>
-                {notifications.length === 0 ? (
-                  <p className="py-2 text-sm text-slate-400">All clear — nothing needs attention.</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {notifications.map((n, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
-                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
-                        {n.text}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
+      {/* Page header — navy hero band, same visual language as the Landing hero */}
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-navy-900 px-5 py-6 shadow-lg sm:px-7">
+        <AuthBackgroundFX variant="dark" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-leaf-300">
+              FRSMS / Dashboard &middot; {summary.activeIncidents} Active
+            </p>
+            <h1 className="mt-1 font-display text-2xl font-bold text-white">Dashboard</h1>
+            <p className="text-sm text-navy-200">
+              Real-time snapshot of incidents, fleet, and personnel readiness.
+            </p>
           </div>
 
-          <Link
-            to="/incidents"
-            className="rounded-lg bg-gradient-to-r from-leaf-400 to-leaf-600 px-4 py-2 text-sm font-semibold text-navy-950 shadow-sm transition-all duration-300 hover:from-leaf-300 hover:to-leaf-500"
-          >
-            + Report Incident
-          </Link>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications((s) => !s)}
+                className="relative flex h-10 w-10 items-center justify-center rounded-full text-white/80 transition-colors duration-300 hover:bg-white/10 hover:text-leaf-300"
+              >
+                <Bell size={19} />
+                {notifications.length > 0 && (
+                  <span className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-flagred-500 text-[10px] font-bold text-white">
+                    {notifications.length}
+                  </span>
+                )}
+              </button>
+              {showNotifications && (
+                <div className="absolute right-0 z-10 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-3 text-left shadow-xl dark:border-leaf-400/10 dark:bg-navy-800">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Notifications
+                  </p>
+                  {notifications.length === 0 ? (
+                    <p className="py-2 text-sm text-slate-400">All clear — nothing needs attention.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {notifications.map((n, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                          <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                          {n.text}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <Link
+              to="/incidents"
+              className="flex items-center gap-2 rounded-lg bg-flagred-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-flagred-500/25 transition-colors duration-300 hover:bg-flagred-600"
+            >
+              <Flame size={15} /> Report Incident
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* Stat cards */}
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Active Incidents" value={summary.activeIncidents} icon="⚠️" accent="rose" to="/incidents" />
-        <StatCard label="Critical & Unresolved" value={summary.criticalUnresolved} icon="🔥" accent="rose" to="/incidents" />
-        <StatCard label="Vehicles Available" value={summary.availableVehicles} icon="🚒" accent="emerald" to="/vehicles" />
-        <StatCard label="Personnel On Duty" value={summary.onDutyPersonnel} icon="👥" accent="amber" to="/personnel" />
+        <StatCard label="Active Incidents" value={summary.activeIncidents} icon={AlertTriangle} accent="rose" to="/incidents" />
+        <StatCard label="Critical & Unresolved" value={summary.criticalUnresolved} icon={Flame} accent="rose" to="/incidents" />
+        <StatCard label="Vehicles Available" value={summary.availableVehicles} icon={Truck} accent="emerald" to="/vehicles" />
+        <StatCard label="Personnel On Duty" value={summary.onDutyPersonnel} icon={Users} accent="amber" to="/personnel" />
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Recent incidents */}
-        <div className="rounded-2xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800 xl:col-span-2">
+        <div className="rounded-2xl border border-leaf-100 bg-white/85 shadow-sm backdrop-blur-sm transition-shadow duration-300 hover:shadow-lg hover:shadow-leaf-500/10 dark:border-leaf-400/10 dark:bg-navy-800/85 xl:col-span-2">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 dark:border-white/10">
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Recent Incidents</p>
             <Link to="/incidents" className="text-xs font-medium text-leaf-600 hover:underline">
@@ -266,7 +290,7 @@ export default function Dashboard() {
         </div>
 
         {/* Fleet snapshot */}
-        <div className="rounded-2xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
+        <div className="rounded-2xl border border-leaf-100 bg-white/85 shadow-sm backdrop-blur-sm transition-shadow duration-300 hover:shadow-lg hover:shadow-leaf-500/10 dark:border-leaf-400/10 dark:bg-navy-800/85">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 dark:border-white/10">
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Fleet Snapshot</p>
             <Link to="/vehicles" className="text-xs font-medium text-leaf-600 hover:underline">
@@ -289,7 +313,7 @@ export default function Dashboard() {
       </div>
 
       {/* Barangay Culiat news & updates */}
-      <div className="mt-6 rounded-2xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
+      <div className="mt-6 rounded-2xl border border-leaf-100 bg-white/85 shadow-sm backdrop-blur-sm transition-shadow duration-300 hover:shadow-lg hover:shadow-leaf-500/10 dark:border-leaf-400/10 dark:bg-navy-800/85">
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 dark:border-white/10">
           <div>
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Barangay Culiat News &amp; Updates</p>
