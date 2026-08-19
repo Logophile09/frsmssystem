@@ -86,7 +86,17 @@ export default function CrudPage<T extends { id: number | string }>({
     setSaving(true);
     setError(null);
     try {
-      const payload = onBeforeSave ? onBeforeSave(form) : form;
+      // Only send the columns this page actually declares as fields, and
+      // turn blank optional inputs into null instead of "". This also
+      // drops any extra keys (like an embedded `establishments` relation
+      // object) that got pulled in when an existing row was loaded into
+      // the edit form for display purposes.
+      const cleaned: Record<string, unknown> = {};
+      fields.forEach((f) => {
+        const v = form[f.name];
+        cleaned[f.name] = v === '' || v === undefined ? null : v;
+      });
+      const payload = onBeforeSave ? onBeforeSave(cleaned) : cleaned;
       const wasNew = editing === 'new';
       if (editing === 'new') {
         await api.post(endpoint, payload);
