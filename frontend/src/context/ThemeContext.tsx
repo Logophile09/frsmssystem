@@ -9,9 +9,11 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [dark, setDark] = useState<boolean>(() => {
+    // Default to light mode. Only go dark if the user has explicitly
+    // chosen it before (stored in localStorage) — never follow the
+    // OS/browser's prefers-color-scheme automatically.
     const stored = localStorage.getItem('frsms-theme');
-    if (stored) return stored === 'dark';
-    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+    return stored === 'dark';
   });
 
   useEffect(() => {
