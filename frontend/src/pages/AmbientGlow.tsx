@@ -17,7 +17,7 @@
 export default function AmbientGlow({ className = '' }: { className?: string }) {
   return (
     <div aria-hidden="true" className={`pointer-events-none fixed inset-0 -z-10 overflow-hidden ${className}`}>
-      <div className="absolute -left-24 -top-24 h-[28rem] w-[28rem] rounded-full bg-flagred-400/30 blur-3xl animate-glow-drift-a animate-glow-pulse dark:bg-flagred-500/25" />
+      <div className="absolute -left-24 -top-24 h-[28rem] w-[28rem] rounded-full bg-flagred-400/30 blur-3xl animate-glow-drift-a dark:bg-flagred-500/25" />
       <div className="absolute -right-20 top-1/4 h-[32rem] w-[32rem] rounded-full bg-navy-400/25 blur-3xl animate-glow-drift-b dark:bg-navy-400/30" />
       <div className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-leaf-400/20 blur-3xl animate-glow-drift-a dark:bg-leaf-500/20" />
       <div className="absolute -bottom-24 right-1/4 h-80 w-80 rounded-full bg-flagred-300/15 blur-3xl animate-glow-drift-b dark:bg-flagred-400/15" />
