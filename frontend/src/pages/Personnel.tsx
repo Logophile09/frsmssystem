@@ -1,4 +1,5 @@
 import CrudPage from '../components/CrudPage';
+import { Users } from 'lucide-react';
 import Badge from '../components/Badge';
 
 interface Personnel {
@@ -17,6 +18,7 @@ export default function PersonnelPage() {
   return (
     <CrudPage<Personnel>
       title="Personnel"
+      icon={Users}
       description="Roster with duty status."
       endpoint="/personnel"
       columns={[
@@ -31,11 +33,11 @@ export default function PersonnelPage() {
           label: 'Portal Access',
           render: (r) =>
             r.profile_id ? (
-              <span className="inline-block rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+              <span className="inline-block rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
                 Linked account
               </span>
             ) : (
-              <span className="text-slate-400">No login</span>
+              <span className="text-slate-400 dark:text-slate-500">No login</span>
             ),
         },
       ]}

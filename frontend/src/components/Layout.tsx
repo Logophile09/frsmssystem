@@ -130,17 +130,17 @@ export default function Layout() {
 
   const sidebarContent = (
     <>
-      <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5 dark:border-leaf-400/15">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-400/70 bg-white shadow-sm dark:border-leaf-200">
+      <div className="flex items-center gap-3 border-b border-leaf-100 px-5 py-5 dark:border-leaf-400/15">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-500/70 bg-white shadow-sm dark:border-leaf-200">
           <img src="/barangay-culiat-seal.png" alt="Barangay Culiat seal" className="h-full w-full object-cover" />
         </div>
         <div>
-          <p className="font-display text-sm font-semibold leading-tight text-white">FRSMS</p>
-          <p className="text-xs leading-tight text-leaf-100/80 dark:text-slate-400">Fire &amp; Rescue Mgmt.</p>
+          <p className="font-display text-sm font-semibold leading-tight text-ink-900 dark:text-white">FRSMS</p>
+          <p className="text-xs leading-tight text-ink-700 dark:text-slate-400">Fire &amp; Rescue Mgmt.</p>
         </div>
         <button
           onClick={() => setMobileNavOpen(false)}
-          className="ml-auto rounded-lg p-1.5 text-white/80 hover:bg-white/10 dark:text-slate-300 dark:hover:bg-white/5 md:hidden"
+          className="ml-auto rounded-lg p-1.5 text-ink-700 hover:bg-leaf-50 dark:text-slate-300 dark:hover:bg-white/5 md:hidden"
           aria-label="Close menu"
         >
           <X size={20} />
@@ -149,7 +149,7 @@ export default function Layout() {
       <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
         {NAV_GROUPS.map((group) => (
           <div key={group.label}>
-            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-leaf-200/70 dark:text-leaf-200/50">
+            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-leaf-600/80 dark:text-leaf-200/50">
               {group.label}
             </p>
             <div className="space-y-0.5">
@@ -167,7 +167,7 @@ export default function Layout() {
                         `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-300 ease-out ${
                           isActive
                             ? 'bg-gradient-to-br from-leaf-500 to-leaf-700 text-white font-semibold shadow-md shadow-leaf-600/30'
-                            : 'text-white/75 hover:translate-x-0.5 hover:bg-white/10 hover:text-white dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-leaf-200'
+                            : 'text-ink-700 hover:translate-x-0.5 hover:bg-leaf-50 hover:text-leaf-700 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-leaf-200'
                         }`
                       }
                     >
@@ -180,11 +180,11 @@ export default function Layout() {
           </div>
         ))}
       </nav>
-      <div className="border-t border-white/10 px-5 py-4 text-xs dark:border-leaf-400/15">
-        <p className="font-bold text-white">{profile?.full_name ?? 'System Administrator'}</p>
+      <div className="border-t border-leaf-100 px-5 py-4 text-xs dark:border-leaf-400/15">
+        <p className="font-bold text-ink-900 dark:text-white">{profile?.full_name ?? 'System Administrator'}</p>
         <button
           onClick={() => setConfirmingLogout(true)}
-          className="text-leaf-100/80 transition-colors duration-300 hover:text-white dark:text-slate-400 dark:hover:text-leaf-300"
+          className="text-ink-700 transition-colors duration-300 hover:text-leaf-600 dark:text-slate-400 dark:hover:text-leaf-300"
         >
           Log out
         </button>
@@ -194,9 +194,9 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen bg-leaf-50 dark:bg-navy-900">
-      {/* Desktop sidebar — always visible at md+. Deep red in light mode,
-          unchanged navy in dark mode (dark: overrides below are untouched). */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-leaf-800 bg-leaf-900 text-white dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200 md:flex">
+      {/* Desktop sidebar — always visible at md+. White in light mode,
+          navy in dark mode, matching the header/content shell. */}
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-leaf-100 bg-white text-ink-900 dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200 md:flex">
         {sidebarContent}
       </aside>
 
@@ -208,7 +208,7 @@ export default function Layout() {
             onClick={() => setMobileNavOpen(false)}
             aria-hidden="true"
           />
-          <aside className="relative z-[1501] flex h-full w-72 max-w-[85vw] flex-col border-r border-leaf-800 bg-leaf-900 text-white shadow-2xl dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200">
+          <aside className="relative z-[1501] flex h-full w-72 max-w-[85vw] flex-col border-r border-leaf-100 bg-white text-ink-900 shadow-2xl dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200">
             {sidebarContent}
           </aside>
         </div>

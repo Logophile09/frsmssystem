@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Search, Plus, Pencil, Trash2, Inbox, type LucideIcon } from 'lucide-react';
 import { api } from '../lib/api';
 import Modal from './Modal';
 
@@ -20,6 +21,7 @@ export interface ColumnDef<T> {
 interface CrudPageProps<T extends { id: number | string }> {
   title: string;
   description?: string;
+  icon?: LucideIcon;
   endpoint: string;
   columns: ColumnDef<T>[];
   fields: FieldDef[];
@@ -30,6 +32,7 @@ interface CrudPageProps<T extends { id: number | string }> {
 export default function CrudPage<T extends { id: number | string }>({
   title,
   description,
+  icon: Icon,
   endpoint,
   columns,
   fields,
@@ -129,82 +132,112 @@ export default function CrudPage<T extends { id: number | string }>({
 
   return (
     <div>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-navy-900 dark:text-slate-100">{title}</h1>
-          {description && <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>}
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          {Icon && (
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-leaf-50 text-leaf-600 dark:bg-white/[0.06] dark:text-leaf-300">
+              <Icon size={20} />
+            </div>
+          )}
+          <div>
+            <h1 className="font-display text-xl font-bold text-navy-900 dark:text-slate-100">{title}</h1>
+            {description && <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>}
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search…"
-            className="w-48 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-          />
+          <div className="relative">
+            <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search…"
+              className="w-48 rounded-lg border border-slate-300 bg-white py-1.5 pl-8 pr-3 text-sm text-navy-900 focus:border-leaf-400 focus:outline-none focus:ring-2 focus:ring-leaf-400/20 dark:border-white/10 dark:bg-navy-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+            />
+          </div>
           <button
             onClick={openNew}
-            className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600"
+            className="flex items-center gap-1.5 rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm shadow-leaf-500/20 transition-colors duration-200 hover:bg-leaf-600"
           >
-            + Add
+            <Plus size={15} /> Add
           </button>
         </div>
       </div>
 
-      {error && <div className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">{error}</div>}
+      {error && (
+        <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+          {error}
+        </div>
+      )}
       {successMessage && (
-        <div className="mb-4 rounded-lg bg-leaf-50 px-4 py-2 text-sm font-medium text-leaf-700 dark:bg-leaf-950 dark:text-leaf-300">
+        <div className="mb-4 rounded-lg border border-leaf-200 bg-leaf-50 px-4 py-2 text-sm font-medium text-leaf-700 dark:border-leaf-400/20 dark:bg-leaf-500/10 dark:text-leaf-300">
           ✓ {successMessage}
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">
-        <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-white/10">
-          <thead className="bg-slate-50 dark:bg-white/5">
-            <tr>
-              {columns.map((c) => (
-                <th key={c.key} className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">
-                  {c.label}
-                </th>
-              ))}
-              <th className="px-4 py-2.5" />
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-            {loading && (
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3 dark:border-white/10">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+            {loading ? 'Loading…' : `${filtered.length} record${filtered.length === 1 ? '' : 's'}`}
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-white/10">
+            <thead className="bg-slate-50 dark:bg-white/[0.03]">
               <tr>
-                <td colSpan={columns.length + 1} className="px-4 py-6 text-center text-slate-400">
-                  Loading…
-                </td>
-              </tr>
-            )}
-            {!loading && filtered.length === 0 && (
-              <tr>
-                <td colSpan={columns.length + 1} className="px-4 py-6 text-center text-slate-400">
-                  No records yet.
-                </td>
-              </tr>
-            )}
-            {filtered.map((row) => (
-              <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-white/5">
                 {columns.map((c) => (
-                  <td key={c.key} className="px-4 py-2.5 text-slate-700 dark:text-slate-300">
-                    {c.render ? c.render(row) : String((row as any)[c.key] ?? '—')}
-                  </td>
+                  <th key={c.key} className="px-5 py-2.5 text-left font-semibold text-slate-500 dark:text-slate-400">
+                    {c.label}
+                  </th>
                 ))}
-                <td className="whitespace-nowrap px-4 py-2.5 text-right">
-                  <button onClick={() => openEdit(row)} className="mr-3 text-leaf-500 hover:underline dark:text-leaf-300">
-                    Edit
-                  </button>
-                  {canDelete && (
-                    <button onClick={() => remove(row)} className="text-rose-600 hover:underline dark:text-rose-400">
-                      Delete
-                    </button>
-                  )}
-                </td>
+                <th className="px-5 py-2.5" />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+              {loading && (
+                <tr>
+                  <td colSpan={columns.length + 1} className="px-5 py-10 text-center text-slate-400 dark:text-slate-500">
+                    Loading…
+                  </td>
+                </tr>
+              )}
+              {!loading && filtered.length === 0 && (
+                <tr>
+                  <td colSpan={columns.length + 1} className="px-5 py-12">
+                    <div className="flex flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500">
+                      <Inbox size={28} className="opacity-60" />
+                      <p className="text-sm">No records yet.</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+              {filtered.map((row) => (
+                <tr key={row.id} className="transition-colors duration-150 hover:bg-slate-50 dark:hover:bg-white/[0.04]">
+                  {columns.map((c) => (
+                    <td key={c.key} className="px-5 py-2.5 text-slate-700 dark:text-slate-300">
+                      {c.render ? c.render(row) : String((row as any)[c.key] ?? '—')}
+                    </td>
+                  ))}
+                  <td className="whitespace-nowrap px-5 py-2.5 text-right">
+                    <button
+                      onClick={() => openEdit(row)}
+                      className="mr-3 inline-flex items-center gap-1 text-leaf-600 hover:underline dark:text-leaf-300"
+                    >
+                      <Pencil size={13} /> Edit
+                    </button>
+                    {canDelete && (
+                      <button
+                        onClick={() => remove(row)}
+                        className="inline-flex items-center gap-1 text-rose-600 hover:underline dark:text-rose-400"
+                      >
+                        <Trash2 size={13} /> Delete
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {editing && (
@@ -217,7 +250,7 @@ export default function CrudPage<T extends { id: number | string }>({
                   <select
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-navy-900 focus:border-leaf-400 focus:outline-none focus:ring-2 focus:ring-leaf-400/20 dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                   >
                     <option value="" disabled>
                       Select…
@@ -237,7 +270,7 @@ export default function CrudPage<T extends { id: number | string }>({
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
                     rows={3}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-navy-900 focus:border-leaf-400 focus:outline-none focus:ring-2 focus:ring-leaf-400/20 dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                   />
                 ) : (
                   <input
@@ -246,7 +279,7 @@ export default function CrudPage<T extends { id: number | string }>({
                     required={f.required}
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-navy-900 focus:border-leaf-400 focus:outline-none focus:ring-2 focus:ring-leaf-400/20 dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
                   />
                 )}
               </div>

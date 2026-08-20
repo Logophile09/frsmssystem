@@ -1,4 +1,5 @@
 import CrudPage from '../components/CrudPage';
+import { Building2 } from 'lucide-react';
 import Badge from '../components/Badge';
 
 interface Establishment {
@@ -20,6 +21,7 @@ export default function EstablishmentsPage() {
   return (
     <CrudPage<Establishment>
       title="Establishments"
+      icon={Building2}
       description="Buildings and businesses subject to fire safety rules."
       endpoint="/establishments"
       columns={[

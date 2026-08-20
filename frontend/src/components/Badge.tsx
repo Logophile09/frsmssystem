@@ -1,61 +1,61 @@
 const COLORS: Record<string, string> = {
   // generic
-  active: 'bg-emerald-100 text-emerald-800',
-  Active: 'bg-emerald-100 text-emerald-800',
-  inactive: 'bg-slate-200 text-slate-700',
-  Inactive: 'bg-slate-200 text-slate-700',
-  disabled: 'bg-slate-200 text-slate-700',
-  pending: 'bg-amber-100 text-amber-800',
+  active: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  Active: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  inactive: 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300',
+  Inactive: 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300',
+  disabled: 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300',
+  pending: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
   // personnel
-  on_duty: 'bg-emerald-100 text-emerald-800',
-  off_duty: 'bg-slate-200 text-slate-700',
-  on_leave: 'bg-amber-100 text-amber-800',
+  on_duty: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  off_duty: 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300',
+  on_leave: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
   // vehicles
-  available: 'bg-emerald-100 text-emerald-800',
-  dispatched: 'bg-blue-100 text-blue-800',
-  maintenance: 'bg-amber-100 text-amber-800',
-  out_of_service: 'bg-rose-100 text-rose-800',
+  available: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  dispatched: 'bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300',
+  maintenance: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+  out_of_service: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
   // equipment condition
-  good: 'bg-emerald-100 text-emerald-800',
-  fair: 'bg-amber-100 text-amber-800',
-  poor: 'bg-orange-100 text-orange-800',
-  damaged: 'bg-rose-100 text-rose-800',
+  good: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  fair: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+  poor: 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300',
+  damaged: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
   // incidents
-  reported: 'bg-slate-200 text-slate-700',
-  on_scene: 'bg-blue-100 text-blue-800',
-  resolved: 'bg-emerald-100 text-emerald-800',
-  closed: 'bg-slate-300 text-slate-800',
-  '1': 'bg-emerald-100 text-emerald-800',
-  '2': 'bg-lime-100 text-lime-800',
-  '3': 'bg-amber-100 text-amber-800',
-  '4': 'bg-orange-100 text-orange-800',
-  '5': 'bg-rose-100 text-rose-800',
+  reported: 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300',
+  on_scene: 'bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300',
+  resolved: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  closed: 'bg-slate-300 text-slate-800 dark:bg-white/15 dark:text-slate-200',
+  '1': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  '2': 'bg-lime-100 text-lime-800 dark:bg-lime-500/15 dark:text-lime-300',
+  '3': 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+  '4': 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300',
+  '5': 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
   // attendance
-  present: 'bg-emerald-100 text-emerald-800',
-  late: 'bg-amber-100 text-amber-800',
-  absent: 'bg-rose-100 text-rose-800',
+  present: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  late: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+  absent: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
   // compliance
-  Compliant: 'bg-emerald-100 text-emerald-800',
-  'Non-Compliant': 'bg-rose-100 text-rose-800',
-  Pending: 'bg-amber-100 text-amber-800',
-  Scheduled: 'bg-blue-100 text-blue-800',
-  Expired: 'bg-rose-100 text-rose-800',
-  Revoked: 'bg-slate-300 text-slate-800',
-  Open: 'bg-rose-100 text-rose-800',
-  Resolved: 'bg-emerald-100 text-emerald-800',
-  Overdue: 'bg-orange-100 text-orange-800',
-  Minor: 'bg-amber-100 text-amber-800',
-  Major: 'bg-orange-100 text-orange-800',
-  Critical: 'bg-rose-100 text-rose-800',
+  Compliant: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  'Non-Compliant': 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
+  Pending: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+  Scheduled: 'bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300',
+  Expired: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
+  Revoked: 'bg-slate-300 text-slate-800 dark:bg-white/15 dark:text-slate-200',
+  Open: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
+  Resolved: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  Overdue: 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300',
+  Minor: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+  Major: 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300',
+  Critical: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
   // gps / false alarm
-  online: 'bg-emerald-100 text-emerald-800',
-  offline: 'bg-slate-200 text-slate-700',
-  signal_lost: 'bg-rose-100 text-rose-800',
-  likely_real: 'bg-rose-100 text-rose-800',
-  uncertain: 'bg-amber-100 text-amber-800',
-  likely_false: 'bg-emerald-100 text-emerald-800',
-  confirmed_false: 'bg-emerald-100 text-emerald-800',
-  confirmed_real: 'bg-rose-100 text-rose-800',
+  online: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  offline: 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300',
+  signal_lost: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
+  likely_real: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
+  uncertain: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+  likely_false: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  confirmed_false: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  confirmed_real: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
 };
 
 // Values that need custom display text instead of the raw stored value.
@@ -68,8 +68,8 @@ const LABELS: Record<string, string> = {
 };
 
 export default function Badge({ value }: { value: string | null | undefined }) {
-  if (!value) return <span className="text-slate-400">—</span>;
-  const classes = COLORS[value] ?? 'bg-slate-200 text-slate-700';
+  if (!value) return <span className="text-slate-400 dark:text-slate-500">—</span>;
+  const classes = COLORS[value] ?? 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300';
   const label = LABELS[value] ?? value.replace(/_/g, ' ');
   return (
     <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${classes}`}>

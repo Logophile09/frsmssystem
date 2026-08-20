@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import CrudPage from '../components/CrudPage';
+import { ClipboardCheck } from 'lucide-react';
 import Badge from '../components/Badge';
 import { api } from '../lib/api';
 
@@ -28,6 +29,7 @@ export default function InspectionsPage() {
   return (
     <CrudPage<Inspection>
       title="Inspections"
+      icon={ClipboardCheck}
       description="On-site fire safety inspection visits."
       endpoint="/inspections"
       columns={[

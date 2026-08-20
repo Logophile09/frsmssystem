@@ -1,4 +1,5 @@
 import CrudPage from '../components/CrudPage';
+import { Truck } from 'lucide-react';
 import Badge from '../components/Badge';
 
 interface Vehicle {
@@ -15,6 +16,7 @@ export default function VehiclesPage() {
   return (
     <CrudPage<Vehicle>
       title="Vehicles"
+      icon={Truck}
       description="Fleet with maintenance/status tracking."
       endpoint="/vehicles"
       columns={[

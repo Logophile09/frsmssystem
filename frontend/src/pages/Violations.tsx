@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import CrudPage from '../components/CrudPage';
+import { Ban } from 'lucide-react';
 import Badge from '../components/Badge';
 import { api } from '../lib/api';
 
@@ -29,6 +30,7 @@ export default function ViolationsPage() {
   return (
     <CrudPage<Violation>
       title="Violations"
+      icon={Ban}
       description="Deficiencies raised during inspections."
       endpoint="/violations"
       columns={[

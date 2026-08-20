@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import CrudPage from '../components/CrudPage';
+import { Wrench } from 'lucide-react';
 import Badge from '../components/Badge';
 import { api } from '../lib/api';
 
@@ -29,6 +30,7 @@ export default function EquipmentPage() {
   return (
     <CrudPage<Equipment>
       title="Equipment"
+      icon={Wrench}
       description="Inventory linked to vehicles or station storage."
       endpoint="/equipment"
       columns={[

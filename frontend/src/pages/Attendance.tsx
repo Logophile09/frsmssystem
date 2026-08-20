@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import CrudPage from '../components/CrudPage';
+import { CalendarCheck } from 'lucide-react';
 import Badge from '../components/Badge';
 import { api } from '../lib/api';
 
@@ -29,6 +30,7 @@ export default function AttendancePage() {
   return (
     <CrudPage<Attendance>
       title="Attendance"
+      icon={CalendarCheck}
       description="Daily time-in/time-out per personnel."
       endpoint="/attendance"
       columns={[
