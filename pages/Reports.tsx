@@ -26,10 +26,33 @@ const PERSONNEL_COLORS: Record<string, string> = { on_duty: '#10b981', off_duty:
 
 function ChartCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-navy-800">
-      <p className="mb-3 text-sm font-semibold text-navy-900 dark:text-slate-100">{title}</p>
+    <div className="surface-card p-5">
+      <p className="surface-card-title mb-3">{title}</p>
       {children}
     </div>
+  );
+}
+
+// Custom pie label: pushes the count outside the slice with a thin leader
+// line back to it, instead of recharts' default (which prints the raw value
+// right at the pie's edge — fine when slices are evenly sized, but numbers
+// from neighboring thin slices collide and become unreadable, e.g. a "1"
+// landing on top of an "8" between two adjacent Alert Level slices).
+function renderPieLabel({ cx, cy, midAngle, outerRadius, value }: any) {
+  const RADIAN = Math.PI / 180;
+  const radius = outerRadius + 20;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  return (
+    <text
+      x={x}
+      y={y}
+      textAnchor={x > cx ? 'start' : 'end'}
+      dominantBaseline="central"
+      className="fill-slate-600 text-[11px] font-bold dark:fill-slate-300"
+    >
+      {value}
+    </text>
   );
 }
 
@@ -82,17 +105,19 @@ export default function ReportsPage() {
     return Object.entries(out).map(([name, value]) => ({ name, value }));
   }, [personnel]);
 
-  if (loading) return <div className="text-slate-400 dark:text-slate-500">Loading reports…</div>;
+  if (loading) return <div className="text-slate-400">Loading reports…</div>;
 
   return (
     <div>
-      <div className="mb-5 flex items-center gap-3.5">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-leaf-50 text-leaf-600 dark:bg-white/[0.06] dark:text-leaf-300">
-          <BarChart3 size={20} />
-        </div>
-        <div>
-          <h1 className="font-display text-xl font-bold text-navy-900 dark:text-slate-100">Reports</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Incident trends, alert level/status breakdown, and fleet &amp; personnel readiness.</p>
+      <div className="module-header">
+        <div className="flex items-center gap-4">
+          <div className="module-icon">
+            <BarChart3 size={21} />
+          </div>
+          <div>
+            <h1 className="module-title">Reports</h1>
+            <p className="module-description">Incident trends, alert level/status breakdown, and fleet &amp; personnel readiness.</p>
+          </div>
         </div>
       </div>
 
@@ -111,8 +136,15 @@ export default function ReportsPage() {
 
         <ChartCard title="Incidents by Alert Level">
           <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie data={bySeverity} dataKey="value" nameKey="name" outerRadius={80} label>
+            <PieChart margin={{ top: 16, right: 24, bottom: 16, left: 24 }}>
+              <Pie
+                data={bySeverity}
+                dataKey="value"
+                nameKey="name"
+                outerRadius={65}
+                label={renderPieLabel}
+                labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+              >
                 {bySeverity.map((d) => (
                   <Cell key={d.name} fill={SEVERITY_COLORS[d.key] ?? '#94a3b8'} />
                 ))}
@@ -137,8 +169,15 @@ export default function ReportsPage() {
 
         <ChartCard title="Fleet Readiness">
           <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie data={fleetReadiness} dataKey="value" nameKey="name" outerRadius={80} label>
+            <PieChart margin={{ top: 16, right: 24, bottom: 16, left: 24 }}>
+              <Pie
+                data={fleetReadiness}
+                dataKey="value"
+                nameKey="name"
+                outerRadius={65}
+                label={renderPieLabel}
+                labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+              >
                 {fleetReadiness.map((d) => (
                   <Cell key={d.name} fill={VEHICLE_COLORS[d.name] ?? '#94a3b8'} />
                 ))}
@@ -151,8 +190,15 @@ export default function ReportsPage() {
 
         <ChartCard title="Personnel Readiness">
           <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie data={personnelReadiness} dataKey="value" nameKey="name" outerRadius={80} label>
+            <PieChart margin={{ top: 16, right: 24, bottom: 16, left: 24 }}>
+              <Pie
+                data={personnelReadiness}
+                dataKey="value"
+                nameKey="name"
+                outerRadius={65}
+                label={renderPieLabel}
+                labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+              >
                 {personnelReadiness.map((d) => (
                   <Cell key={d.name} fill={PERSONNEL_COLORS[d.name] ?? '#94a3b8'} />
                 ))}
