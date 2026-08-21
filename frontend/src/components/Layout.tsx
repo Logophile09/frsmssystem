@@ -130,6 +130,15 @@ export default function Layout() {
 
   const sidebarContent = (
     <>
+      {/* Ambient red glow behind the nav modules (Dashboard -> Staff Accounts).
+          -z-10 within the relative aside paints above the aside's own solid
+          background but below the nav rows/header/footer, so it reads as a
+          soft red haze behind the module list rather than covering it. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-16 top-16 h-56 w-56 rounded-full bg-flagred-400/25 blur-3xl animate-glow-drift-a animate-glow-pulse dark:bg-flagred-500/20" />
+        <div className="absolute -right-20 top-1/2 h-64 w-64 rounded-full bg-flagred-500/20 blur-3xl animate-glow-drift-b dark:bg-flagred-400/20" />
+        <div className="absolute -left-10 bottom-24 h-48 w-48 rounded-full bg-flagred-400/15 blur-3xl animate-glow-drift-a dark:bg-flagred-500/15" />
+      </div>
       <div className="flex items-center gap-3 border-b border-leaf-100 px-5 py-5 dark:border-leaf-400/15">
         <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-500/70 bg-white shadow-sm ring-4 ring-leaf-500/10 dark:border-leaf-200 dark:ring-leaf-400/10">
           <img src="/barangay-culiat-seal.png" alt="Barangay Culiat seal" className="h-full w-full object-cover" />
@@ -220,7 +229,7 @@ export default function Layout() {
     <div className="flex min-h-screen bg-leaf-50 dark:bg-navy-900">
       {/* Desktop sidebar — always visible at md+. White in light mode,
           navy in dark mode, matching the header/content shell. */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-leaf-100 bg-white text-ink-900 dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200 md:flex">
+      <aside className="relative hidden w-64 shrink-0 flex-col overflow-hidden border-r border-leaf-100 bg-white text-ink-900 dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200 md:flex">
         {sidebarContent}
       </aside>
 
@@ -232,7 +241,7 @@ export default function Layout() {
             onClick={() => setMobileNavOpen(false)}
             aria-hidden="true"
           />
-          <aside className="relative z-[1501] flex h-full w-72 max-w-[85vw] flex-col border-r border-leaf-100 bg-white text-ink-900 shadow-2xl dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200">
+          <aside className="relative z-[1501] flex h-full w-72 max-w-[85vw] flex-col overflow-hidden border-r border-leaf-100 bg-white text-ink-900 shadow-2xl dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200">
             {sidebarContent}
           </aside>
         </div>

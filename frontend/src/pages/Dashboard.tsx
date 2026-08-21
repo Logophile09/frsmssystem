@@ -286,6 +286,16 @@ export default function Dashboard() {
     // margins) then re-adds it inside, so the whole Dashboard route reads as
     // one continuous panel rather than a strip of white cards on white page.
     <div className="relative -m-4 overflow-hidden rounded-b-3xl bg-slate-50 p-4 dark:bg-navy-950 sm:-m-6 sm:rounded-3xl sm:p-7">
+      {/* Ambient glow — same color language as AmbientGlow.tsx, but scoped
+          inside this panel since its opaque background otherwise blocks the
+          app-wide glow from Layout. Kept faint in light mode (texture, not
+          color) and a touch stronger in dark mode where it reads as the
+          "command console" glow. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-20 -top-24 h-72 w-72 rounded-full bg-leaf-400/10 blur-3xl animate-glow-drift-a animate-glow-pulse dark:bg-leaf-500/25" />
+        <div className="absolute -right-16 top-0 h-80 w-80 rounded-full bg-navy-400/10 blur-3xl animate-glow-drift-b dark:bg-navy-300/25" />
+        <div className="absolute -bottom-20 left-1/3 h-64 w-64 rounded-full bg-flagred-400/10 blur-3xl animate-glow-drift-a dark:bg-flagred-400/20" />
+      </div>
       <GridDots />
 
       <div className="relative">
