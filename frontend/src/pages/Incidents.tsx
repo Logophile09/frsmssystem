@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AlertTriangle, Pencil, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 import Modal from '../components/Modal';
 import Badge from '../components/Badge';
@@ -151,81 +152,95 @@ export default function IncidentsPage() {
 
   return (
     <div>
-      <div className="mb-5 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-navy-900 dark:text-slate-100">Incidents &amp; Dispatch</h1>
-          <p className="text-sm text-slate-500">Log emergencies, assign personnel &amp; vehicles, track status.</p>
+      <div className="module-header">
+        <div className="flex items-center gap-4">
+          <div className="module-icon">
+            <AlertTriangle size={21} />
+          </div>
+          <div>
+            <h1 className="module-title">Incidents &amp; Dispatch</h1>
+            <p className="module-description">Log emergencies, assign personnel &amp; vehicles, track status.</p>
+          </div>
         </div>
-        <button onClick={openNew} className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600">
-          + Log Incident
+        <button onClick={openNew} className="btn-primary">
+          <AlertTriangle size={15} /> Log Incident
         </button>
       </div>
 
-      {error && <div className="mb-4 rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">{error}</div>}
+      {error && (
+        <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+          {error}
+        </div>
+      )}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">
-        <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-white/10">
-          <thead className="bg-slate-50 dark:bg-white/5">
-            <tr>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">#</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Type</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Location</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Alert Level</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Status</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">AI Score</th>
-              <th className="px-4 py-2.5" />
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-            {loading && (
+      <div className="surface-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-100 text-sm dark:divide-white/5">
+            <thead className="bg-slate-50/70 dark:bg-white/[0.03]">
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-slate-400">
-                  Loading…
-                </td>
+                <th className="table-head-cell">#</th>
+                <th className="table-head-cell">Type</th>
+                <th className="table-head-cell">Location</th>
+                <th className="table-head-cell">Alert Level</th>
+                <th className="table-head-cell">Status</th>
+                <th className="table-head-cell">AI Score</th>
+                <th className="table-head-cell text-right">Actions</th>
               </tr>
-            )}
-            {!loading && rows.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-slate-400">
-                  No incidents logged yet.
-                </td>
-              </tr>
-            )}
-            {rows.map((r) => (
-              <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-white/5">
-                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{r.incident_number}</td>
-                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{r.incident_type}</td>
-                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{r.location}</td>
-                <td className="px-4 py-2.5">
-                  <Badge value={r.severity} />
-                </td>
-                <td className="px-4 py-2.5">
-                  <Badge value={r.status} />
-                </td>
-                <td className="px-4 py-2.5">
-                  {r.ai_false_alarm_score != null ? (
-                    <span
-                      className="text-xs text-slate-600 dark:text-slate-400"
-                      title={(r.ai_false_alarm_factors ?? []).join('\n')}
-                    >
-                      {r.ai_false_alarm_score} · <Badge value={r.ai_false_alarm_label} />
-                    </span>
-                  ) : (
-                    '—'
-                  )}
-                </td>
-                <td className="whitespace-nowrap px-4 py-2.5 text-right">
-                  <button onClick={() => openEdit(r)} className="mr-3 text-leaf-500 hover:underline">
-                    Edit
-                  </button>
-                  <button onClick={() => remove(r)} className="text-rose-600 hover:underline">
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+              {loading && (
+                <tr>
+                  <td colSpan={7} className="px-5 py-14 text-center text-slate-400 dark:text-slate-500">
+                    Loading…
+                  </td>
+                </tr>
+              )}
+              {!loading && rows.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-5 py-14 text-center text-slate-400 dark:text-slate-500">
+                    No incidents logged yet.
+                  </td>
+                </tr>
+              )}
+              {rows.map((r) => (
+                <tr key={r.id} className="table-row">
+                  <td className="table-cell font-semibold text-navy-900 dark:text-slate-100">{r.incident_number}</td>
+                  <td className="table-cell">{r.incident_type}</td>
+                  <td className="table-cell">{r.location}</td>
+                  <td className="table-cell">
+                    <Badge value={r.severity} />
+                  </td>
+                  <td className="table-cell">
+                    <Badge value={r.status} />
+                  </td>
+                  <td className="table-cell">
+                    {r.ai_false_alarm_score != null ? (
+                      <span
+                        className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400"
+                        title={(r.ai_false_alarm_factors ?? []).join('\n')}
+                      >
+                        <span className="font-bold text-navy-900 dark:text-slate-200">{r.ai_false_alarm_score}</span>
+                        <Badge value={r.ai_false_alarm_label} />
+                      </span>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
+                  <td className="whitespace-nowrap px-5 py-2.5 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button onClick={() => openEdit(r)} title="Edit" className="btn-icon">
+                        <Pencil size={13} />
+                      </button>
+                      <button onClick={() => remove(r)} title="Delete" className="btn-icon-danger">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {editing && (
@@ -233,11 +248,11 @@ export default function IncidentsPage() {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Incident Type</label>
+                <label className="field-label">Incident Type</label>
                 <select
                   value={form.incident_type ?? ''}
                   onChange={(e) => setForm({ ...form, incident_type: e.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                  className="field-input"
                 >
                   <option value="" disabled>
                     Select incident type…
@@ -250,7 +265,7 @@ export default function IncidentsPage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Location</label>
+                <label className="field-label">Location</label>
                 <select
                   value={otherLocation ? 'Other (specify below)' : form.location ?? ''}
                   onChange={(e) => {
@@ -263,7 +278,7 @@ export default function IncidentsPage() {
                       setForm({ ...form, location: val });
                     }
                   }}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                  className="field-input"
                 >
                   <option value="" disabled>
                     Select location…
@@ -279,7 +294,7 @@ export default function IncidentsPage() {
                     value={form.location ?? ''}
                     onChange={(e) => setForm({ ...form, location: e.target.value })}
                     placeholder="Enter the exact address"
-                    className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                    className="mt-2 field-input"
                   />
                 )}
               </div>
@@ -318,7 +333,7 @@ export default function IncidentsPage() {
                 rows={3}
                 value={form.description ?? ''}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                className="field-input"
               />
               {aiSummaryError && <p className="mt-1 text-xs text-rose-600">{aiSummaryError}</p>}
               <p className="mt-1 text-xs text-slate-400">
@@ -328,11 +343,11 @@ export default function IncidentsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Alert Level</label>
+                <label className="field-label">Alert Level</label>
                 <select
                   value={form.severity ?? '3'}
                   onChange={(e) => setForm({ ...form, severity: e.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                  className="field-input"
                 >
                   {SEVERITIES.map((s) => (
                     <option key={s} value={s}>
@@ -343,11 +358,11 @@ export default function IncidentsPage() {
               </div>
               {editing !== 'new' && (
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Status</label>
+                  <label className="field-label">Status</label>
                   <select
                     value={form.status ?? 'reported'}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                    className="field-input"
                   >
                     {STATUSES.map((s) => (
                       <option key={s} value={s}>
@@ -360,7 +375,7 @@ export default function IncidentsPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Assign Personnel</label>
+              <label className="field-label">Assign Personnel</label>
               <div className="max-h-32 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2 dark:border-white/10">
                 {personnel.map((p) => (
                   <label key={p.id} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
@@ -371,7 +386,7 @@ export default function IncidentsPage() {
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Assign Vehicles</label>
+              <label className="field-label">Assign Vehicles</label>
               <div className="max-h-32 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2 dark:border-white/10">
                 {vehicles.map((v) => (
                   <label key={v.id} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
@@ -418,7 +433,7 @@ export default function IncidentsPage() {
                     min={0}
                     value={form.caller_count ?? 1}
                     onChange={(e) => setForm({ ...form, caller_count: Number(e.target.value) })}
-                    className="w-24 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                    className="w-24 field-input"
                   />
                 </div>
               </div>
@@ -430,14 +445,10 @@ export default function IncidentsPage() {
             </div>
           </div>
           <div className="mt-5 flex justify-end gap-2">
-            <button onClick={() => setEditing(null)} className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5">
+            <button onClick={() => setEditing(null)} className="btn-outline">
               Cancel
             </button>
-            <button
-              onClick={save}
-              disabled={saving}
-              className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600 disabled:opacity-60"
-            >
+            <button onClick={save} disabled={saving} className="btn-primary">
               {saving ? 'Saving…' : 'Save'}
             </button>
           </div>

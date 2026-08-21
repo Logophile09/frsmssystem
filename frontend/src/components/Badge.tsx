@@ -72,7 +72,10 @@ export default function Badge({ value }: { value: string | null | undefined }) {
   const classes = COLORS[value] ?? 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300';
   const label = LABELS[value] ?? value.replace(/_/g, ' ');
   return (
-    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${classes}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold capitalize leading-none ring-1 ring-inset ring-black/[0.04] dark:ring-white/[0.06] ${classes}`}
+    >
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-70" />
       {label}
     </span>
   );

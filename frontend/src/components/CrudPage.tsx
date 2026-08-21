@@ -132,106 +132,106 @@ export default function CrudPage<T extends { id: number | string }>({
 
   return (
     <div>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
+      <div className="module-header">
+        <div className="flex items-center gap-4">
           {Icon && (
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-leaf-50 text-leaf-600 dark:bg-white/[0.06] dark:text-leaf-300">
-              <Icon size={20} />
+            <div className="module-icon">
+              <Icon size={21} />
             </div>
           )}
           <div>
-            <h1 className="font-display text-xl font-bold text-navy-900 dark:text-slate-100">{title}</h1>
-            {description && <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>}
+            <h1 className="module-title">{title}</h1>
+            {description && <p className="module-description">{description}</p>}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <div className="relative">
-            <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+            <Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search…"
-              className="w-48 rounded-lg border border-slate-300 bg-white py-1.5 pl-8 pr-3 text-sm text-navy-900 focus:border-leaf-400 focus:outline-none focus:ring-2 focus:ring-leaf-400/20 dark:border-white/10 dark:bg-navy-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+              placeholder="Search records…"
+              className="field-search w-48 sm:w-56"
             />
           </div>
-          <button
-            onClick={openNew}
-            className="flex items-center gap-1.5 rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm shadow-leaf-500/20 transition-colors duration-200 hover:bg-leaf-600"
-          >
+          <button onClick={openNew} className="btn-primary">
             <Plus size={15} /> Add
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+        <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
           {error}
         </div>
       )}
       {successMessage && (
-        <div className="mb-4 rounded-lg border border-leaf-200 bg-leaf-50 px-4 py-2 text-sm font-medium text-leaf-700 dark:border-leaf-400/20 dark:bg-leaf-500/10 dark:text-leaf-300">
-          ✓ {successMessage}
+        <div className="mb-4 flex items-center gap-2 rounded-xl border border-leaf-200 bg-leaf-50 px-4 py-2.5 text-sm font-semibold text-leaf-700 dark:border-leaf-400/20 dark:bg-leaf-500/10 dark:text-leaf-300">
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-leaf-500 text-[10px] text-white">✓</span>
+          {successMessage}
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3 dark:border-white/10">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+      <div className="surface-card overflow-hidden">
+        <div className="surface-card-header">
+          <p className="stat-chip">
+            <span className={`stat-chip-dot ${loading ? 'animate-pulse bg-slate-400' : 'bg-leaf-500'}`} />
             {loading ? 'Loading…' : `${filtered.length} record${filtered.length === 1 ? '' : 's'}`}
           </p>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-white/10">
-            <thead className="bg-slate-50 dark:bg-white/[0.03]">
+          <table className="min-w-full divide-y divide-slate-100 text-sm dark:divide-white/5">
+            <thead className="bg-slate-50/70 dark:bg-white/[0.03]">
               <tr>
                 {columns.map((c) => (
-                  <th key={c.key} className="px-5 py-2.5 text-left font-semibold text-slate-500 dark:text-slate-400">
+                  <th key={c.key} className="table-head-cell">
                     {c.label}
                   </th>
                 ))}
-                <th className="px-5 py-2.5" />
+                <th className="table-head-cell text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5">
               {loading && (
                 <tr>
-                  <td colSpan={columns.length + 1} className="px-5 py-10 text-center text-slate-400 dark:text-slate-500">
+                  <td colSpan={columns.length + 1} className="px-5 py-14 text-center text-slate-400 dark:text-slate-500">
                     Loading…
                   </td>
                 </tr>
               )}
               {!loading && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={columns.length + 1} className="px-5 py-12">
-                    <div className="flex flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500">
-                      <Inbox size={28} className="opacity-60" />
-                      <p className="text-sm">No records yet.</p>
+                  <td colSpan={columns.length + 1} className="px-5 py-14">
+                    <div className="flex flex-col items-center justify-center gap-2.5 text-slate-400 dark:text-slate-500">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-white/5">
+                        <Inbox size={20} className="opacity-70" />
+                      </div>
+                      <p className="text-sm font-medium">No records yet.</p>
+                      <button onClick={openNew} className="text-xs font-bold text-leaf-600 hover:underline dark:text-leaf-300">
+                        Add the first one
+                      </button>
                     </div>
                   </td>
                 </tr>
               )}
               {filtered.map((row) => (
-                <tr key={row.id} className="transition-colors duration-150 hover:bg-slate-50 dark:hover:bg-white/[0.04]">
+                <tr key={row.id} className="table-row">
                   {columns.map((c) => (
-                    <td key={c.key} className="px-5 py-2.5 text-slate-700 dark:text-slate-300">
+                    <td key={c.key} className="table-cell">
                       {c.render ? c.render(row) : String((row as any)[c.key] ?? '—')}
                     </td>
                   ))}
                   <td className="whitespace-nowrap px-5 py-2.5 text-right">
-                    <button
-                      onClick={() => openEdit(row)}
-                      className="mr-3 inline-flex items-center gap-1 text-leaf-600 hover:underline dark:text-leaf-300"
-                    >
-                      <Pencil size={13} /> Edit
-                    </button>
-                    {canDelete && (
-                      <button
-                        onClick={() => remove(row)}
-                        className="inline-flex items-center gap-1 text-rose-600 hover:underline dark:text-rose-400"
-                      >
-                        <Trash2 size={13} /> Delete
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button onClick={() => openEdit(row)} title="Edit" className="btn-icon">
+                        <Pencil size={13} />
                       </button>
-                    )}
+                      {canDelete && (
+                        <button onClick={() => remove(row)} title="Delete" className="btn-icon-danger">
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -245,12 +245,12 @@ export default function CrudPage<T extends { id: number | string }>({
           <div className="space-y-3">
             {fields.map((f) => (
               <div key={f.name}>
-                <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{f.label}</label>
+                <label className="field-label">{f.label}</label>
                 {f.type === 'select' ? (
                   <select
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-navy-900 focus:border-leaf-400 focus:outline-none focus:ring-2 focus:ring-leaf-400/20 dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                    className="field-input"
                   >
                     <option value="" disabled>
                       Select…
@@ -270,7 +270,7 @@ export default function CrudPage<T extends { id: number | string }>({
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
                     rows={3}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-navy-900 focus:border-leaf-400 focus:outline-none focus:ring-2 focus:ring-leaf-400/20 dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                    className="field-input"
                   />
                 ) : (
                   <input
@@ -279,24 +279,17 @@ export default function CrudPage<T extends { id: number | string }>({
                     required={f.required}
                     value={(form[f.name] as string) ?? ''}
                     onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-navy-900 focus:border-leaf-400 focus:outline-none focus:ring-2 focus:ring-leaf-400/20 dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                    className="field-input"
                   />
                 )}
               </div>
             ))}
           </div>
           <div className="mt-5 flex justify-end gap-2">
-            <button
-              onClick={() => setEditing(null)}
-              className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
-            >
+            <button onClick={() => setEditing(null)} className="btn-outline">
               Cancel
             </button>
-            <button
-              onClick={save}
-              disabled={saving}
-              className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600 disabled:opacity-60"
-            >
+            <button onClick={save} disabled={saving} className="btn-primary">
               {saving ? 'Saving…' : 'Save'}
             </button>
           </div>

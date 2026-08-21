@@ -5,9 +5,11 @@ import {
   AlertTriangle,
   Bell,
   ExternalLink,
+  FileCheck,
   Flame,
   HardHat,
   Milestone,
+  ShieldAlert,
   Truck,
   Users,
   type LucideIcon,
@@ -139,6 +141,115 @@ const NEWS_TOPIC_STYLE: Record<string, { icon: LucideIcon; classes: string }> = 
   fire: { icon: Flame, classes: 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300' },
 };
 
+// "Good morning" / "Good afternoon" / "Good evening" — small human touch on
+// the hero greeting instead of a flat, always-the-same "Welcome".
+function timeGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+// Compact "at a glance" pill — a small icon + number + label, used for the
+// secondary metrics row under the hero (totals that don't need a full stat
+// card, but are still worth surfacing at a click's reach).
+function QuickFact({
+  label,
+  value,
+  icon: Icon,
+  to,
+  attention,
+}: {
+  label: string;
+  value: ReactNode;
+  icon: LucideIcon;
+  to: string;
+  attention?: boolean;
+}) {
+  return (
+    <Link
+      to={to}
+      className={`flex items-center gap-3 rounded-2xl border px-4 py-2.5 transition-all duration-300 hover:-translate-y-0.5 ${
+        attention
+          ? 'border-amber-400/25 bg-amber-400/[0.08] hover:bg-amber-400/[0.12]'
+          : 'border-white/10 bg-white/[0.04] hover:bg-white/[0.07]'
+      }`}
+    >
+      <Icon size={15} className={attention ? 'shrink-0 text-amber-300' : 'shrink-0 text-white/50'} />
+      <span className="flex items-baseline gap-1.5">
+        <span className={`text-sm font-extrabold ${attention ? 'text-amber-200' : 'text-white/90'}`}>{value}</span>
+        <span className="text-xs text-white/45">{label}</span>
+      </span>
+    </Link>
+  );
+}
+
+// Alert level 1–5 and status keys ordered/labeled for the breakdown bars —
+// mirrors Badge's palette so the colors read consistently with the badges
+// used everywhere else in the incident tables.
+const SEVERITY_ORDER = ['1', '2', '3', '4', '5'];
+const SEVERITY_BAR_LABEL: Record<string, string> = {
+  '1': 'Level 1',
+  '2': 'Level 2',
+  '3': 'Level 3',
+  '4': 'Level 4',
+  '5': 'Level 5',
+};
+const SEVERITY_BAR_COLOR: Record<string, string> = {
+  '1': 'bg-emerald-400',
+  '2': 'bg-lime-400',
+  '3': 'bg-amber-400',
+  '4': 'bg-orange-400',
+  '5': 'bg-rose-500',
+};
+const STATUS_BAR_COLOR: Record<string, string> = {
+  reported: 'bg-slate-400',
+  on_scene: 'bg-blue-400',
+  resolved: 'bg-emerald-400',
+  closed: 'bg-white/40',
+};
+
+/** Horizontal breakdown bars for a count-by-key record, sorted largest first
+ *  (unless an explicit key order is given). Pure CSS — no chart library —
+ *  since this sits inside the dark command-console panel alongside plain
+ *  tables/lists, not the charting-heavy Reports page. */
+function BreakdownBars({
+  data,
+  order,
+  labelFor,
+  colorFor,
+}: {
+  data: Record<string, number>;
+  order?: string[];
+  labelFor: (key: string) => string;
+  colorFor: (key: string) => string;
+}) {
+  const keys = order ? order.filter((k) => data[k] > 0) : Object.keys(data).sort((a, b) => data[b] - data[a]);
+  const max = Math.max(1, ...keys.map((k) => data[k] ?? 0));
+  if (keys.length === 0) {
+    return <p className="px-5 py-6 text-center text-sm text-white/40">No data yet.</p>;
+  }
+  return (
+    <ul className="space-y-3 px-5 py-4">
+      {keys.map((key) => {
+        const value = data[key] ?? 0;
+        return (
+          <li key={key} className="flex items-center gap-3 text-sm">
+            <span className="w-20 shrink-0 truncate text-white/60">{labelFor(key)}</span>
+            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+              <span
+                className={`block h-full rounded-full ${colorFor(key)} transition-all duration-700 ease-out`}
+                style={{ width: `${(value / max) * 100}%` }}
+              />
+            </span>
+            <span className="w-6 shrink-0 text-right font-bold text-white/85">{value}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export default function Dashboard() {
   const { profile } = useAuth();
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -186,7 +297,9 @@ export default function Dashboard() {
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
               Barangay Culiat &middot; Fire &amp; Rescue &middot; Quezon City
             </span>
-            <h1 className="mt-3 font-display text-3xl font-extrabold text-white sm:text-4xl">Welcome, {firstName}.</h1>
+            <h1 className="mt-3 font-display text-3xl font-extrabold text-white sm:text-4xl">
+              {timeGreeting()}, {firstName}.
+            </h1>
             <p className="mt-1.5 text-sm text-white/50">
               {summary.activeIncidents} active incident{summary.activeIncidents === 1 ? '' : 's'}, {summary.availableVehicles} vehicle
               {summary.availableVehicles === 1 ? '' : 's'} available, {summary.onDutyPersonnel} personnel on duty.
@@ -246,6 +359,30 @@ export default function Dashboard() {
           <StatCard label="Critical & Unresolved" value={summary.criticalUnresolved} icon={Flame} accent="rose" to="/incidents" />
           <StatCard label="Vehicles Available" value={summary.availableVehicles} icon={Truck} accent="emerald" to="/vehicles" />
           <StatCard label="Personnel On Duty" value={summary.onDutyPersonnel} icon={Users} accent="amber" to="/personnel" />
+        </div>
+
+        {/* Secondary "at a glance" numbers — totals that don't warrant a full
+            stat card, but are still one tap away, plus surfaces the two
+            review queues (false alarms, expiring certificates) that were
+            previously only visible buried in the notifications dropdown. */}
+        <div className="mb-6 flex flex-wrap gap-2.5">
+          <QuickFact label="incidents logged" value={summary.totalIncidents} icon={AlertTriangle} to="/incidents" />
+          <QuickFact label="personnel on roster" value={summary.totalPersonnel} icon={Users} to="/personnel" />
+          <QuickFact label="vehicles in fleet" value={summary.totalVehicles} icon={Truck} to="/vehicles" />
+          <QuickFact
+            label="false alarms to review"
+            value={summary.pendingFalseAlarmReviews}
+            icon={ShieldAlert}
+            to="/false-alarms"
+            attention={summary.pendingFalseAlarmReviews > 0}
+          />
+          <QuickFact
+            label="certificates expiring soon"
+            value={summary.certificatesExpiringSoon}
+            icon={FileCheck}
+            to="/certificates"
+            attention={summary.certificatesExpiringSoon > 0}
+          />
         </div>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
@@ -318,6 +455,33 @@ export default function Dashboard() {
                 </li>
               ))}
             </ul>
+          </div>
+        </div>
+
+        {/* Incident breakdown — surfaces incidentsBySeverity/incidentsByStatus,
+            which the summary endpoint already returns, as two quick-scan
+            bar readouts instead of leaving them unused. */}
+        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-sm transition-colors duration-300 hover:bg-white/[0.05]">
+            <div className="border-b border-white/10 px-5 py-3.5">
+              <p className="text-sm font-semibold text-white">Incidents by Alert Level</p>
+            </div>
+            <BreakdownBars
+              data={summary.incidentsBySeverity}
+              order={SEVERITY_ORDER}
+              labelFor={(k) => SEVERITY_BAR_LABEL[k] ?? k}
+              colorFor={(k) => SEVERITY_BAR_COLOR[k] ?? 'bg-white/40'}
+            />
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-sm transition-colors duration-300 hover:bg-white/[0.05]">
+            <div className="border-b border-white/10 px-5 py-3.5">
+              <p className="text-sm font-semibold text-white">Incidents by Status</p>
+            </div>
+            <BreakdownBars
+              data={summary.incidentsByStatus}
+              labelFor={(k) => k.replace(/_/g, ' ')}
+              colorFor={(k) => STATUS_BAR_COLOR[k] ?? 'bg-white/40'}
+            />
           </div>
         </div>
 

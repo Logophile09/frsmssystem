@@ -111,30 +111,33 @@ export default function DispatchRecommendationPage() {
 
   return (
     <div>
-      <div className="mb-5 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-xl font-semibold text-navy-900 dark:text-slate-100">
-            <GitBranch size={20} className="text-leaf-500" /> Dispatch Recommendation
-          </h1>
-          <p className="text-sm text-slate-500">
-            A transparent, decision-tree AI — every recommendation shows the exact path of questions and
-            branches it took to get there, cross-checked against live fleet &amp; personnel availability.
-            Optionally, Groq can narrate that trace in plain language for the dispatcher.
-          </p>
+      <div className="module-header">
+        <div className="flex items-center gap-4">
+          <div className="module-icon">
+            <GitBranch size={21} />
+          </div>
+          <div>
+            <h1 className="module-title">Dispatch Recommendation</h1>
+            <p className="module-description">
+              A transparent, decision-tree AI — every recommendation shows the exact path of questions and
+              branches it took to get there, cross-checked against live fleet &amp; personnel availability.
+              Optionally, Groq can narrate that trace in plain language for the dispatcher.
+            </p>
+          </div>
         </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_1.2fr]">
         {/* Input form */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-navy-800">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Incident details</p>
+        <div className="surface-card p-5">
+          <p className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Incident details</p>
 
-          <label className="mb-1 block text-xs font-medium text-slate-500">Load from an active incident (optional)</label>
+          <label className="field-label">Load from an active incident (optional)</label>
           <select
             value={selectedIncidentId}
             onChange={(e) => loadFromIncident(e.target.value)}
             disabled={loading}
-            className="mb-4 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm dark:border-white/10 dark:bg-navy-900 dark:text-slate-100"
+            className="field-input mb-4"
           >
             <option value="">— Enter manually —</option>
             {incidents.map((r) => (
@@ -144,11 +147,11 @@ export default function DispatchRecommendationPage() {
             ))}
           </select>
 
-          <label className="mb-1 block text-xs font-medium text-slate-500">Incident type</label>
+          <label className="field-label">Incident type</label>
           <select
             value={form.incidentType}
             onChange={(e) => setForm({ ...form, incidentType: e.target.value })}
-            className="mb-4 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm dark:border-white/10 dark:bg-navy-900 dark:text-slate-100"
+            className="field-input mb-4"
           >
             {INCIDENT_TYPES.map((t) => (
               <option key={t} value={t}>
@@ -157,11 +160,11 @@ export default function DispatchRecommendationPage() {
             ))}
           </select>
 
-          <label className="mb-1 block text-xs font-medium text-slate-500">Alert Level</label>
+          <label className="field-label">Alert Level</label>
           <select
             value={form.severity}
             onChange={(e) => setForm({ ...form, severity: e.target.value as Severity })}
-            className="mb-4 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm dark:border-white/10 dark:bg-navy-900 dark:text-slate-100"
+            className="field-input mb-4"
           >
             {SEVERITIES.map((s) => (
               <option key={s} value={s}>
@@ -170,7 +173,7 @@ export default function DispatchRecommendationPage() {
             ))}
           </select>
 
-          <div className="space-y-2">
+          <div className="space-y-2 rounded-xl border border-slate-100 bg-slate-50/60 p-3 dark:border-white/5 dark:bg-white/[0.03]">
             {[
               { key: 'occupantsTrapped', label: 'Occupants / passengers reported trapped' },
               { key: 'multipleCasualties', label: 'Multiple casualties reported' },
@@ -188,14 +191,11 @@ export default function DispatchRecommendationPage() {
             ))}
           </div>
 
-          <button
-            onClick={run}
-            className="mt-5 w-full rounded-lg bg-leaf-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-leaf-600"
-          >
+          <button onClick={run} className="btn-primary mt-5 w-full !py-2.5">
             Run Decision Tree
           </button>
 
-          <p className="mt-3 text-xs text-slate-400">
+          <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
             Fleet snapshot: {vehicles.filter((v) => v.status === 'available').length} of {vehicles.length} vehicles
             available across {activeVehicleTypes.length} types · {personnel.filter((p) => p.status === 'on_duty').length}{' '}
             personnel on duty.
@@ -203,7 +203,7 @@ export default function DispatchRecommendationPage() {
         </div>
 
         {/* Result */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-navy-800">
+        <div className="surface-card p-5">
           {!result && (
             <div className="flex h-full min-h-[280px] flex-col items-center justify-center text-center text-slate-400">
               <GitBranch size={32} className="mb-3 opacity-40" />

@@ -31,3 +31,142 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background-color: rgba(206, 17, 38, 0.55);
 }
+
+/* Faint dot-grid canvas texture behind every authenticated page — the same
+   quiet "graph paper" backdrop a modern ops console uses so white/navy
+   cards feel like they're sitting on something instead of floating on flat
+   color. Extremely low-opacity and masked so it fades out toward the edges. */
+.app-canvas-texture {
+  background-image: radial-gradient(rgba(15, 26, 43, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.dark .app-canvas-texture {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+}
+
+/* ------------------------------------------------------------------ */
+/* Shared admin design system — one place for the recurring surface,   */
+/* control and typography patterns used across every module page      */
+/* (Dashboard → Staff Accounts). Keeping these as classes instead of   */
+/* copy-pasted utility strings is what makes the system read as one    */
+/* consistent product instead of 15 separately-styled screens.         */
+/* ------------------------------------------------------------------ */
+@layer components {
+  /* Page header: icon chip + title + description, used at the top of every
+     module. Elevated into a soft bordered "hero strip" — a wash of leaf
+     tint plus a hairline dot texture in the corner — so each module opens
+     with the same quiet sense of arrival as the dashboard, instead of a
+     plain heading sitting directly on the page background. */
+  .module-header {
+    @apply relative mb-6 flex flex-wrap items-start justify-between gap-4 overflow-hidden rounded-3xl border border-leaf-100/80 bg-gradient-to-br from-white via-white to-leaf-50/60 px-5 py-5 shadow-sm shadow-slate-200/60 dark:border-white/10 dark:from-navy-800 dark:via-navy-800 dark:to-navy-800 dark:shadow-none sm:px-6 sm:py-6;
+  }
+  .module-header::before {
+    content: '';
+    @apply pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-leaf-500/[0.06] blur-2xl dark:bg-leaf-400/[0.08];
+  }
+  .module-header > * {
+    @apply relative;
+  }
+  .module-icon {
+    @apply flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-leaf-500 to-leaf-700 text-white shadow-md shadow-leaf-600/25 ring-4 ring-leaf-500/10 dark:ring-leaf-400/10;
+  }
+  .module-title {
+    @apply font-display text-xl font-extrabold tracking-tight text-navy-900 dark:text-white sm:text-2xl;
+  }
+  .module-description {
+    @apply mt-0.5 text-sm text-slate-500 dark:text-slate-400;
+  }
+  /* Small uppercase eyebrow label with a lead dot — section kickers ("YOUR
+     REGISTRATIONS"-style), used above card headers and grouped content. */
+  .eyebrow-label {
+    @apply inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-leaf-600/80 dark:text-leaf-300/70;
+  }
+  .eyebrow-label::before {
+    content: '';
+    @apply h-1.5 w-1.5 shrink-0 rounded-full bg-leaf-500;
+  }
+
+  /* Generic elevated surface used for tables, form panels, chart cards, etc. */
+  .surface-card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70 transition-all duration-300 hover:shadow-md hover:shadow-slate-200/80 dark:border-white/10 dark:bg-navy-800 dark:shadow-none dark:hover:bg-navy-800/80;
+  }
+  .surface-card-header {
+    @apply flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-3.5 dark:border-white/10;
+  }
+  .surface-card-title {
+    @apply text-sm font-bold text-navy-900 dark:text-slate-100;
+  }
+  .surface-card-subtitle {
+    @apply text-xs text-slate-500 dark:text-slate-400;
+  }
+  /* "View all →" link pattern used in card headers to point at the full module */
+  .card-link {
+    @apply inline-flex items-center gap-1 text-xs font-bold text-leaf-600 transition-colors duration-200 hover:text-leaf-700 hover:underline dark:text-leaf-300 dark:hover:text-leaf-200;
+  }
+
+  /* Small rounded stat readouts used in header strips (record counts, quick totals) */
+  .stat-chip {
+    @apply flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300;
+  }
+  .stat-chip-dot {
+    @apply h-1.5 w-1.5 shrink-0 rounded-full;
+  }
+  /* Compact icon + value + label tile — used for "at a glance" stat strips
+     (Staff Accounts totals, Dashboard secondary metrics) */
+  .mini-stat {
+    @apply surface-card flex items-center gap-3 px-4 py-3.5;
+  }
+  .mini-stat-icon {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5;
+  }
+  .mini-stat-value {
+    @apply text-xl font-extrabold leading-tight;
+  }
+  .mini-stat-label {
+    @apply truncate text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500;
+  }
+
+  /* Avatar chip — initials circle with a soft ring, used for staff/profile identity */
+  .avatar-chip {
+    @apply flex shrink-0 items-center justify-center rounded-full font-bold text-white ring-2 ring-white dark:ring-navy-800;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-br from-leaf-500 to-leaf-600 px-4 py-2 text-sm font-bold text-white shadow-sm shadow-leaf-500/25 transition-all duration-200 hover:-translate-y-0.5 hover:from-leaf-600 hover:to-leaf-700 hover:shadow-md hover:shadow-leaf-600/25 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-slate-300 px-4 py-2 text-sm font-bold text-slate-600 transition-colors duration-200 hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-rose-600 px-4 py-2 text-sm font-bold text-white shadow-sm shadow-rose-600/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0;
+  }
+  .btn-icon {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition-colors duration-200 hover:border-leaf-300 hover:bg-leaf-50 hover:text-leaf-700 dark:border-white/10 dark:text-slate-400 dark:hover:border-leaf-400/30 dark:hover:bg-white/5 dark:hover:text-leaf-300;
+  }
+  .btn-icon-danger {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition-colors duration-200 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 dark:border-white/10 dark:text-slate-400 dark:hover:border-rose-400/30 dark:hover:bg-rose-500/10 dark:hover:text-rose-300;
+  }
+
+  /* Form fields */
+  .field-label {
+    @apply mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400;
+  }
+  .field-input {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-navy-900 transition-colors duration-200 placeholder:text-slate-400 focus:border-leaf-400 focus:outline-none focus:ring-2 focus:ring-leaf-400/20 dark:border-white/10 dark:bg-navy-900 dark:text-slate-100 dark:placeholder:text-slate-500;
+  }
+  .field-search {
+    @apply w-full rounded-full border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm text-navy-900 transition-colors duration-200 focus:border-leaf-400 focus:outline-none focus:ring-2 focus:ring-leaf-400/20 dark:border-white/10 dark:bg-navy-900 dark:text-slate-100 dark:placeholder:text-slate-500;
+  }
+
+  /* Tables */
+  .table-head-cell {
+    @apply px-5 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500;
+  }
+  .table-row {
+    @apply transition-colors duration-150 hover:bg-leaf-50/60 dark:hover:bg-white/[0.045];
+  }
+  .table-cell {
+    @apply px-5 py-3 text-slate-700 dark:text-slate-300;
+  }
+}

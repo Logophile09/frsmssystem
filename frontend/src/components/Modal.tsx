@@ -24,19 +24,20 @@ export default function Modal({
     >
       <div className="flex min-h-full items-center justify-center py-8">
         <div
-          className={`w-full ${wide ? 'max-w-2xl' : 'max-w-md'} rounded-xl border border-transparent bg-white shadow-xl animate-modal-in dark:border-leaf-400/10 dark:bg-navy-800`}
+          className={`w-full ${wide ? 'max-w-2xl' : 'max-w-md'} overflow-hidden rounded-2xl border border-transparent bg-white shadow-2xl shadow-navy-950/20 animate-modal-in dark:border-white/10 dark:bg-navy-800`}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-leaf-400/10">
-            <h2 className="font-display text-lg font-semibold text-navy-900 dark:text-slate-100">{title}</h2>
+          <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/60 px-5 py-4 dark:border-white/10 dark:bg-white/[0.02]">
+            <h2 className="font-display text-base font-bold text-navy-900 dark:text-slate-100">{title}</h2>
             <button
               onClick={onClose}
-              className="rounded-full p-1 text-slate-400 transition-colors duration-300 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-leaf-300"
+              aria-label="Close"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors duration-200 hover:bg-slate-200/70 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-leaf-300"
             >
               ✕
             </button>
           </div>
-          <div className="p-5">{children}</div>
+          <div className="max-h-[75vh] overflow-y-auto p-5">{children}</div>
         </div>
       </div>
     </div>,

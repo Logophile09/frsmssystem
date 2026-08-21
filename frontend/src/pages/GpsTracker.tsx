@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { MapPin, Radio, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 import Badge from '../components/Badge';
 import Modal from '../components/Modal';
@@ -117,19 +118,22 @@ export default function GpsTrackerPage() {
 
   return (
     <div>
-      <div className="mb-5 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-navy-900 dark:text-slate-100">GPS Tracker</h1>
-          <p className="text-sm text-slate-500">
-            Live device map, dark basemap by CARTO (free, no API key required).
-          </p>
+      <div className="module-header">
+        <div className="flex items-center gap-4">
+          <div className="module-icon">
+            <MapPin size={21} />
+          </div>
+          <div>
+            <h1 className="module-title">GPS Tracker</h1>
+            <p className="module-description">Live device map, dark basemap by CARTO (free, no API key required).</p>
+          </div>
         </div>
-        <button onClick={() => setAdding(true)} className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600">
-          + Register Device
+        <button onClick={() => setAdding(true)} className="btn-primary">
+          <Radio size={15} /> Register Device
         </button>
       </div>
 
-      <div className="relative isolate mb-6 overflow-hidden rounded-xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
+      <div className="relative isolate mb-6 overflow-hidden rounded-2xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
         <MapContainer center={DEFAULT_CENTER} zoom={12} scrollWheelZoom style={{ height: '24rem', width: '100%' }}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -163,20 +167,16 @@ export default function GpsTrackerPage() {
         </MapContainer>
       </div>
 
-      <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-navy-800">
-        <p className="mb-1 text-sm font-semibold text-navy-900 dark:text-slate-100">Geofenced ETA — real-time fleet management</p>
-        <p className="mb-3 text-xs text-slate-500">
+      <div className="surface-card mb-6 p-5">
+        <p className="surface-card-title">Geofenced ETA — real-time fleet management</p>
+        <p className="surface-card-subtitle mb-3">
           Pick a barangay and every located vehicle is ranked by estimated time of arrival (haversine distance ÷
           live/average speed), with a flag for units already inside that barangay's boundary.
         </p>
-        <div className="flex flex-wrap items-end gap-2">
+        <div className="flex flex-wrap items-end gap-2.5">
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Target barangay</label>
-            <select
-              value={etaTarget}
-              onChange={(e) => setEtaTarget(e.target.value)}
-              className="w-56 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-900 dark:text-slate-100"
-            >
+            <label className="field-label">Target barangay</label>
+            <select value={etaTarget} onChange={(e) => setEtaTarget(e.target.value)} className="field-input w-56">
               <option value="">Select…</option>
               {barangayNames.map((n) => (
                 <option key={n} value={n}>
@@ -185,11 +185,7 @@ export default function GpsTrackerPage() {
               ))}
             </select>
           </div>
-          <button
-            onClick={computeEta}
-            disabled={!etaTarget || etaLoading}
-            className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600 disabled:opacity-50"
-          >
+          <button onClick={computeEta} disabled={!etaTarget || etaLoading} className="btn-primary">
             {etaLoading ? 'Calculating…' : 'Compute ETA'}
           </button>
         </div>
@@ -222,9 +218,13 @@ export default function GpsTrackerPage() {
                     <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-200">~{r.etaMinutes} min</td>
                     <td className="px-3 py-2">
                       {r.withinGeofence ? (
-                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">Inside</span>
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
+                          <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" /> Inside
+                        </span>
                       ) : (
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">Outside</span>
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-600 dark:bg-white/10 dark:text-slate-300">
+                          <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" /> Outside
+                        </span>
                       )}
                     </td>
                   </tr>
@@ -235,74 +235,74 @@ export default function GpsTrackerPage() {
         )}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">
-        <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-white/10">
-          <thead className="bg-slate-50 dark:bg-white/5">
-            <tr>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Device</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Vehicle</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Status</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Last Position</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Speed</th>
-              <th className="px-4 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">Last Ping</th>
-              <th className="px-4 py-2.5" />
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-            {loading && (
+      <div className="surface-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-100 text-sm dark:divide-white/5">
+            <thead className="bg-slate-50/70 dark:bg-white/[0.03]">
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-slate-400">
-                  Loading…
-                </td>
+                <th className="table-head-cell">Device</th>
+                <th className="table-head-cell">Vehicle</th>
+                <th className="table-head-cell">Status</th>
+                <th className="table-head-cell">Last Position</th>
+                <th className="table-head-cell">Speed</th>
+                <th className="table-head-cell">Last Ping</th>
+                <th className="table-head-cell text-right">Actions</th>
               </tr>
-            )}
-            {devices.map((d) => (
-              <tr key={d.id} className="hover:bg-slate-50 dark:hover:bg-white/5">
-                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{d.device_code}</td>
-                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{d.vehicles?.unit_code ?? '—'}</td>
-                <td className="px-4 py-2.5">
-                  <Badge value={d.status} />
-                </td>
-                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{d.last_lat && d.last_lng ? `${Number(d.last_lat).toFixed(4)}, ${Number(d.last_lng).toFixed(4)}` : '—'}</td>
-                <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">{d.last_speed_kph != null ? `${d.last_speed_kph} kph` : '—'}</td>
-                <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400">{d.last_ping_at ? new Date(d.last_ping_at).toLocaleString() : 'never'}</td>
-                <td className="whitespace-nowrap px-4 py-2.5 text-right">
-                  <button
-                    onClick={() => simulatePing(d.id)}
-                    disabled={pinging === d.id}
-                    className="mr-3 text-leaf-500 hover:underline disabled:opacity-50"
-                  >
-                    {pinging === d.id ? 'Pinging…' : 'Simulate Ping'}
-                  </button>
-                  <button onClick={() => removeDevice(d.id)} className="text-rose-600 hover:underline">
-                    Remove
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+              {loading && (
+                <tr>
+                  <td colSpan={7} className="px-5 py-14 text-center text-slate-400 dark:text-slate-500">
+                    Loading…
+                  </td>
+                </tr>
+              )}
+              {devices.map((d) => (
+                <tr key={d.id} className="table-row">
+                  <td className="table-cell font-semibold text-navy-900 dark:text-slate-100">{d.device_code}</td>
+                  <td className="table-cell">{d.vehicles?.unit_code ?? '—'}</td>
+                  <td className="table-cell">
+                    <Badge value={d.status} />
+                  </td>
+                  <td className="table-cell">{d.last_lat && d.last_lng ? `${Number(d.last_lat).toFixed(4)}, ${Number(d.last_lng).toFixed(4)}` : '—'}</td>
+                  <td className="table-cell">{d.last_speed_kph != null ? `${d.last_speed_kph} kph` : '—'}</td>
+                  <td className="table-cell text-slate-500 dark:text-slate-400">{d.last_ping_at ? new Date(d.last_ping_at).toLocaleString() : 'never'}</td>
+                  <td className="whitespace-nowrap px-5 py-2.5 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        onClick={() => simulatePing(d.id)}
+                        disabled={pinging === d.id}
+                        className="btn-outline !px-3 !py-1 !text-xs disabled:opacity-50"
+                      >
+                        {pinging === d.id ? 'Pinging…' : 'Simulate Ping'}
+                      </button>
+                      <button onClick={() => removeDevice(d.id)} title="Remove" className="btn-icon-danger">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {adding && (
         <Modal title="Register GPS Device" onClose={() => setAdding(false)}>
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Device Code</label>
+              <label className="field-label">Device Code</label>
               <input
                 value={newCode}
                 onChange={(e) => setNewCode(e.target.value)}
                 placeholder="GPS-ENG-03"
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                className="field-input"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Vehicle</label>
-              <select
-                value={newVehicle}
-                onChange={(e) => setNewVehicle(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
-              >
+              <label className="field-label">Vehicle</label>
+              <select value={newVehicle} onChange={(e) => setNewVehicle(e.target.value)} className="field-input">
                 <option value="">None</option>
                 {vehicles.map((v) => (
                   <option key={v.id} value={v.id}>
@@ -317,10 +317,10 @@ export default function GpsTrackerPage() {
             </p>
           </div>
           <div className="mt-5 flex justify-end gap-2">
-            <button onClick={() => setAdding(false)} className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5">
+            <button onClick={() => setAdding(false)} className="btn-outline">
               Cancel
             </button>
-            <button onClick={addDevice} className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600">
+            <button onClick={addDevice} className="btn-primary">
               Register
             </button>
           </div>

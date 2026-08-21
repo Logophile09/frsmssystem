@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, Pie, PieChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend } from 'recharts';
+import { BarChart3 } from 'lucide-react';
 import { api } from '../lib/api';
 
 interface Incident {
@@ -25,8 +26,8 @@ const PERSONNEL_COLORS: Record<string, string> = { on_duty: '#10b981', off_duty:
 
 function ChartCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-navy-800">
-      <p className="mb-3 text-sm font-medium text-navy-900 dark:text-slate-100">{title}</p>
+    <div className="surface-card p-5">
+      <p className="surface-card-title mb-3">{title}</p>
       {children}
     </div>
   );
@@ -85,9 +86,16 @@ export default function ReportsPage() {
 
   return (
     <div>
-      <div className="mb-5">
-        <h1 className="text-xl font-semibold text-navy-900 dark:text-slate-100">Reports</h1>
-        <p className="text-sm text-slate-500">Incident trends, alert level/status breakdown, and fleet &amp; personnel readiness.</p>
+      <div className="module-header">
+        <div className="flex items-center gap-4">
+          <div className="module-icon">
+            <BarChart3 size={21} />
+          </div>
+          <div>
+            <h1 className="module-title">Reports</h1>
+            <p className="module-description">Incident trends, alert level/status breakdown, and fleet &amp; personnel readiness.</p>
+          </div>
+        </div>
       </div>
 
       <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
