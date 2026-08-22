@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/Badge';
 import Modal from '../components/Modal';
+import Avatar from '../components/Avatar';
 
 interface StaffAccount {
   id: string;
@@ -13,34 +14,11 @@ interface StaffAccount {
   status: 'active' | 'disabled' | 'pending';
   position?: string | null;
   station?: string | null;
+  avatar_url?: string | null;
   last_login_at: string | null;
   created_at: string;
 }
 
-function initials(name: string) {
-  return name
-    .split(' ')
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
-
-// Deterministic accent so each avatar isn't the same flat color, without
-// pulling in a random/id-hash library for one small bit of visual variety.
-const AVATAR_ACCENTS = [
-  'bg-leaf-500',
-  'bg-navy-500',
-  'bg-amber-500',
-  'bg-emerald-500',
-  'bg-blue-500',
-  'bg-fuchsia-500',
-];
-function avatarAccent(seed: string) {
-  const sum = seed.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  return AVATAR_ACCENTS[sum % AVATAR_ACCENTS.length];
-}
 
 export default function StaffAccountsPage() {
   const { profile } = useAuth();
@@ -233,9 +211,7 @@ export default function StaffAccountsPage() {
                   <tr key={r.id} className="table-row">
                     <td className="table-cell">
                       <div className="flex items-center gap-3">
-                        <div className={`avatar-chip h-9 w-9 text-xs ${avatarAccent(r.username)}`}>
-                          {initials(r.full_name)}
-                        </div>
+                        <Avatar name={r.full_name} avatarUrl={r.avatar_url} seed={r.username} className="h-9 w-9 text-xs" />
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-navy-900 dark:text-slate-100">
                             {r.full_name} {isSelf && <span className="font-normal text-slate-400">(you)</span>}

@@ -9,6 +9,7 @@ export interface AuthedRequest extends Request {
     username: string;
     full_name: string;
     status: 'active' | 'pending' | 'disabled';
+    avatar_url: string | null;
   };
 }
 
@@ -37,7 +38,7 @@ export async function requireAuth(req: AuthedRequest, res: Response, next: NextF
 
   const { data: profile, error: profileError } = await supabaseAdmin
     .from('profiles')
-    .select('id, username, full_name, role, status')
+    .select('id, username, full_name, role, status, avatar_url')
     .eq('id', userData.user.id)
     .single();
 
@@ -72,6 +73,7 @@ export async function requireAuth(req: AuthedRequest, res: Response, next: NextF
     username: profile.username,
     full_name: profile.full_name,
     status: profile.status,
+    avatar_url: profile.avatar_url ?? null,
   };
 
   next();

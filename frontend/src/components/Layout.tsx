@@ -28,6 +28,7 @@ import { api, isBackendUnreachable } from '../lib/api';
 import AmbientGlow from './AmbientGlow';
 import LiveClock from './LiveClock';
 import Modal from './Modal';
+import Avatar from './Avatar';
 
 const NAV_GROUPS: {
   label: string;
@@ -72,15 +73,6 @@ const NAV_GROUPS: {
     ],
   },
 ];
-
-function initials(name: string) {
-  return name
-    .split(' ')
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
 
 export default function Layout() {
   const { profile, signOut, demoMode } = useAuth();
@@ -208,9 +200,11 @@ export default function Layout() {
       </nav>
       <div className="flex items-center gap-3 border-t border-leaf-100 px-4 py-4 dark:border-leaf-400/15">
         <div className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl bg-leaf-50/70 px-3 py-2.5 dark:bg-white/[0.04]">
-          <div className="avatar-chip h-8 w-8 shrink-0 bg-flagred-500 text-[11px]">
-            {initials(profile?.full_name ?? 'Demo Administrator')}
-          </div>
+          <Avatar
+            name={profile?.full_name ?? 'Demo Administrator'}
+            avatarUrl={profile?.avatar_url}
+            className="h-8 w-8 text-[11px]"
+          />
           <div className="min-w-0 flex-1 text-xs">
             <p className="truncate font-bold text-ink-900 dark:text-white">{profile?.full_name ?? 'System Administrator'}</p>
             <button
@@ -286,9 +280,11 @@ export default function Layout() {
                 <p className="text-sm font-bold leading-tight text-ink-900 dark:text-slate-100">{profile?.full_name ?? 'Demo Administrator'}</p>
                 <p className="text-xs capitalize leading-tight text-ink-700 dark:text-slate-400">{profile?.role ?? 'Admin'}</p>
               </div>
-              <div className="avatar-chip h-9 w-9 bg-flagred-500 text-xs ring-flagred-100 dark:ring-flagred-500/20">
-                {initials(profile?.full_name ?? 'Demo Administrator')}
-              </div>
+              <Avatar
+                name={profile?.full_name ?? 'Demo Administrator'}
+                avatarUrl={profile?.avatar_url}
+                className="h-9 w-9 text-xs"
+              />
               <button onClick={() => setConfirmingLogout(true)} className="btn-outline !px-3 !py-1.5">
                 Sign out
               </button>

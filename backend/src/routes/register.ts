@@ -128,10 +128,20 @@ router.post('/complete-oauth', requireAuth, async (req: AuthedRequest, res) => {
     return res.status(400).json({ error: `Missing required field(s): ${missing.join(', ')}` });
   }
 
+  // Re-read the Google profile photo here too, not just in the
+  // on_auth_user_created trigger -- covers accounts created before the
+  // trigger picked up avatar_url, and is a cheap no-op otherwise.
+  const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(req.user!.id);
+  const meta = (authUser?.user?.user_metadata ?? {}) as Record<string, unknown>;
+  const avatarUrl = [meta.avatar_url, meta.picture].find(
+    (v): v is string => typeof v === 'string' && v.trim().length > 0
+  );
+
   const { data: profile, error } = await supabaseAdmin
     .from('profiles')
     .update({
       ...(full_name && String(full_name).trim() ? { full_name: String(full_name).trim() } : {}),
+      ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
       position,
       station,
       phone,

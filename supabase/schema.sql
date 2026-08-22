@@ -54,6 +54,7 @@ create table profiles (
   position        text,
   station         text,
   notes           text,
+  avatar_url      text,
   last_login_at   timestamptz,
   created_at      timestamptz not null default now()
 );

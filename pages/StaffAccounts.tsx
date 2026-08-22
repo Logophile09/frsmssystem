@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
-import { UserCog, Plus } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { UserCog, Search, Shield, ShieldCheck, Clock, UserCheck, Ban, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/Badge';
 import Modal from '../components/Modal';
+import Avatar from '../components/Avatar';
 
 interface StaffAccount {
   id: string;
@@ -13,15 +14,18 @@ interface StaffAccount {
   status: 'active' | 'disabled' | 'pending';
   position?: string | null;
   station?: string | null;
+  avatar_url?: string | null;
   last_login_at: string | null;
   created_at: string;
 }
+
 
 export default function StaffAccountsPage() {
   const { profile } = useAuth();
   const [rows, setRows] = useState<StaffAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const [adding, setAdding] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ email: '', password: '', username: '', full_name: '', role: 'staff' });
@@ -73,143 +77,246 @@ export default function StaffAccountsPage() {
     await load();
   }
 
+  const stats = useMemo(
+    () => ({
+      total: rows.length,
+      admins: rows.filter((r) => r.role === 'admin').length,
+      pending: rows.filter((r) => r.status === 'pending').length,
+      active: rows.filter((r) => r.status === 'active').length,
+    }),
+    [rows],
+  );
+
+  const filtered = rows.filter((r) =>
+    search
+      ? [r.username, r.full_name, r.position, r.station].filter(Boolean).join(' ').toLowerCase().includes(search.toLowerCase())
+      : true,
+  );
+
+  const pendingRows = rows.filter((r) => r.status === 'pending');
+
   return (
     <div>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-leaf-50 text-leaf-600 dark:bg-white/[0.06] dark:text-leaf-300">
-            <UserCog size={20} />
+      <div className="module-header">
+        <div className="flex items-center gap-4">
+          <div className="module-icon">
+            <UserCog size={21} />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-navy-900 dark:text-slate-100">Staff Accounts</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Manage who can log in, and at what role. Admin only.</p>
+            <h1 className="module-title">Staff Accounts</h1>
+            <p className="module-description">Manage who can log in, and at what role. Admin only.</p>
           </div>
         </div>
-        <button
-          onClick={() => setAdding(true)}
-          className="flex items-center gap-1.5 rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm shadow-leaf-500/20 transition-colors duration-200 hover:bg-leaf-600"
-        >
-          <Plus size={15} /> New Account
-        </button>
+        <div className="flex items-center gap-2.5">
+          <div className="relative">
+            <Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search staff…"
+              className="field-search w-48 sm:w-56"
+            />
+          </div>
+          <button onClick={() => setAdding(true)} className="btn-primary">
+            <UserCog size={15} /> New Account
+          </button>
+        </div>
+      </div>
+
+      {/* Stat strip */}
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { label: 'Total Staff', value: stats.total, icon: UserCog, accent: 'text-navy-700 dark:text-slate-200' },
+          { label: 'Admins', value: stats.admins, icon: ShieldCheck, accent: 'text-leaf-600 dark:text-leaf-300' },
+          { label: 'Pending Approval', value: stats.pending, icon: Clock, accent: 'text-amber-600 dark:text-amber-300' },
+          { label: 'Active', value: stats.active, icon: UserCheck, accent: 'text-emerald-600 dark:text-emerald-300' },
+        ].map((s) => (
+          <div key={s.label} className="mini-stat">
+            <div className={`mini-stat-icon ${s.accent}`}>
+              <s.icon size={16} />
+            </div>
+            <div className="min-w-0">
+              <p className={`mini-stat-value ${s.accent}`}>{s.value}</p>
+              <p className="mini-stat-label">{s.label}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+        <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
           {error}
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-800">
-        <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-white/10">
-          <thead className="bg-slate-50 dark:bg-white/[0.03]">
-            <tr>
-              <th className="px-5 py-2.5 text-left font-semibold text-slate-500 dark:text-slate-400">Username</th>
-              <th className="px-5 py-2.5 text-left font-semibold text-slate-500 dark:text-slate-400">Full Name</th>
-              <th className="px-5 py-2.5 text-left font-semibold text-slate-500 dark:text-slate-400">Role</th>
-              <th className="px-5 py-2.5 text-left font-semibold text-slate-500 dark:text-slate-400">Position</th>
-              <th className="px-5 py-2.5 text-left font-semibold text-slate-500 dark:text-slate-400">Status</th>
-              <th className="px-5 py-2.5 text-left font-semibold text-slate-500 dark:text-slate-400">Last Login</th>
-              <th className="px-5 py-2.5" />
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-            {loading && (
-              <tr>
-                <td colSpan={7} className="px-5 py-10 text-center text-slate-400 dark:text-slate-500">
-                  Loading…
-                </td>
-              </tr>
-            )}
-            {rows.map((r) => (
-              <tr key={r.id} className="transition-colors duration-150 hover:bg-slate-50 dark:hover:bg-white/[0.04]">
-                <td className="px-5 py-2.5 font-medium text-slate-700 dark:text-slate-300">{r.username}</td>
-                <td className="px-5 py-2.5 text-slate-700 dark:text-slate-300">{r.full_name}</td>
-                <td className="px-5 py-2.5">
-                  <Badge value={r.role} />
-                </td>
-                <td className="px-5 py-2.5 text-slate-700 dark:text-slate-300">
-                  {r.position ? `${r.position}${r.station ? ` · ${r.station}` : ''}` : '—'}
-                </td>
-                <td className="px-5 py-2.5">
-                  <Badge value={r.status} />
-                </td>
-                <td className="px-5 py-2.5 text-slate-500 dark:text-slate-400">{r.last_login_at ? new Date(r.last_login_at).toLocaleString() : 'never'}</td>
-                <td className="whitespace-nowrap px-5 py-2.5 text-right">
-                  <button onClick={() => toggleRole(r)} className="mr-3 text-leaf-500 hover:underline" disabled={r.id === profile?.id}>
-                    Make {r.role === 'admin' ? 'Staff' : 'Admin'}
-                  </button>
-                  <button onClick={() => toggleStatus(r)} className="mr-3 text-leaf-500 hover:underline" disabled={r.id === profile?.id}>
-                    {r.status === 'active' ? 'Disable' : r.status === 'pending' ? 'Approve' : 'Re-enable'}
-                  </button>
-                  <button onClick={() => remove(r)} className="text-rose-600 hover:underline" disabled={r.id === profile?.id}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
+      {pendingRows.length > 0 && (
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-3.5 dark:border-amber-400/20 dark:bg-amber-500/10">
+          <div className="flex items-center gap-3">
+            <Clock size={18} className="shrink-0 text-amber-600 dark:text-amber-300" />
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+              {pendingRows.length} account{pendingRows.length === 1 ? '' : 's'} awaiting approval before they can sign in.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {pendingRows.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => toggleStatus(r)}
+                className="rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-bold text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-400/30 dark:bg-navy-900 dark:text-amber-200 dark:hover:bg-amber-500/10"
+              >
+                Approve {r.full_name.split(' ')[0]}
+              </button>
             ))}
-          </tbody>
-        </table>
+          </div>
+        </div>
+      )}
+
+      <div className="surface-card overflow-hidden">
+        <div className="surface-card-header">
+          <p className="stat-chip">
+            <span className={`stat-chip-dot ${loading ? 'animate-pulse bg-slate-400' : 'bg-leaf-500'}`} />
+            {loading ? 'Loading…' : `${filtered.length} account${filtered.length === 1 ? '' : 's'}`}
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-100 text-sm dark:divide-white/5">
+            <thead className="bg-slate-50/70 dark:bg-white/[0.03]">
+              <tr>
+                <th className="table-head-cell">Staff Member</th>
+                <th className="table-head-cell">Role</th>
+                <th className="table-head-cell">Position</th>
+                <th className="table-head-cell">Status</th>
+                <th className="table-head-cell">Last Login</th>
+                <th className="table-head-cell text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+              {loading && (
+                <tr>
+                  <td colSpan={6} className="px-5 py-14 text-center text-slate-400 dark:text-slate-500">
+                    Loading…
+                  </td>
+                </tr>
+              )}
+              {!loading && filtered.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-5 py-14 text-center text-slate-400 dark:text-slate-500">
+                    No accounts match your search.
+                  </td>
+                </tr>
+              )}
+              {filtered.map((r) => {
+                const isSelf = r.id === profile?.id;
+                return (
+                  <tr key={r.id} className="table-row">
+                    <td className="table-cell">
+                      <div className="flex items-center gap-3">
+                        <Avatar name={r.full_name} avatarUrl={r.avatar_url} seed={r.username} className="h-9 w-9 text-xs" />
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-navy-900 dark:text-slate-100">
+                            {r.full_name} {isSelf && <span className="font-normal text-slate-400">(you)</span>}
+                          </p>
+                          <p className="truncate text-xs text-slate-400 dark:text-slate-500">@{r.username}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="table-cell">
+                      <Badge value={r.role} />
+                    </td>
+                    <td className="table-cell">{r.position ? `${r.position}${r.station ? ` · ${r.station}` : ''}` : '—'}</td>
+                    <td className="table-cell">
+                      <Badge value={r.status} />
+                    </td>
+                    <td className="table-cell text-slate-500 dark:text-slate-400">
+                      {r.last_login_at ? new Date(r.last_login_at).toLocaleString() : 'never'}
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-2.5 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => toggleRole(r)}
+                          disabled={isSelf}
+                          title={r.role === 'admin' ? 'Make Staff' : 'Make Admin'}
+                          className="btn-icon disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          {r.role === 'admin' ? <Shield size={13} /> : <ShieldCheck size={13} />}
+                        </button>
+                        <button
+                          onClick={() => toggleStatus(r)}
+                          disabled={isSelf}
+                          title={r.status === 'active' ? 'Disable' : r.status === 'pending' ? 'Approve' : 'Re-enable'}
+                          className="btn-icon disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          {r.status === 'active' ? <Ban size={13} /> : <UserCheck size={13} />}
+                        </button>
+                        <button
+                          onClick={() => remove(r)}
+                          disabled={isSelf}
+                          title="Delete"
+                          className="btn-icon-danger disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {adding && (
         <Modal title="New Staff Account" onClose={() => setAdding(false)}>
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Full Name</label>
+              <label className="field-label">Full Name</label>
               <input
                 value={form.full_name}
                 onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                className="field-input"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Username</label>
+              <label className="field-label">Username</label>
               <input
                 value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                className="field-input"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Email (login)</label>
+              <label className="field-label">Email (login)</label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                className="field-input"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Temporary Password</label>
+              <label className="field-label">Temporary Password</label>
               <input
                 type="text"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
+                className="field-input"
                 placeholder="At least 6 characters"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Role</label>
-              <select
-                value={form.role}
-                onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-leaf-400 focus:outline-none dark:border-white/10 dark:bg-navy-800 dark:text-slate-100"
-              >
+              <label className="field-label">Role</label>
+              <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="field-input">
                 <option value="staff">Staff</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
           </div>
           <div className="mt-5 flex justify-end gap-2">
-            <button onClick={() => setAdding(false)} className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5">
+            <button onClick={() => setAdding(false)} className="btn-outline">
               Cancel
             </button>
-            <button
-              onClick={createAccount}
-              disabled={saving}
-              className="rounded-lg bg-leaf-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-leaf-600 disabled:opacity-60"
-            >
+            <button onClick={createAccount} disabled={saving} className="btn-primary">
               {saving ? 'Creating…' : 'Create Account'}
             </button>
           </div>

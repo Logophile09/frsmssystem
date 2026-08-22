@@ -11,6 +11,7 @@ export interface Profile {
   username: string;
   full_name: string;
   status?: 'active' | 'pending' | 'disabled';
+  avatar_url?: string | null;
 }
 
 interface AuthContextValue {
@@ -47,6 +48,9 @@ function profileFromSupabaseUser(user: User): Profile {
   const metaName = [meta.full_name, meta.name, meta.display_name].find(
     (v): v is string => typeof v === 'string' && v.trim().length > 0
   );
+  const metaAvatar = [meta.avatar_url, meta.picture].find(
+    (v): v is string => typeof v === 'string' && v.trim().length > 0
+  );
   const fallbackName = user.email ? user.email.split('@')[0] : 'User';
 
   return {
@@ -55,6 +59,7 @@ function profileFromSupabaseUser(user: User): Profile {
     role: 'staff',
     username: fallbackName,
     full_name: metaName ?? fallbackName,
+    avatar_url: metaAvatar ?? null,
   };
 }
 

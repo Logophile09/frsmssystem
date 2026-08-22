@@ -29,6 +29,7 @@ declare
   base_username text;
   final_username text;
   display_name text;
+  photo_url text;
 begin
   -- Skip if a profile already exists for this id (e.g. /api/register
   -- inserted it moments ago as part of the same signup).
@@ -47,13 +48,21 @@ begin
     base_username
   );
 
+  -- Google's OAuth profile puts the photo under 'avatar_url' or
+  -- 'picture' depending on how Supabase mapped the provider response --
+  -- check both.
+  photo_url := coalesce(
+    new.raw_user_meta_data ->> 'avatar_url',
+    new.raw_user_meta_data ->> 'picture'
+  );
+
   final_username := base_username;
   if exists (select 1 from public.profiles where username = final_username) then
     final_username := base_username || '-' || substr(new.id::text, 1, 4);
   end if;
 
-  insert into public.profiles (id, username, full_name, role, status)
-  values (new.id, final_username, display_name, 'staff', 'pending');
+  insert into public.profiles (id, username, full_name, role, status, avatar_url)
+  values (new.id, final_username, display_name, 'staff', 'pending', photo_url);
 
   return new;
 end;

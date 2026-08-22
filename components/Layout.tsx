@@ -28,6 +28,7 @@ import { api, isBackendUnreachable } from '../lib/api';
 import AmbientGlow from './AmbientGlow';
 import LiveClock from './LiveClock';
 import Modal from './Modal';
+import Avatar from './Avatar';
 
 const NAV_GROUPS: {
   label: string;
@@ -72,15 +73,6 @@ const NAV_GROUPS: {
     ],
   },
 ];
-
-function initials(name: string) {
-  return name
-    .split(' ')
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
 
 export default function Layout() {
   const { profile, signOut, demoMode } = useAuth();
@@ -130,13 +122,28 @@ export default function Layout() {
 
   const sidebarContent = (
     <>
+      {/* Ambient red glow behind the nav modules (Dashboard -> Staff Accounts).
+          -z-10 within the relative aside paints above the aside's own solid
+          background but below the nav rows/header/footer, so it reads as a
+          soft red haze behind the module list rather than covering it. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-16 top-16 h-56 w-56 rounded-full bg-flagred-400/25 blur-3xl animate-glow-drift-a animate-glow-pulse dark:bg-flagred-500/20" />
+        <div className="absolute -right-20 top-1/2 h-64 w-64 rounded-full bg-flagred-500/20 blur-3xl animate-glow-drift-b dark:bg-flagred-400/20" />
+        <div className="absolute -left-10 bottom-24 h-48 w-48 rounded-full bg-flagred-400/15 blur-3xl animate-glow-drift-a dark:bg-flagred-500/15" />
+      </div>
       <div className="flex items-center gap-3 border-b border-leaf-100 px-5 py-5 dark:border-leaf-400/15">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-500/70 bg-white shadow-sm dark:border-leaf-200">
+        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-500/70 bg-white shadow-sm ring-4 ring-leaf-500/10 dark:border-leaf-200 dark:ring-leaf-400/10">
           <img src="/barangay-culiat-seal.png" alt="Barangay Culiat seal" className="h-full w-full object-cover" />
+          <span
+            className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white transition-colors duration-300 dark:border-navy-950 ${
+              online ? 'bg-leaf-500' : 'bg-rose-500'
+            }`}
+            aria-hidden="true"
+          />
         </div>
-        <div>
-          <p className="font-display text-sm font-semibold leading-tight text-ink-900 dark:text-white">FRSMS</p>
-          <p className="text-xs leading-tight text-ink-700 dark:text-slate-400">Fire &amp; Rescue Mgmt.</p>
+        <div className="min-w-0">
+          <p className="font-display text-sm font-extrabold leading-tight tracking-tight text-ink-900 dark:text-white">FRSMS</p>
+          <p className="truncate text-[11px] leading-tight text-ink-700 dark:text-slate-400">Fire &amp; Rescue Mgmt.</p>
         </div>
         <button
           onClick={() => setMobileNavOpen(false)}
@@ -146,10 +153,10 @@ export default function Layout() {
           <X size={20} />
         </button>
       </div>
-      <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+      <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
         {NAV_GROUPS.map((group) => (
           <div key={group.label}>
-            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-leaf-600/80 dark:text-leaf-200/50">
+            <p className="px-3 pb-1.5 text-[10.5px] font-extrabold uppercase tracking-widest text-leaf-600/70 dark:text-leaf-200/45">
               {group.label}
             </p>
             <div className="space-y-0.5">
@@ -164,15 +171,26 @@ export default function Layout() {
                       end={item.to === '/dashboard'}
                       onClick={() => setMobileNavOpen(false)}
                       className={({ isActive }) =>
-                        `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-300 ease-out ${
+                        `group relative flex items-center gap-2.5 rounded-full py-2 pl-3 pr-3.5 text-sm transition-all duration-300 ease-out ${
                           isActive
-                            ? 'bg-gradient-to-br from-leaf-500 to-leaf-700 text-white font-semibold shadow-md shadow-leaf-600/30'
+                            ? 'bg-gradient-to-br from-leaf-500 to-leaf-700 font-bold text-white shadow-md shadow-leaf-600/30'
                             : 'text-ink-700 hover:translate-x-0.5 hover:bg-leaf-50 hover:text-leaf-700 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-leaf-200'
                         }`
                       }
                     >
-                      <Icon size={16} className="shrink-0" />
-                      {item.label}
+                      {({ isActive }) => (
+                        <>
+                          <span
+                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors duration-300 ${
+                              isActive ? 'bg-white/20' : 'bg-transparent group-hover:bg-leaf-100 dark:group-hover:bg-white/10'
+                            }`}
+                          >
+                            <Icon size={15} className="shrink-0" />
+                          </span>
+                          <span className="truncate">{item.label}</span>
+                          {isActive && <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-white/80" aria-hidden="true" />}
+                        </>
+                      )}
                     </NavLink>
                   );
                 })}
@@ -180,14 +198,23 @@ export default function Layout() {
           </div>
         ))}
       </nav>
-      <div className="border-t border-leaf-100 px-5 py-4 text-xs dark:border-leaf-400/15">
-        <p className="font-bold text-ink-900 dark:text-white">{profile?.full_name ?? 'System Administrator'}</p>
-        <button
-          onClick={() => setConfirmingLogout(true)}
-          className="text-ink-700 transition-colors duration-300 hover:text-leaf-600 dark:text-slate-400 dark:hover:text-leaf-300"
-        >
-          Log out
-        </button>
+      <div className="flex items-center gap-3 border-t border-leaf-100 px-4 py-4 dark:border-leaf-400/15">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl bg-leaf-50/70 px-3 py-2.5 dark:bg-white/[0.04]">
+          <Avatar
+            name={profile?.full_name ?? 'Demo Administrator'}
+            avatarUrl={profile?.avatar_url}
+            className="h-8 w-8 text-[11px]"
+          />
+          <div className="min-w-0 flex-1 text-xs">
+            <p className="truncate font-bold text-ink-900 dark:text-white">{profile?.full_name ?? 'System Administrator'}</p>
+            <button
+              onClick={() => setConfirmingLogout(true)}
+              className="text-ink-700 transition-colors duration-300 hover:text-leaf-600 dark:text-slate-400 dark:hover:text-leaf-300"
+            >
+              Log out
+            </button>
+          </div>
+        </div>
       </div>
     </>
   );
@@ -196,7 +223,7 @@ export default function Layout() {
     <div className="flex min-h-screen bg-leaf-50 dark:bg-navy-900">
       {/* Desktop sidebar — always visible at md+. White in light mode,
           navy in dark mode, matching the header/content shell. */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-leaf-100 bg-white text-ink-900 dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200 md:flex">
+      <aside className="relative hidden w-64 shrink-0 flex-col overflow-hidden border-r border-leaf-100 bg-white text-ink-900 dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200 md:flex">
         {sidebarContent}
       </aside>
 
@@ -208,62 +235,63 @@ export default function Layout() {
             onClick={() => setMobileNavOpen(false)}
             aria-hidden="true"
           />
-          <aside className="relative z-[1501] flex h-full w-72 max-w-[85vw] flex-col border-r border-leaf-100 bg-white text-ink-900 shadow-2xl dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200">
+          <aside className="relative z-[1501] flex h-full w-72 max-w-[85vw] flex-col overflow-hidden border-r border-leaf-100 bg-white text-ink-900 shadow-2xl dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200">
             {sidebarContent}
           </aside>
         </div>
       )}
 
-      <div className="flex min-h-screen flex-1 flex-col">
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-leaf-100 bg-white px-4 py-3 dark:border-leaf-400/10 dark:bg-navy-800 sm:px-6">
-          <div className="flex items-center gap-3 text-sm">
-            <button
-              onClick={() => setMobileNavOpen(true)}
-              className="rounded-lg border border-leaf-100 p-2 text-ink-900 hover:bg-leaf-50 dark:border-leaf-400/15 dark:text-slate-300 dark:hover:bg-white/5 md:hidden"
-              aria-label="Open menu"
-            >
-              <Menu size={20} />
-            </button>
-            <span className="flex items-center gap-1.5 font-bold text-leaf-700 dark:text-slate-300">
-              <span className={`h-2 w-2 rounded-full transition-colors duration-300 ${online ? 'animate-pulse bg-leaf-500' : 'bg-rose-500'}`} />
-              System {online ? 'Online' : 'Offline'}
-            </span>
-            <span className="hidden h-4 w-px bg-leaf-100 dark:bg-white/10 sm:block" />
-            <span className="hidden text-ink-700 dark:text-slate-400 sm:inline">
-              Active Incidents: <span className="font-bold text-ink-900 dark:text-slate-200">{activeIncidents ?? '—'}</span>
-            </span>
-            {(demoMode || !online) && (
-              <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-amber-800 dark:bg-leaf-500/20 dark:text-leaf-300">
-                Demo Data
+      <div className="app-canvas-texture flex min-h-screen flex-1 flex-col">
+        <div className="px-4 pt-4 sm:px-6 sm:pt-6">
+          <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-leaf-100 bg-white/90 px-4 py-3 shadow-sm shadow-slate-200/60 backdrop-blur-sm dark:border-leaf-400/10 dark:bg-navy-800/90 dark:shadow-none sm:px-5">
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <button
+                onClick={() => setMobileNavOpen(true)}
+                className="rounded-lg border border-leaf-100 p-2 text-ink-900 hover:bg-leaf-50 dark:border-leaf-400/15 dark:text-slate-300 dark:hover:bg-white/5 md:hidden"
+                aria-label="Open menu"
+              >
+                <Menu size={20} />
+              </button>
+              <span className="stat-chip">
+                <span className={`stat-chip-dot transition-colors duration-300 ${online ? 'animate-pulse bg-leaf-500' : 'bg-rose-500'}`} />
+                {online ? 'System Online' : 'System Offline'}
               </span>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <LiveClock />
-            <button
-              onClick={toggle}
-              title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="rounded-lg border border-leaf-100 p-2 text-ink-900 transition-colors duration-300 hover:bg-leaf-50 dark:border-leaf-400/15 dark:text-slate-300 dark:hover:bg-white/5"
-              aria-label="Toggle theme"
-            >
-              {dark ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-            <div className="hidden text-right sm:block">
-              <p className="text-sm font-bold text-ink-900 dark:text-slate-100">{profile?.full_name ?? 'Demo Administrator'}</p>
-              <p className="text-xs capitalize text-ink-700 dark:text-slate-400">{profile?.role ?? 'Admin'}</p>
+              <span className="hidden stat-chip sm:flex">
+                Active Incidents <span className="font-extrabold text-navy-900 dark:text-slate-100">{activeIncidents ?? '—'}</span>
+              </span>
+              {(demoMode || !online) && (
+                <span className="rounded-full bg-amber-100 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-amber-800 dark:bg-leaf-500/20 dark:text-leaf-300">
+                  Demo Data
+                </span>
+              )}
             </div>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-flagred-500 text-xs font-bold text-white">
-              {initials(profile?.full_name ?? 'Demo Administrator')}
+            <div className="flex items-center gap-2.5">
+              <LiveClock />
+              <span className="hidden h-6 w-px bg-leaf-100 dark:bg-white/10 sm:block" />
+              <button
+                onClick={toggle}
+                title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+                className="btn-icon !h-9 !w-9"
+                aria-label="Toggle theme"
+              >
+                {dark ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+              <div className="hidden text-right sm:block">
+                <p className="text-sm font-bold leading-tight text-ink-900 dark:text-slate-100">{profile?.full_name ?? 'Demo Administrator'}</p>
+                <p className="text-xs capitalize leading-tight text-ink-700 dark:text-slate-400">{profile?.role ?? 'Admin'}</p>
+              </div>
+              <Avatar
+                name={profile?.full_name ?? 'Demo Administrator'}
+                avatarUrl={profile?.avatar_url}
+                className="h-9 w-9 text-xs"
+              />
+              <button onClick={() => setConfirmingLogout(true)} className="btn-outline !px-3 !py-1.5">
+                Sign out
+              </button>
             </div>
-            <button
-              onClick={() => setConfirmingLogout(true)}
-              className="rounded-lg border border-leaf-100 px-3 py-1.5 text-sm font-bold text-ink-900 transition-colors duration-300 hover:bg-leaf-50 dark:border-leaf-400/15 dark:text-slate-300 dark:hover:bg-white/5"
-            >
-              Sign out
-            </button>
-          </div>
-        </header>
-        <main className="flex-1 overflow-y-auto p-4 dark:bg-navy-900 sm:p-6">
+          </header>
+        </div>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div key={location.pathname} className="relative animate-page-in">
             <AmbientGlow />
             <Outlet />
@@ -277,17 +305,10 @@ export default function Layout() {
             Are you sure you want to log out? You'll need to sign in again to access the dashboard.
           </p>
           <div className="mt-5 flex justify-end gap-2">
-            <button
-              onClick={() => setConfirmingLogout(false)}
-              className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
-            >
+            <button onClick={() => setConfirmingLogout(false)} className="btn-outline">
               Cancel
             </button>
-            <button
-              onClick={confirmSignOut}
-              disabled={loggingOut}
-              className="rounded-lg bg-rose-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-rose-700 disabled:opacity-60"
-            >
+            <button onClick={confirmSignOut} disabled={loggingOut} className="btn-danger">
               {loggingOut ? 'Signing out…' : 'Yes, log out'}
             </button>
           </div>
