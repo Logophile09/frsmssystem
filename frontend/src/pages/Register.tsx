@@ -53,7 +53,7 @@ const inputClass =
 const labelClass = 'mb-1.5 block text-xs font-semibold text-navy-200';
 
 export default function Register() {
-  const { session, demoMode, profile, loading } = useAuth();
+  const { session, demoMode, profile, loading, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   // A session with no *approved* profile yet means "Continue with Google"
@@ -130,9 +130,13 @@ export default function Register() {
           station,
           notes: form.notes,
         });
-        // Already signed in via Google -- no need to sign in again, the
-        // account is just 'pending' until an admin approves it.
-        navigate('/pending-approval', { replace: true });
+        // Already signed in via Google. The account is 'active' the
+        // moment the backend call above returns, but the AuthContext
+        // still has the stale 'pending' profile it loaded at sign-in --
+        // refresh it before navigating so ProtectedRoute doesn't bounce
+        // us straight back to /pending-approval.
+        await refreshProfile();
+        navigate('/dashboard', { replace: true });
         return;
       }
 
@@ -147,8 +151,8 @@ export default function Register() {
         notes: form.notes,
       });
 
-      // Auto-sign-in so the app has a session; the account is 'pending'
-      // so every protected route will bounce them to /pending-approval.
+      // Auto-sign-in so the app has a session; the account is 'active'
+      // immediately, so this lands straight on the dashboard.
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: form.email,
         password: form.password,
@@ -159,7 +163,7 @@ export default function Register() {
           state: { registered: true },
         });
       } else {
-        navigate('/pending-approval', { replace: true });
+        navigate('/dashboard', { replace: true });
       }
     } catch (err: any) {
       setError(err.message ?? 'Registration failed. Please try again.');
@@ -257,8 +261,8 @@ export default function Register() {
               </h1>
               <p className="mt-2 max-w-md text-sm text-navy-200">
                 {oauthCompletion
-                  ? "You're signed in with Google -- just a few more details and an administrator will review your account."
-                  : 'Register for access as a responder or staff member. An administrator will review and approve your account before you can sign in.'}
+                  ? "You're signed in with Google -- just a few more details and you're in."
+                  : 'Register for access as a responder or staff member. Your account is ready to use as soon as you sign up.'}
               </p>
               <div className="mt-5 w-full max-w-xs">
                 {oauthCompletion ? (
@@ -436,7 +440,7 @@ export default function Register() {
 
             <div className="flex items-start gap-2 rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-navy-200">
               <ShieldCheck size={15} className="mt-0.5 shrink-0 text-leaf-300" />
-              <span>Your account will be held for administrator approval before you can sign in and access FRSMS.</span>
+              <span>You'll be signed in and taken straight to the FRSMS dashboard.</span>
             </div>
           </div>
             </form>

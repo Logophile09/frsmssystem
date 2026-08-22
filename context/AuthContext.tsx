@@ -21,6 +21,7 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signInDemo: () => void;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -153,8 +154,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut().catch(() => {});
   }
 
+  // Re-fetches the profile without waiting for a Supabase auth state
+  // change event. Needed right after a flow that changes the profile
+  // row server-side (e.g. completing OAuth registration) but doesn't
+  // touch the session itself -- onAuthStateChange never fires for that,
+  // so without this the context would keep serving the stale ('pending')
+  // profile it loaded at sign-in and ProtectedRoute would misroute.
+  async function refreshProfile() {
+    if (session) await loadProfile(session.user);
+  }
+
   return (
-    <AuthContext.Provider value={{ session, profile, loading, demoMode, signIn, signInDemo, signOut }}>
+    <AuthContext.Provider value={{ session, profile, loading, demoMode, signIn, signInDemo, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

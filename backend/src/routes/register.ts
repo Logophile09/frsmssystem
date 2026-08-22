@@ -6,9 +6,11 @@ const router = Router();
 
 // Public self-registration for FRSMS staff/responders. Unlike
 // /api/staff-accounts (admin-only, creates active accounts directly),
-// this route is reachable by anyone and always lands the new account
-// as status = 'pending' -- it can't sign in to any protected route
-// until an administrator approves it from Staff Accounts.
+// this route is reachable by anyone. Accounts are landed as
+// status = 'active' immediately -- no administrator approval step --
+// so a new registrant can sign in and reach the dashboard right away.
+// role is still always forced to 'staff' below; only an administrator
+// can promote an account to 'admin' from Staff Accounts.
 router.post('/', async (req, res) => {
   const { email, password, first_name, last_name, phone, position, station, notes } = req.body ?? {};
 
@@ -53,7 +55,7 @@ router.post('/', async (req, res) => {
         username,
         full_name,
         role: 'staff',
-        status: 'pending',
+        status: 'active',
         phone,
         position,
         station,
@@ -77,7 +79,7 @@ router.post('/', async (req, res) => {
           username,
           full_name,
           role: 'staff',
-          status: 'pending',
+          status: 'active',
           phone,
           position,
           station,
@@ -96,7 +98,7 @@ router.post('/', async (req, res) => {
   }
 
   res.status(201).json({
-    message: 'Registration received. An administrator will review your account shortly.',
+    message: 'Registration successful. You can now sign in.',
     profile,
   });
 });
@@ -108,15 +110,16 @@ router.post('/', async (req, res) => {
 // bare-bones `status = 'pending'` profile row in place the moment the
 // Google sign-in created their auth.users row. This route lets that
 // still-pending account fill in the rest, same as a manual registrant,
-// before an administrator ever sees it in Staff Accounts.
+// and flips it straight to 'active' -- no administrator review step.
 //
 // requireAuth (via the isOAuthCompleteRoute exception) lets a 'pending'
-// account reach this one route despite not being 'active' yet -- but
-// role/status are always forced server-side below, never taken from the
-// request body, so there's no way for someone to grant themselves admin
-// or active status through this endpoint. The extra .eq('status',
-// 'pending') guard below also means a *disabled* account can't use this
-// route to quietly reinstate itself.
+// account reach this one route despite not being 'active' yet -- and
+// role is always forced server-side below, never taken from the request
+// body, so there's no way for someone to grant themselves admin access
+// through this endpoint. The .eq('status', 'pending') guard below means
+// this can only ever fire once per account (a *disabled* account can't
+// use it to quietly reinstate itself, and an already-active one can't
+// replay it to overwrite its fields).
 router.post('/complete-oauth', requireAuth, async (req: AuthedRequest, res) => {
   const { full_name, position, station, phone, notes } = req.body ?? {};
 
@@ -133,10 +136,10 @@ router.post('/complete-oauth', requireAuth, async (req: AuthedRequest, res) => {
       station,
       phone,
       notes: notes && String(notes).trim() ? String(notes).trim() : null,
-      // Forced regardless of anything in the request body -- completing
-      // this form can never itself grant admin or active access.
+      // role is forced regardless of anything in the request body --
+      // completing this form can never itself grant admin access.
       role: 'staff',
-      status: 'pending',
+      status: 'active',
     })
     .eq('id', req.user!.id)
     .eq('status', 'pending')
@@ -148,7 +151,7 @@ router.post('/complete-oauth', requireAuth, async (req: AuthedRequest, res) => {
   }
 
   res.status(200).json({
-    message: 'Registration received. An administrator will review your account shortly.',
+    message: 'Registration complete. You can now use FRSMS.',
     profile,
   });
 });
