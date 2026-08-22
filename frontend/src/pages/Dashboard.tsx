@@ -8,6 +8,7 @@ import {
   FileCheck,
   Flame,
   HardHat,
+  LayoutDashboard,
   Milestone,
   ShieldAlert,
   Truck,
@@ -15,9 +16,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { api } from '../lib/api';
-import { useAuth } from '../context/AuthContext';
 import Badge from '../components/Badge';
-import GridDots from '../components/GridDots';
 
 interface Summary {
   totalIncidents: number;
@@ -76,10 +75,10 @@ function StatCard({
     amber: 'text-amber-600 dark:text-amber-300',
   };
   const cardClass =
-    'group relative block overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-sm dark:hover:border-white/20 dark:hover:bg-white/[0.06]';
+    'group relative block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors duration-300 hover:border-slate-300 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none dark:hover:border-white/20 dark:hover:bg-white/[0.06]';
   const content = (
     <>
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 transition-transform duration-300 group-hover:scale-105 dark:bg-white/10">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 dark:bg-white/10">
         <Icon size={18} className={iconColor[accent]} />
       </div>
       <p className="mt-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-white/45">{label}</p>
@@ -141,15 +140,6 @@ const NEWS_TOPIC_STYLE: Record<string, { icon: LucideIcon; classes: string }> = 
   fire: { icon: Flame, classes: 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300' },
 };
 
-// "Good morning" / "Good afternoon" / "Good evening" — small human touch on
-// the hero greeting instead of a flat, always-the-same "Welcome".
-function timeGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 18) return 'Good afternoon';
-  return 'Good evening';
-}
-
 // Compact "at a glance" pill — a small icon + number + label, used for the
 // secondary metrics row under the hero (totals that don't need a full stat
 // card, but are still worth surfacing at a click's reach).
@@ -169,7 +159,7 @@ function QuickFact({
   return (
     <Link
       to={to}
-      className={`flex items-center gap-3 rounded-2xl border px-4 py-2.5 transition-all duration-300 hover:-translate-y-0.5 ${
+      className={`flex items-center gap-3 rounded-2xl border px-4 py-2.5 transition-colors duration-300 ${
         attention
           ? 'border-amber-300 bg-amber-50 hover:bg-amber-100 dark:border-amber-400/25 dark:bg-amber-400/[0.08] dark:hover:bg-amber-400/[0.12]'
           : 'border-slate-200 bg-white shadow-sm hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none dark:hover:bg-white/[0.07]'
@@ -251,7 +241,6 @@ function BreakdownBars({
 }
 
 export default function Dashboard() {
-  const { profile } = useAuth();
   const [summary, setSummary] = useState<Summary | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -279,47 +268,34 @@ export default function Dashboard() {
       : []),
   ];
 
-  const firstName = (profile?.full_name ?? 'Officer').split(' ')[0];
-
   return (
-    // Full-bleed light panel — bleeds past <main>'s own padding (the negative
-    // margins) then re-adds it inside, so the whole Dashboard route reads as
-    // one continuous panel rather than a strip of white cards on white page.
-    <div className="relative -m-4 overflow-hidden rounded-b-3xl bg-slate-50 p-4 dark:bg-navy-950 sm:-m-6 sm:rounded-3xl sm:p-7">
-      {/* Ambient glow — same color language as AmbientGlow.tsx, but scoped
-          inside this panel since its opaque background otherwise blocks the
-          app-wide glow from Layout. Kept faint in light mode (texture, not
-          color) and a touch stronger in dark mode where it reads as the
-          "command console" glow. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-20 -top-24 h-72 w-72 rounded-full bg-leaf-400/10 blur-3xl animate-glow-drift-a animate-glow-pulse dark:bg-leaf-500/25" />
-        <div className="absolute -right-16 top-0 h-80 w-80 rounded-full bg-navy-400/10 blur-3xl animate-glow-drift-b dark:bg-navy-300/25" />
-        <div className="absolute -bottom-20 left-1/3 h-64 w-64 rounded-full bg-flagred-400/10 blur-3xl animate-glow-drift-a dark:bg-flagred-400/20" />
-      </div>
-      <GridDots />
-
-      <div className="relative">
-        {/* Hero */}
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-6">
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 shadow-sm text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:border-white/10 dark:bg-white/5 dark:shadow-none dark:text-white/60">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              Barangay Culiat &middot; Fire &amp; Rescue &middot; Quezon City
-            </span>
-            <h1 className="mt-3 font-display text-3xl font-extrabold text-slate-900 dark:text-white sm:text-4xl">
-              {timeGreeting()}, {firstName}.
-            </h1>
-            <p className="mt-1.5 text-sm text-slate-500 dark:text-white/50">
-              {summary.activeIncidents} active incident{summary.activeIncidents === 1 ? '' : 's'}, {summary.availableVehicles} vehicle
-              {summary.availableVehicles === 1 ? '' : 's'} available, {summary.onDutyPersonnel} personnel on duty.
-            </p>
+    // Plain page layout — matches the flat, un-glowed style used on the
+    // other module pages (e.g. Incidents & Dispatch) instead of the old
+    // bleed panel with ambient glow blobs.
+    <div>
+      <div>
+        {/* Header — flat card style matching the other module pages
+            (icon square + title + subtitle, action button on the right)
+            instead of the old greeting hero. */}
+        <div className="mb-6 flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-flagred-600 text-white">
+              <LayoutDashboard size={22} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Dashboard</h1>
+              <p className="mt-1 text-sm text-slate-500 dark:text-white/50">
+                {summary.activeIncidents} active incident{summary.activeIncidents === 1 ? '' : 's'}, {summary.availableVehicles} vehicle
+                {summary.availableVehicles === 1 ? '' : 's'} available, {summary.onDutyPersonnel} personnel on duty.
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="relative">
               <button
                 onClick={() => setShowNotifications((s) => !s)}
-                className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors duration-300 hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:shadow-none dark:hover:bg-white/10 dark:hover:text-white"
+                className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors duration-300 hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 <Bell size={18} />
                 {notifications.length > 0 && (
@@ -349,15 +325,9 @@ export default function Dashboard() {
 
             <Link
               to="/incidents"
-              className="flex items-center gap-2 rounded-full bg-leaf-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors duration-300 hover:bg-leaf-700"
+              className="flex items-center gap-2 rounded-full bg-flagred-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors duration-300 hover:bg-flagred-700"
             >
               <Flame size={15} /> Report Incident
-            </Link>
-            <Link
-              to="/incidents"
-              className="hidden items-center gap-1.5 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition-colors duration-300 hover:bg-slate-100 hover:text-slate-900 dark:border-white/15 dark:text-white/80 dark:hover:bg-white/5 dark:hover:text-white sm:flex"
-            >
-              View all incidents <ExternalLink size={13} />
             </Link>
           </div>
         </div>
@@ -396,7 +366,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
           {/* Recent incidents */}
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-sm dark:hover:shadow-none dark:hover:bg-white/[0.05] xl:col-span-2">
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none xl:col-span-2">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3.5 dark:border-white/10">
               <p className="text-sm font-semibold text-slate-900 dark:text-white">Recent Incidents</p>
               <Link to="/incidents" className="text-xs font-medium text-slate-500 hover:text-slate-900 hover:underline dark:text-white/50 dark:hover:text-white">
@@ -445,7 +415,7 @@ export default function Dashboard() {
           </div>
 
           {/* Fleet snapshot */}
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-sm dark:hover:shadow-none dark:hover:bg-white/[0.05]">
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3.5 dark:border-white/10">
               <p className="text-sm font-semibold text-slate-900 dark:text-white">Fleet Snapshot</p>
               <Link to="/vehicles" className="text-xs font-medium text-slate-500 hover:text-slate-900 hover:underline dark:text-white/50 dark:hover:text-white">
@@ -471,7 +441,7 @@ export default function Dashboard() {
             which the summary endpoint already returns, as two quick-scan
             bar readouts instead of leaving them unused. */}
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-sm dark:hover:shadow-none dark:hover:bg-white/[0.05]">
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none">
             <div className="border-b border-slate-200 px-5 py-3.5">
               <p className="text-sm font-semibold text-slate-900 dark:text-white">Incidents by Alert Level</p>
             </div>
@@ -482,7 +452,7 @@ export default function Dashboard() {
               colorFor={(k) => SEVERITY_BAR_COLOR[k] ?? 'bg-slate-300 dark:bg-white/40'}
             />
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-sm dark:hover:shadow-none dark:hover:bg-white/[0.05]">
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none">
             <div className="border-b border-slate-200 px-5 py-3.5">
               <p className="text-sm font-semibold text-slate-900 dark:text-white">Incidents by Status</p>
             </div>
@@ -495,7 +465,7 @@ export default function Dashboard() {
         </div>
 
         {/* Barangay Culiat news & updates */}
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none dark:backdrop-blur-sm dark:hover:shadow-none dark:hover:bg-white/[0.05]">
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none">
           <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3.5 dark:border-white/10">
             <div>
               <p className="text-sm font-semibold text-slate-900 dark:text-white">Barangay Culiat News &amp; Updates</p>
