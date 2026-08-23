@@ -2,9 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { UserCog, Search, Shield, ShieldCheck, Clock, UserCheck, Ban, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import Badge from '../components/Badge';
 import Modal from '../components/Modal';
 import Avatar from '../components/Avatar';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { SkeletonTableRow } from '../components/Skeleton';
 
 interface StaffAccount {
   id: string;
@@ -19,9 +22,9 @@ interface StaffAccount {
   created_at: string;
 }
 
-
 export default function StaffAccountsPage() {
   const { profile } = useAuth();
+  const toast = useToast();
   const [rows, setRows] = useState<StaffAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +32,8 @@ export default function StaffAccountsPage() {
   const [adding, setAdding] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ email: '', password: '', username: '', full_name: '', role: 'staff' });
+  const [deletingAccount, setDeletingAccount] = useState<StaffAccount | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -36,6 +41,7 @@ export default function StaffAccountsPage() {
       setRows(await api.get('/staff-accounts'));
     } catch (e: any) {
       setError(e.message);
+      toast.error(e.message, 'Failed to load staff accounts');
     } finally {
       setLoading(false);
     }
@@ -52,9 +58,11 @@ export default function StaffAccountsPage() {
       await api.post('/staff-accounts', form);
       setAdding(false);
       setForm({ email: '', password: '', username: '', full_name: '', role: 'staff' });
+      toast.success(`Account created for ${form.full_name}.`);
       await load();
     } catch (e: any) {
       setError(e.message);
+      toast.error(e.message, 'Failed to create account');
     } finally {
       setSaving(false);
     }
@@ -62,19 +70,39 @@ export default function StaffAccountsPage() {
 
   async function toggleStatus(row: StaffAccount) {
     const nextStatus = row.status === 'active' ? 'disabled' : 'active';
-    await api.put(`/staff-accounts/${row.id}`, { status: nextStatus });
-    await load();
+    try {
+      await api.put(`/staff-accounts/${row.id}`, { status: nextStatus });
+      toast.success(`Account ${nextStatus === 'active' ? 'activated' : 'disabled'} for ${row.full_name}.`);
+      await load();
+    } catch (e: any) {
+      toast.error(e.message, 'Status update failed');
+    }
   }
 
   async function toggleRole(row: StaffAccount) {
-    await api.put(`/staff-accounts/${row.id}`, { role: row.role === 'admin' ? 'staff' : 'admin' });
-    await load();
+    const nextRole = row.role === 'admin' ? 'staff' : 'admin';
+    try {
+      await api.put(`/staff-accounts/${row.id}`, { role: nextRole });
+      toast.success(`Role updated to ${nextRole} for ${row.full_name}.`);
+      await load();
+    } catch (e: any) {
+      toast.error(e.message, 'Role update failed');
+    }
   }
 
-  async function remove(row: StaffAccount) {
-    if (!confirm(`Remove the account for ${row.full_name}? This cannot be undone.`)) return;
-    await api.del(`/staff-accounts/${row.id}`);
-    await load();
+  async function confirmRemove() {
+    if (!deletingAccount) return;
+    setActionLoading(true);
+    try {
+      await api.del(`/staff-accounts/${deletingAccount.id}`);
+      toast.success(`Account for ${deletingAccount.full_name} has been removed.`);
+      setDeletingAccount(null);
+      await load();
+    } catch (e: any) {
+      toast.error(e.message, 'Delete failed');
+    } finally {
+      setActionLoading(false);
+    }
   }
 
   const stats = useMemo(
@@ -191,13 +219,10 @@ export default function StaffAccountsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-              {loading && (
-                <tr>
-                  <td colSpan={6} className="px-5 py-14 text-center text-slate-400 dark:text-slate-500">
-                    Loading…
-                  </td>
-                </tr>
-              )}
+              {loading &&
+                Array.from({ length: 4 }).map((_, i) => (
+                  <SkeletonTableRow key={i} cols={6} />
+                ))}
               {!loading && filtered.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-5 py-14 text-center text-slate-400 dark:text-slate-500">
@@ -205,62 +230,63 @@ export default function StaffAccountsPage() {
                   </td>
                 </tr>
               )}
-              {filtered.map((r) => {
-                const isSelf = r.id === profile?.id;
-                return (
-                  <tr key={r.id} className="table-row">
-                    <td className="table-cell">
-                      <div className="flex items-center gap-3">
-                        <Avatar name={r.full_name} avatarUrl={r.avatar_url} seed={r.username} className="h-9 w-9 text-xs" />
-                        <div className="min-w-0">
-                          <p className="truncate font-semibold text-navy-900 dark:text-slate-100">
-                            {r.full_name} {isSelf && <span className="font-normal text-slate-400">(you)</span>}
-                          </p>
-                          <p className="truncate text-xs text-slate-400 dark:text-slate-500">@{r.username}</p>
+              {!loading &&
+                filtered.map((r) => {
+                  const isSelf = r.id === profile?.id;
+                  return (
+                    <tr key={r.id} className="table-row">
+                      <td className="table-cell">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={r.full_name} avatarUrl={r.avatar_url} seed={r.username} className="h-9 w-9 text-xs" />
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold text-navy-900 dark:text-slate-100">
+                              {r.full_name} {isSelf && <span className="font-normal text-slate-400">(you)</span>}
+                            </p>
+                            <p className="truncate text-xs text-slate-400 dark:text-slate-500">@{r.username}</p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="table-cell">
-                      <Badge value={r.role} />
-                    </td>
-                    <td className="table-cell">{r.position ? `${r.position}${r.station ? ` · ${r.station}` : ''}` : '—'}</td>
-                    <td className="table-cell">
-                      <Badge value={r.status} />
-                    </td>
-                    <td className="table-cell text-slate-500 dark:text-slate-400">
-                      {r.last_login_at ? new Date(r.last_login_at).toLocaleString() : 'never'}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-2.5 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          onClick={() => toggleRole(r)}
-                          disabled={isSelf}
-                          title={r.role === 'admin' ? 'Make Staff' : 'Make Admin'}
-                          className="btn-icon disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          {r.role === 'admin' ? <Shield size={13} /> : <ShieldCheck size={13} />}
-                        </button>
-                        <button
-                          onClick={() => toggleStatus(r)}
-                          disabled={isSelf}
-                          title={r.status === 'active' ? 'Disable' : r.status === 'pending' ? 'Approve' : 'Re-enable'}
-                          className="btn-icon disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          {r.status === 'active' ? <Ban size={13} /> : <UserCheck size={13} />}
-                        </button>
-                        <button
-                          onClick={() => remove(r)}
-                          disabled={isSelf}
-                          title="Delete"
-                          className="btn-icon-danger disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td className="table-cell">
+                        <Badge value={r.role} />
+                      </td>
+                      <td className="table-cell">{r.position ? `${r.position}${r.station ? ` · ${r.station}` : ''}` : '—'}</td>
+                      <td className="table-cell">
+                        <Badge value={r.status} />
+                      </td>
+                      <td className="table-cell text-slate-500 dark:text-slate-400">
+                        {r.last_login_at ? new Date(r.last_login_at).toLocaleString() : 'never'}
+                      </td>
+                      <td className="whitespace-nowrap px-5 py-2.5 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => toggleRole(r)}
+                            disabled={isSelf}
+                            title={r.role === 'admin' ? 'Make Staff' : 'Make Admin'}
+                            className="btn-icon disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            {r.role === 'admin' ? <Shield size={13} /> : <ShieldCheck size={13} />}
+                          </button>
+                          <button
+                            onClick={() => toggleStatus(r)}
+                            disabled={isSelf}
+                            title={r.status === 'active' ? 'Disable' : r.status === 'pending' ? 'Approve' : 'Re-enable'}
+                            className="btn-icon disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            {r.status === 'active' ? <Ban size={13} /> : <UserCheck size={13} />}
+                          </button>
+                          <button
+                            onClick={() => setDeletingAccount(r)}
+                            disabled={isSelf}
+                            title="Delete"
+                            className="btn-icon-danger disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         </div>
@@ -322,6 +348,23 @@ export default function StaffAccountsPage() {
           </div>
         </Modal>
       )}
+
+      {/* Confirm deletion dialog */}
+      <ConfirmDialog
+        isOpen={Boolean(deletingAccount)}
+        title="Remove Staff Account"
+        message={
+          <span>
+            Are you sure you want to remove the account for{' '}
+            <strong>{deletingAccount?.full_name}</strong>? This user will no longer be able to log in.
+          </span>
+        }
+        confirmText="Remove Account"
+        isDestructive={true}
+        loading={actionLoading}
+        onConfirm={confirmRemove}
+        onCancel={() => setDeletingAccount(null)}
+      />
     </div>
   );
 }

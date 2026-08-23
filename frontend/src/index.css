@@ -10,11 +10,19 @@ body {
   font-family: 'Inter', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Smooth, consistent transitions across the whole interface */
-* {
+/* Selective smooth transitions for interactive surfaces instead of universal selector */
+button,
+a,
+input,
+select,
+textarea,
+.surface-card,
+.stat-chip,
+.badge,
+.table-row {
   transition-property: background-color, border-color, color, fill, stroke, box-shadow, opacity, transform;
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  transition-duration: 250ms;
+  transition-duration: 200ms;
 }
 
 ::-webkit-scrollbar {
@@ -168,5 +176,30 @@ body {
   }
   .table-cell {
     @apply px-5 py-3 text-slate-700 dark:text-slate-300;
+  }
+}
+
+/* Print-specific layout rules */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print,
+  nav,
+  aside,
+  header {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .printable-document {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }

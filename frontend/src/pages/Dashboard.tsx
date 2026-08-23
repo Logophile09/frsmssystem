@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { api } from '../lib/api';
+import { SkeletonCard, SkeletonTableRow } from '../components/Skeleton';
 import Badge from '../components/Badge';
 
 interface Summary {
@@ -255,8 +256,26 @@ export default function Dashboard() {
       .catch((e) => setError(e.message));
   }, []);
 
-  if (error) return <div className="rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>;
-  if (!summary) return <div className="text-slate-400">Loading dashboard…</div>;
+  if (error) return <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">{error}</div>;
+  
+  if (!summary) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <div className="h-8 w-48 animate-pulse rounded-lg bg-slate-200 dark:bg-white/10" />
+            <div className="h-4 w-72 animate-pulse rounded-lg bg-slate-200 dark:bg-white/10" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      </div>
+    );
+  }
 
   const notifications = [
     ...summary.gpsIssues.map((g) => ({ text: `GPS signal ${g.status.replace('_', ' ')}: ${g.device_code}` })),
@@ -269,9 +288,6 @@ export default function Dashboard() {
   ];
 
   return (
-    // Plain page layout — matches the flat, un-glowed style used on the
-    // other module pages (e.g. Incidents & Dispatch) instead of the old
-    // bleed panel with ambient glow blobs.
     <div>
       <div>
         {/* Header — flat card style matching the other module pages
@@ -330,6 +346,63 @@ export default function Dashboard() {
               <Flame size={15} /> Report Incident
             </Link>
           </div>
+        </div>
+
+        {/* Command Readiness HUD Banner */}
+        <div
+          className={`mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm transition-all duration-300 ${
+            summary.criticalUnresolved > 0
+              ? 'border-rose-300 bg-rose-50/90 dark:border-rose-500/30 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200'
+              : summary.activeIncidents > 0
+              ? 'border-amber-300 bg-amber-50/90 dark:border-amber-500/30 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200'
+              : 'border-emerald-300 bg-emerald-50/90 dark:border-emerald-500/30 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-3.5 w-3.5">
+              <span
+                className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${
+                  summary.criticalUnresolved > 0
+                    ? 'bg-rose-500'
+                    : summary.activeIncidents > 0
+                    ? 'bg-amber-500'
+                    : 'bg-emerald-500'
+                }`}
+              />
+              <span
+                className={`relative inline-flex h-3.5 w-3.5 rounded-full ${
+                  summary.criticalUnresolved > 0
+                    ? 'bg-rose-600'
+                    : summary.activeIncidents > 0
+                    ? 'bg-amber-600'
+                    : 'bg-emerald-600'
+                }`}
+              />
+            </span>
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider">
+                Operational Status:{' '}
+                {summary.criticalUnresolved > 0
+                  ? 'CONDITION RED — CRITICAL INCIDENT RESPONSE ACTIVE'
+                  : summary.activeIncidents > 0
+                  ? 'CONDITION AMBER — ACTIVE INCIDENTS UNDER MONITORING'
+                  : 'CONDITION GREEN — NORMAL OPERATIONAL READINESS'}
+              </p>
+              <p className="text-[11px] opacity-80">
+                Station 7 (Culiat) Dispatch Console • {summary.availableVehicles}/{summary.totalVehicles} units in service •{' '}
+                {summary.onDutyPersonnel} personnel on duty
+              </p>
+            </div>
+          </div>
+
+          {summary.criticalUnresolved > 0 && (
+            <Link
+              to="/incidents"
+              className="btn-danger !py-1.5 !px-3 !text-xs animate-pulse"
+            >
+              Review Critical Incidents ({summary.criticalUnresolved})
+            </Link>
+          )}
         </div>
 
         {/* Stat cards */}

@@ -2,10 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapPin, Radio, Trash2 } from 'lucide-react';
+import { MapPin, Radio, Trash2, Gauge, Clock } from 'lucide-react';
 import { api } from '../lib/api';
+import { useToast } from '../context/ToastContext';
 import Badge from '../components/Badge';
 import Modal from '../components/Modal';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { SkeletonTableRow } from '../components/Skeleton';
 import qcBarangays from '../lib/qcBarangays.json';
 
 interface GpsDevice {
@@ -28,6 +31,18 @@ const STATUS_COLOR: Record<string, string> = {
   offline: '#94a3b8',
 };
 
+function formatRelativeTime(dateStr: string | null): string {
+  if (!dateStr) return 'never';
+  const diffSec = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (diffSec < 5) return 'just now';
+  if (diffSec < 60) return `${diffSec}s ago`;
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return `${diffHour}h ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
 // Quezon City, PH -- used as the map's default center before any
 // devices have reported a position yet.
 const DEFAULT_CENTER: [number, number] = [14.676, 121.045];
@@ -45,6 +60,7 @@ function FitToBounds({ bounds }: { bounds: L.LatLngBounds }) {
 }
 
 export default function GpsTrackerPage() {
+  const toast = useToast();
   const [devices, setDevices] = useState<GpsDevice[]>([]);
   const [vehicles, setVehicles] = useState<{ id: number; unit_code: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,13 +74,20 @@ export default function GpsTrackerPage() {
   const [etaResults, setEtaResults] = useState<
     { device_id: number; device_code: string; vehicle: { unit_code: string; vehicle_type: string } | null; status: string; distanceKm: number; etaMinutes: number; withinGeofence: boolean }[] | null
   >(null);
+  const [deletingDevice, setDeletingDevice] = useState<GpsDevice | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   async function load() {
     setLoading(true);
-    const [d, v] = await Promise.all([api.get('/gps/devices'), api.get('/vehicles')]);
-    setDevices(d);
-    setVehicles(v);
-    setLoading(false);
+    try {
+      const [d, v] = await Promise.all([api.get('/gps/devices'), api.get('/vehicles')]);
+      setDevices(d ?? []);
+      setVehicles(v ?? []);
+    } catch (e: any) {
+      toast.error(e.message, 'Failed to load GPS devices');
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -72,15 +95,15 @@ export default function GpsTrackerPage() {
     api.get('/gps/barangays').then((names) => setBarangayNames(names ?? []));
   }, []);
 
-  // Geofenced ETA: for real-time fleet management, ranks every located
-  // vehicle by estimated time of arrival at a target barangay, and flags
-  // which ones are already physically inside that barangay's boundary.
   async function computeEta() {
     if (!etaTarget) return;
     setEtaLoading(true);
     try {
       const res = await api.get(`/gps/eta?barangay=${encodeURIComponent(etaTarget)}`);
       setEtaResults(res?.results ?? []);
+      toast.info(`ETA computed for ${etaTarget}`);
+    } catch (e: any) {
+      toast.error(e.message, 'ETA calculation failed');
     } finally {
       setEtaLoading(false);
     }
@@ -90,7 +113,10 @@ export default function GpsTrackerPage() {
     setPinging(id);
     try {
       await api.post(`/gps/devices/${id}/simulate-ping`, {});
+      toast.success('Simulated GPS ping received.');
       await load();
+    } catch (e: any) {
+      toast.error(e.message, 'Simulation failed');
     } finally {
       setPinging(null);
     }
@@ -98,17 +124,31 @@ export default function GpsTrackerPage() {
 
   async function addDevice() {
     if (!newCode) return;
-    await api.post('/gps/devices', { device_code: newCode, vehicle_id: newVehicle ? Number(newVehicle) : null });
-    setAdding(false);
-    setNewCode('');
-    setNewVehicle('');
-    await load();
+    try {
+      await api.post('/gps/devices', { device_code: newCode, vehicle_id: newVehicle ? Number(newVehicle) : null });
+      setAdding(false);
+      setNewCode('');
+      setNewVehicle('');
+      toast.success(`Registered GPS device ${newCode}.`);
+      await load();
+    } catch (e: any) {
+      toast.error(e.message, 'Registration failed');
+    }
   }
 
-  async function removeDevice(id: number) {
-    if (!confirm('Remove this GPS device?')) return;
-    await api.del(`/gps/devices/${id}`);
-    await load();
+  async function confirmRemove() {
+    if (!deletingDevice) return;
+    setActionLoading(true);
+    try {
+      await api.del(`/gps/devices/${deletingDevice.id}`);
+      toast.success(`Removed GPS device ${deletingDevice.device_code}.`);
+      setDeletingDevice(null);
+      await load();
+    } catch (e: any) {
+      toast.error(e.message, 'Delete failed');
+    } finally {
+      setActionLoading(false);
+    }
   }
 
   const located = devices.filter((d) => d.last_lat != null && d.last_lng != null);
@@ -250,39 +290,79 @@ export default function GpsTrackerPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-              {loading && (
+              {loading &&
+                Array.from({ length: 4 }).map((_, i) => (
+                  <SkeletonTableRow key={i} cols={7} />
+                ))}
+              {!loading && devices.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-5 py-14 text-center text-slate-400 dark:text-slate-500">
-                    Loading…
+                    No GPS devices registered yet.
                   </td>
                 </tr>
               )}
-              {devices.map((d) => (
-                <tr key={d.id} className="table-row">
-                  <td className="table-cell font-semibold text-navy-900 dark:text-slate-100">{d.device_code}</td>
-                  <td className="table-cell">{d.vehicles?.unit_code ?? '—'}</td>
-                  <td className="table-cell">
-                    <Badge value={d.status} />
-                  </td>
-                  <td className="table-cell">{d.last_lat && d.last_lng ? `${Number(d.last_lat).toFixed(4)}, ${Number(d.last_lng).toFixed(4)}` : '—'}</td>
-                  <td className="table-cell">{d.last_speed_kph != null ? `${d.last_speed_kph} kph` : '—'}</td>
-                  <td className="table-cell text-slate-500 dark:text-slate-400">{d.last_ping_at ? new Date(d.last_ping_at).toLocaleString() : 'never'}</td>
-                  <td className="whitespace-nowrap px-5 py-2.5 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button
-                        onClick={() => simulatePing(d.id)}
-                        disabled={pinging === d.id}
-                        className="btn-outline !px-3 !py-1 !text-xs disabled:opacity-50"
-                      >
-                        {pinging === d.id ? 'Pinging…' : 'Simulate Ping'}
-                      </button>
-                      <button onClick={() => removeDevice(d.id)} title="Remove" className="btn-icon-danger">
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {!loading &&
+                devices.map((d) => (
+                  <tr key={d.id} className="table-row">
+                    <td className="table-cell font-semibold text-navy-900 dark:text-slate-100">{d.device_code}</td>
+                    <td className="table-cell">
+                      {d.vehicles ? (
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {d.vehicles.unit_code}{' '}
+                          <span className="text-xs font-normal text-slate-400">({d.vehicles.vehicle_type})</span>
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 italic">Unassigned</span>
+                      )}
+                    </td>
+                    <td className="table-cell">
+                      <Badge value={d.status} />
+                    </td>
+                    <td className="table-cell">
+                      {d.last_lat && d.last_lng ? (
+                        <span className="font-mono text-xs text-slate-600 dark:text-slate-300">
+                          {Number(d.last_lat).toFixed(4)}, {Number(d.last_lng).toFixed(4)}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
+                    <td className="table-cell">
+                      {d.last_speed_kph != null ? (
+                        <span className="inline-flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300">
+                          <Gauge size={13} className="text-leaf-500" />
+                          {d.last_speed_kph} kph
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
+                    <td className="table-cell text-xs text-slate-500 dark:text-slate-400">
+                      <span className="inline-flex items-center gap-1">
+                        <Clock size={12} className="opacity-60" />
+                        {formatRelativeTime(d.last_ping_at)}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-2.5 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => simulatePing(d.id)}
+                          disabled={pinging === d.id}
+                          className="btn-outline !px-3 !py-1 !text-xs disabled:opacity-50"
+                        >
+                          {pinging === d.id ? 'Pinging…' : 'Simulate Ping'}
+                        </button>
+                        <button
+                          onClick={() => setDeletingDevice(d)}
+                          title="Remove"
+                          className="btn-icon-danger"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
@@ -326,6 +406,23 @@ export default function GpsTrackerPage() {
           </div>
         </Modal>
       )}
+
+      {/* Confirm Deletion Dialog */}
+      <ConfirmDialog
+        isOpen={Boolean(deletingDevice)}
+        title="Remove GPS Device"
+        message={
+          <span>
+            Are you sure you want to unregister GPS device{' '}
+            <strong>{deletingDevice?.device_code}</strong>? IoT pings from this device will be rejected.
+          </span>
+        }
+        confirmText="Remove Device"
+        isDestructive={true}
+        loading={actionLoading}
+        onConfirm={confirmRemove}
+        onCancel={() => setDeletingDevice(null)}
+      />
     </div>
   );
 }
