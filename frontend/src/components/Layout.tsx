@@ -220,10 +220,12 @@ export default function Layout() {
   );
 
   return (
-    <div className="flex min-h-screen bg-leaf-50 dark:bg-navy-900">
-      {/* Desktop sidebar — always visible at md+. White in light mode,
-          navy in dark mode, matching the header/content shell. */}
-      <aside className="relative hidden w-64 shrink-0 flex-col overflow-hidden border-r border-leaf-100 bg-white text-ink-900 dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200 md:flex">
+    <div className="relative flex min-h-screen bg-leaf-50/60 transition-colors duration-300 dark:bg-navy-950">
+      {/* System-wide ambient background glow covering entire viewport behind all surfaces */}
+      <AmbientGlow position="fixed" variant="system" showEmbers interactive />
+
+      {/* Desktop sidebar — frosted glass backdrop with subtle border */}
+      <aside className="relative hidden w-64 shrink-0 flex-col overflow-hidden border-r border-leaf-100/80 bg-white/80 text-ink-900 backdrop-blur-md dark:border-white/10 dark:bg-navy-950/80 dark:text-slate-200 md:flex">
         {sidebarContent}
       </aside>
 
@@ -231,11 +233,11 @@ export default function Layout() {
       {mobileNavOpen && (
         <div className="fixed inset-0 z-[1500] md:hidden">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMobileNavOpen(false)}
             aria-hidden="true"
           />
-          <aside className="relative z-[1501] flex h-full w-72 max-w-[85vw] flex-col overflow-hidden border-r border-leaf-100 bg-white text-ink-900 shadow-2xl dark:border-leaf-400/15 dark:bg-navy-950 dark:text-slate-200">
+          <aside className="relative z-[1501] flex h-full w-72 max-w-[85vw] flex-col overflow-hidden border-r border-leaf-100/80 bg-white/95 text-ink-900 shadow-2xl backdrop-blur-md dark:border-white/10 dark:bg-navy-950/95 dark:text-slate-200">
             {sidebarContent}
           </aside>
         </div>
@@ -243,7 +245,7 @@ export default function Layout() {
 
       <div className="app-canvas-texture flex min-h-screen flex-1 flex-col">
         <div className="px-4 pt-4 sm:px-6 sm:pt-6">
-          <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-leaf-100 bg-white/90 px-4 py-3 shadow-sm shadow-slate-200/60 backdrop-blur-sm dark:border-leaf-400/10 dark:bg-navy-800/90 dark:shadow-none sm:px-5">
+          <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-leaf-100/90 bg-white/85 px-4 py-3 shadow-sm shadow-slate-200/50 backdrop-blur-md transition-all duration-300 dark:border-white/10 dark:bg-navy-800/80 dark:shadow-none sm:px-5">
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <button
                 onClick={() => setMobileNavOpen(true)}
@@ -293,7 +295,6 @@ export default function Layout() {
         </div>
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div key={location.pathname} className="relative animate-page-in">
-            <AmbientGlow />
             <Outlet />
           </div>
         </main>

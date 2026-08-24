@@ -1,0 +1,8 @@
+id,establishment_id,establishment_name,violation_code,description,severity,date_issued,compliance_deadline,status
+1,2,"North Triangle Auto Repair & Logistics","RA9514-SEC10-01","Blocked designated fire exit access corridor due to stacked automobile tires and auto parts pallets.","Critical","2026-04-10","2026-05-10",Open
+2,2,"North Triangle Auto Repair & Logistics","RA9514-SEC10-04","Absence of certified Type B (CO2 / Dry Chemical) portable fire extinguisher near high-hazard spray paint booth.","Major","2026-04-10","2026-04-25",Open
+3,4,"Culiat Residence Inn & Dormitory","RA9514-SEC10-02","Secondary fire exit door on 2nd floor dormitory locked with deadbolt lock during occupied night hours.","Critical","2026-02-14","2026-03-01",Resolved
+4,4,"Culiat Residence Inn & Dormitory","RA9514-SEC10-08","Missing emergency lighting fixtures and illuminated directional EXIT signs along hallway corridors.","Minor","2026-02-14","2026-03-15",Resolved
+5,7,"Evergreen Woodcrafts & Carpentry","RA9514-SEC10-09","Excessive accumulation of combustible sawdust without spark-arresting dust collection and ventilation system.","Major","2025-10-15","2025-11-15",Overdue
+6,6,"Metro Gas & Fuel Refilling Station","RA9514-SEC10-05","Faded 'NO SMOKING / FLAMMABLE VAPOR' hazard warning signage at fuel dispensing island.","Minor","2026-06-12","2026-06-26",Open
+7,5,"Tandang Sora Supermarket & Warehouse","RA9514-SEC10-04","Expired inspection tag on 2 out of 10 stored ABC dry powder fire extinguishers in storage bay B.","Minor","2026-05-08","2026-05-22",Resolved

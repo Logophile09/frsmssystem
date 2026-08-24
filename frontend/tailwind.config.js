@@ -83,21 +83,37 @@ export default {
         },
         glowDriftA: {
           '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
-          '50%': { transform: 'translate(40px, 30px) scale(1.15)' },
+          '50%': { transform: 'translate(45px, 35px) scale(1.15)' },
         },
         glowDriftB: {
           '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
-          '50%': { transform: 'translate(-35px, -25px) scale(1.1)' },
+          '50%': { transform: 'translate(-40px, -30px) scale(1.18)' },
+        },
+        glowDriftC: {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1.05)' },
+          '50%': { transform: 'translate(30px, -35px) scale(0.92)' },
+        },
+        glowDriftD: {
+          '0%, 100%': { transform: 'translate(0, 0) scale(0.95)' },
+          '50%': { transform: 'translate(-25px, 40px) scale(1.12)' },
         },
         glowPulse: {
-          '0%, 100%': { opacity: '0.35' },
-          '50%': { opacity: '0.55' },
+          '0%, 100%': { opacity: '0.4' },
+          '50%': { opacity: '0.75' },
+        },
+        glowPulseSlow: {
+          '0%, 100%': { opacity: '0.25' },
+          '50%': { opacity: '0.5' },
+        },
+        glowSpinSlow: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
         },
         emberRise: {
           '0%': { transform: 'translate(0, 0) scale(0.6)', opacity: '0' },
           '12%': { opacity: '0.9' },
           '80%': { opacity: '0.5' },
-          '100%': { transform: 'translate(var(--ember-drift, 12px), -160px) scale(1)', opacity: '0' },
+          '100%': { transform: 'translate(var(--ember-drift, 12px), -180px) scale(1)', opacity: '0' },
         },
       },
       animation: {
@@ -108,10 +124,19 @@ export default {
         'auth-slide-from-left': 'authSlideFromLeft 0.32s cubic-bezier(0.16, 1, 0.3, 1)',
         'auth-flip-from-right': 'authFlipFromRight 0.55s cubic-bezier(0.16, 1, 0.3, 1)',
         'auth-flip-from-left': 'authFlipFromLeft 0.55s cubic-bezier(0.16, 1, 0.3, 1)',
-        'glow-drift-a': 'glowDriftA 14s ease-in-out infinite',
-        'glow-drift-b': 'glowDriftB 18s ease-in-out infinite',
-        'glow-pulse': 'glowPulse 6s ease-in-out infinite',
+        'glow-drift-a': 'glowDriftA 16s ease-in-out infinite',
+        'glow-drift-b': 'glowDriftB 20s ease-in-out infinite',
+        'glow-drift-c': 'glowDriftC 22s ease-in-out infinite',
+        'glow-drift-d': 'glowDriftD 18s ease-in-out infinite',
+        'glow-pulse': 'glowPulse 7s ease-in-out infinite',
+        'glow-pulse-slow': 'glowPulseSlow 10s ease-in-out infinite',
+        'glow-spin-slow': 'glowSpinSlow 45s linear infinite',
         'ember-rise': 'emberRise linear infinite',
+      },
+      boxShadow: {
+        'glow-leaf': '0 0 35px -5px rgba(206, 17, 38, 0.25)',
+        'glow-amber': '0 0 35px -5px rgba(245, 158, 11, 0.22)',
+        'glow-navy': '0 0 35px -5px rgba(59, 130, 246, 0.2)',
       },
       transitionTimingFunction: {
         smooth: 'cubic-bezier(0.16, 1, 0.3, 1)',

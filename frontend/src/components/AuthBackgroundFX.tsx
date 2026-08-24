@@ -26,16 +26,17 @@ export function AuthBackgroundFX({ variant = 'dark' }: { variant?: 'dark' | 'lig
 
   return (
     <div aria-hidden="true" className={`pointer-events-none absolute inset-0 overflow-hidden ${blobOpacity}`}>
-      {/* Drifting glow blobs */}
-      <div className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-flagred-500/25 blur-3xl animate-glow-drift-a animate-glow-pulse" />
-      <div className="absolute -right-16 top-1/4 h-80 w-80 rounded-full bg-leaf-400/20 blur-3xl animate-glow-drift-b" />
-      <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-navy-400/25 blur-3xl animate-glow-drift-a" />
+      {/* Drifting multi-spectral glow orbs */}
+      <div className="absolute -left-20 -top-20 h-80 w-80 rounded-full bg-gradient-to-br from-flagred-500/30 to-rose-600/20 blur-3xl animate-glow-drift-a animate-glow-pulse" />
+      <div className="absolute -right-16 top-1/4 h-96 w-96 rounded-full bg-gradient-to-bl from-leaf-400/25 via-amber-500/15 to-navy-500/20 blur-3xl animate-glow-drift-b" />
+      <div className="absolute bottom-0 left-1/4 h-80 w-80 rounded-full bg-gradient-to-tr from-navy-400/30 via-indigo-600/20 to-leaf-500/15 blur-3xl animate-glow-drift-c" />
+      <div className="absolute -bottom-16 right-1/4 h-64 w-64 rounded-full bg-amber-500/15 blur-2xl animate-glow-drift-d" />
 
       {/* Rising embers */}
       {embers.map((e, i) => (
         <span
           key={i}
-          className={`absolute bottom-0 rounded-full ${emberOpacity} animate-ember-rise`}
+          className={`absolute bottom-0 rounded-full ${emberOpacity} shadow-[0_0_8px_rgba(206,17,38,0.7)] animate-ember-rise`}
           style={
             {
               left: e.left,
