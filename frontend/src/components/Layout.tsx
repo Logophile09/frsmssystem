@@ -14,6 +14,7 @@ import {
   ClipboardCheck,
   FileCheck,
   Ban,
+  FileText,
   BarChart3,
   UserCog,
   Menu,
@@ -42,6 +43,7 @@ const NAV_GROUPS: {
     label: 'Operations',
     items: [
       { to: '/incidents', label: 'Incidents & Dispatch', icon: AlertTriangle },
+      { to: '/post-incident-reports', label: 'Post-Incident Reports', icon: FileText },
       { to: '/personnel', label: 'Personnel', icon: Users },
       { to: '/vehicles', label: 'Vehicles', icon: Truck },
       { to: '/equipment', label: 'Equipment', icon: Wrench },

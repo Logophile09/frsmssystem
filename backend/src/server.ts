@@ -18,6 +18,7 @@ import gpsRoutes from './routes/gps';
 import falseAlarmRoutes from './routes/falseAlarms';
 import dashboardRoutes from './routes/dashboard';
 import aiRoutes from './routes/ai';
+import postIncidentReportRoutes from './routes/postIncidentReports';
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use('/api/gps', gpsRoutes);
 app.use('/api/false-alarms', falseAlarmRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/post-incident-reports', postIncidentReportRoutes);
 
 // Vercel imports this module and calls `app` directly as a serverless
 // function per request -- it must NOT also bind a persistent port in

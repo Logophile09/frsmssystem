@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import PendingApproval from './pages/PendingApproval';
 import Dashboard from './pages/Dashboard';
 import Incidents from './pages/Incidents';
+import PostIncidentReport from './pages/PostIncidentReport';
 import Personnel from './pages/Personnel';
 import Vehicles from './pages/Vehicles';
 import Equipment from './pages/Equipment';
@@ -38,6 +39,7 @@ export default function App() {
       >
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/incidents" element={<Incidents />} />
+        <Route path="/post-incident-reports" element={<PostIncidentReport />} />
         <Route path="/personnel" element={<Personnel />} />
         <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/equipment" element={<Equipment />} />

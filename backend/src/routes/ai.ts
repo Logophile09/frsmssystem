@@ -84,4 +84,42 @@ router.post('/incident-summary', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/ai/post-incident-report
+ *
+ * Body: { incident: {...}, report: { response_time_minutes, outcome,
+ *         injuries_count, fatalities_count, property_damage_estimate,
+ *         actions_taken, lessons_learned } }
+ *
+ * Drafts the longer after-action narrative for the Post-Incident
+ * Reporting module (backend/src/routes/postIncidentReports.ts,
+ * frontend/src/pages/PostIncidentReport.tsx) from the incident record
+ * plus whatever after-action fields have been filled in so far. Same
+ * drafting-aid contract as /ai/incident-summary: nothing is saved
+ * automatically, a human reviews and edits before finalizing the report.
+ */
+router.post('/post-incident-report', async (req, res) => {
+  const { incident, report } = req.body ?? {};
+  if (!incident?.incident_type || !incident?.location) {
+    return res.status(400).json({ error: 'incident.incident_type and incident.location are required' });
+  }
+
+  const systemPrompt =
+    'You write the narrative section of a post-incident (after-action) report for a fire and rescue ' +
+    'service management system. Use only the facts given -- do not speculate about cause, fault, or ' +
+    'anything not stated. Cover, in prose: what was reported and how crews responded, the outcome, and ' +
+    'casualties/damage if any were given. If lessons-learned notes are provided, close with a short ' +
+    'paragraph on follow-up action. Plain paragraphs, no headers or bullet points, past tense, factual ' +
+    'and official in tone, 4-8 sentences.';
+
+  const userPrompt = `Incident record:\n${JSON.stringify(incident, null, 2)}\n\nAfter-action fields so far:\n${JSON.stringify(report ?? {}, null, 2)}`;
+
+  try {
+    const narrative = await callGroq(systemPrompt, userPrompt, 500);
+    res.json({ narrative });
+  } catch (err) {
+    handleGroqError(err, res);
+  }
+});
+
 export default router;

@@ -237,6 +237,39 @@ create table gps_location_history (
 );
 
 -- ---------------------------------------------------------------------
+-- post_incident_reports
+--
+-- One report per incident (typically filed once an incident reaches
+-- 'resolved'/'closed'). Captures the after-action facts the live
+-- incident record doesn't: response time, outcome, casualties/damage,
+-- actions taken, and lessons learned -- plus an optional longer
+-- narrative that can be drafted with Groq (see backend/src/routes/ai.ts
+-- POST /ai/post-incident-report) and is always reviewed/edited by a
+-- human before being finalized.
+-- ---------------------------------------------------------------------
+create type post_incident_report_status as enum ('draft', 'finalized');
+create type post_incident_outcome as enum (
+  'extinguished', 'contained', 'rescued', 'treated_transported', 'false_alarm', 'other'
+);
+
+create table post_incident_reports (
+  id                        bigserial primary key,
+  incident_id               bigint not null unique references incidents(id) on delete cascade,
+  response_time_minutes     numeric,
+  outcome                   post_incident_outcome not null default 'other',
+  injuries_count            integer not null default 0,
+  fatalities_count          integer not null default 0,
+  property_damage_estimate  numeric,
+  actions_taken             text,
+  lessons_learned           text,
+  narrative                 text,
+  status                    post_incident_report_status not null default 'draft',
+  prepared_by               uuid references profiles(id) on delete set null,
+  created_at                timestamptz not null default now(),
+  updated_at                timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------
 -- Indexes
 -- ---------------------------------------------------------------------
 create index idx_incidents_status on incidents(status);
@@ -246,6 +279,7 @@ create index idx_inspections_establishment on inspections(establishment_id);
 create index idx_certificates_establishment on certificates(establishment_id);
 create index idx_violations_establishment on violations(establishment_id);
 create index idx_gps_history_device on gps_location_history(device_id, recorded_at desc);
+create index idx_post_incident_reports_status on post_incident_reports(status);
 
 -- ---------------------------------------------------------------------
 -- Row Level Security
@@ -272,6 +306,7 @@ alter table certificates enable row level security;
 alter table violations enable row level security;
 alter table gps_devices enable row level security;
 alter table gps_location_history enable row level security;
+alter table post_incident_reports enable row level security;
 
 create policy "authenticated read profiles" on profiles for select using (auth.role() = 'authenticated');
 create policy "authenticated read personnel" on personnel for select using (auth.role() = 'authenticated');
@@ -287,6 +322,7 @@ create policy "authenticated read certificates" on certificates for select using
 create policy "authenticated read violations" on violations for select using (auth.role() = 'authenticated');
 create policy "authenticated read gps_devices" on gps_devices for select using (auth.role() = 'authenticated');
 create policy "authenticated read gps_location_history" on gps_location_history for select using (auth.role() = 'authenticated');
+create policy "authenticated read post_incident_reports" on post_incident_reports for select using (auth.role() = 'authenticated');
 
 -- ---------------------------------------------------------------------
 -- Seed / demo data
@@ -413,6 +449,11 @@ insert into violations (establishment_id, inspection_id, violation_code, descrip
 (3, 3, 'FC-045', 'Minor: fire exit signage faded, needs replacement', 'Minor', '2026-03-02', '2026-04-02', 'Resolved'),
 (9, 9, 'FC-212', 'Emergency exits blocked by pallet storage in warehouse', 'Critical', '2026-05-22', '2026-07-22', 'Overdue'),
 (7, 7, 'FC-301', 'Missing fire drill records for current school year', 'Major', '2026-04-20', '2026-06-20', 'Open');
+
+insert into post_incident_reports (incident_id, response_time_minutes, outcome, injuries_count, fatalities_count, property_damage_estimate, actions_taken, lessons_learned, narrative, status) values
+(1, 8, 'extinguished', 1, 0, 350000, 'Engine crews knocked down the fire on the 2nd floor and completed a full overhaul before clearing the scene.', 'Ground-floor unit''s fire door had been propped open, letting smoke spread faster than expected -- flag for the next inspection cycle.', 'Fire crews responded to a reported structure fire on the 2nd floor of a residential building along Tandang Sora Ave. Engine 1 arrived within 8 minutes and confirmed active fire on arrival. The fire was contained to a single unit and extinguished; one occupant sustained minor smoke inhalation and was treated on scene. No fatalities were reported. Estimated property damage is PHP 350,000.', 'finalized'),
+(3, 6, 'extinguished', 0, 0, 5000, 'Grass fire was knocked down with hand tools and a single hose line before it reached the adjacent fence line.', 'Vacant lot has no cleared firebreak; recommend coordinating with the barangay for regular brush clearing.', 'A small grass fire was reported near a vacant lot along Culiat Road. Crews contained and extinguished the fire quickly with no injuries, fatalities, or structural exposure. Estimated damage was minimal.', 'finalized'),
+(5, 4, 'false_alarm', 0, 0, 0, 'Crews confirmed no fire or smoke on arrival; smoke detector was reset and the building was cleared.', 'Detector had recently been serviced and appears to be overly sensitive to cooking smoke; recommend the owner request a sensitivity recalibration.', 'Crews responded to an automatic smoke detector activation in Brgy. Culiat. On arrival, no fire or smoke was found. The activation was determined to be a false alarm consistent with the AI false-alarm scoring already logged on the incident.', 'finalized');
 
 insert into gps_devices (device_code, vehicle_id, status, last_lat, last_lng, last_speed_kph, last_heading, last_ping_at) values
 ('GPS-ENG-01', 1, 'online', 14.6970, 121.0680, 0, 0, now() - interval '2 minutes'),
