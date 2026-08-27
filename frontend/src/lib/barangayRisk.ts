@@ -31,7 +31,10 @@ function seededUnit(seed: string): number {
 // New Era (encircled by Culiat, home of the INC Central Temple),
 // U.P. Campus (southeast), Vasra (southwest, near Visayas Ave), and
 // Bahay Toro (west, past Mindanao Ave).
-const NEIGHBORS_OF_CULIAT = new Set([
+// Exported so any other module that needs "Culiat + its mutual-aid
+// neighbors" (e.g. the Establishments barangay field) uses the same list
+// instead of redefining it and drifting out of sync.
+export const NEIGHBORS_OF_CULIAT = new Set([
   'Pasong Tamo',
   'Matandang Balara',
   'New Era (Constitution Hills)',

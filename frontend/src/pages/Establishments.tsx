@@ -1,6 +1,13 @@
 import CrudPage from '../components/CrudPage';
 import { Building2 } from 'lucide-react';
 import Badge from '../components/Badge';
+import { NEIGHBORS_OF_CULIAT } from '../lib/barangayRisk';
+
+// FRSMS is Brgy. Culiat's fire sub-station -- Culiat is its actual
+// jurisdiction, and the bordering barangays cover mutual-aid responses.
+// Kept as a fixed list (like the Location field on Incidents & Dispatch)
+// so establishments can't drift into barangays this station doesn't serve.
+const BARANGAY_OPTIONS = ['Culiat', ...Array.from(NEIGHBORS_OF_CULIAT)];
 
 interface Establishment {
   id: number;
@@ -35,7 +42,7 @@ export default function EstablishmentsPage() {
         { name: 'business_name', label: 'Business Name', type: 'text', required: true },
         { name: 'business_type', label: 'Business Type', type: 'text', required: true },
         { name: 'owner_name', label: 'Owner Name', type: 'text', required: true },
-        { name: 'barangay', label: 'Barangay', type: 'text', required: true },
+        { name: 'barangay', label: 'Barangay', type: 'select', options: BARANGAY_OPTIONS, required: true },
         { name: 'address', label: 'Address', type: 'text', required: true },
         { name: 'occupancy_type', label: 'Occupancy Type', type: 'text', required: true },
         { name: 'storeys', label: 'Storeys', type: 'number' },

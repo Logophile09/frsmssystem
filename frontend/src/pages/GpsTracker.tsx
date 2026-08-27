@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, GeoJSON, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Radio, Trash2, Gauge, Clock } from 'lucide-react';
@@ -48,9 +48,41 @@ function formatRelativeTime(dateStr: string | null): string {
 // map focuses here instead of all of Quezon City.
 const DEFAULT_CENTER: [number, number] = [14.68, 121.05];
 
-// Brand green used for the Culiat boundary highlight -- matches leaf-500
-// in tailwind.config.js (Barangay Culiat's official portal accent color).
-const CULIAT_HIGHLIGHT_COLOR = '#16a34a';
+// Ray-casting point-in-polygon test, same algorithm as the backend's
+// geofenceEta.ts, so a device only counts as "in Culiat" by the same
+// definition the ETA/geofence feature already uses.
+type Ring = [number, number][];
+function pointInRing(point: [number, number], ring: Ring): boolean {
+  const [x, y] = point;
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    const intersects = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (intersects) inside = !inside;
+  }
+  return inside;
+}
+function isInsideCuliat(lat: number, lng: number, feature: any): boolean {
+  if (!feature?.geometry) return false;
+  const point: [number, number] = [lng, lat];
+  const geom = feature.geometry;
+  if (geom.type === 'Polygon') {
+    const rings = geom.coordinates as Ring[];
+    if (!pointInRing(point, rings[0])) return false;
+    for (let i = 1; i < rings.length; i++) if (pointInRing(point, rings[i])) return false;
+    return true;
+  }
+  if (geom.type === 'MultiPolygon') {
+    const polygons = geom.coordinates as Ring[][];
+    return polygons.some((rings) => {
+      if (!pointInRing(point, rings[0])) return false;
+      for (let i = 1; i < rings.length; i++) if (pointInRing(point, rings[i])) return false;
+      return true;
+    });
+  }
+  return false;
+}
 
 // Free at carto.com/basemaps/apikey. Left undefined in dev/preview
 // deployments that haven't set it yet -- tiles still load, just with
@@ -161,8 +193,6 @@ export default function GpsTrackerPage() {
     }
   }
 
-  const located = devices.filter((d) => d.last_lat != null && d.last_lng != null);
-
   // FRSMS only serves Brgy. Culiat, so the map focuses on Culiat's own
   // boundary instead of framing all 142 QC barangays -- same idea as the
   // Culiat-only location list on the Incidents & Dispatch page.
@@ -173,6 +203,14 @@ export default function GpsTrackerPage() {
   const culiatBounds = useMemo(
     () => (culiatFeature ? L.geoJSON(culiatFeature).getBounds() : L.geoJSON(qcBarangays as any).getBounds()),
     [culiatFeature]
+  );
+
+  // Only devices whose last known position actually falls inside Brgy.
+  // Culiat's boundary -- a unit that pinged from outside Culiat (e.g. out
+  // on a mutual-aid run) is left off this map rather than shown as a stray
+  // marker outside the barangay.
+  const located = devices.filter(
+    (d) => d.last_lat != null && d.last_lng != null && isInsideCuliat(Number(d.last_lat), Number(d.last_lng), culiatFeature)
   );
 
   return (
@@ -206,18 +244,6 @@ export default function GpsTrackerPage() {
             }`}
           />
           <FitToBounds bounds={culiatBounds} />
-          {culiatFeature && (
-            <GeoJSON
-              data={culiatFeature}
-              style={{
-                color: CULIAT_HIGHLIGHT_COLOR,
-                weight: 2.5,
-                fillColor: CULIAT_HIGHLIGHT_COLOR,
-                fillOpacity: 0.12,
-                dashArray: '4 3',
-              }}
-            />
-          )}
           {located.map((d) => (
             <CircleMarker
               key={d.id}
