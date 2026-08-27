@@ -26,15 +26,18 @@ function seededUnit(seed: string): number {
 // Barangays bordering Culiat read moderately on the demo scale instead
 // of being flat -- makes the map look like a real hot-spot radiating out
 // from the station rather than one red square in a sea of random noise.
+// These are Culiat's actual direct-border barangays (District 6, QC):
+// Pasong Tamo (north), Matandang Balara (east, past Commonwealth Ave),
+// New Era (encircled by Culiat, home of the INC Central Temple),
+// U.P. Campus (southeast), Vasra (southwest, near Visayas Ave), and
+// Bahay Toro (west, past Mindanao Ave).
 const NEIGHBORS_OF_CULIAT = new Set([
-  'Talipapa',
-  'Sauyo',
   'Pasong Tamo',
-  'Bagbag',
-  'Novaliches Proper',
-  'San Bartolome',
-  'Capri',
-  'Santa Lucia',
+  'Matandang Balara',
+  'New Era (Constitution Hills)',
+  'U.P. Campus',
+  'Vasra',
+  'Bahay Toro',
 ]);
 
 export interface BarangayRisk {
