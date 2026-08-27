@@ -107,7 +107,7 @@ export default function AmbientGlow({
           className="absolute inset-0 transition-opacity duration-700"
           style={{
             background:
-              'radial-gradient(650px circle at var(--mouse-x, 50%) var(--mouse-y, 25%), rgba(206, 17, 38, 0.075), rgba(59, 130, 246, 0.04) 35%, transparent 70%)',
+              'radial-gradient(650px circle at var(--mouse-x, 50%) var(--mouse-y, 25%), rgba(22, 163, 74, 0.075), rgba(59, 130, 246, 0.04) 35%, transparent 70%)',
           }}
         />
       )}

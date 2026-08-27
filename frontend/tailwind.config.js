@@ -9,18 +9,19 @@ export default {
         sans: ['Inter', 'Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // Republic red — primary accent, matches the landing page hotline bar & CTAs
+        // Barangay Culiat green — primary accent, matches the official
+        // barangayculiat.com portal's nav highlights & CTA buttons
         leaf: {
-          50: '#fdf2f2',
-          100: '#fbdede',
-          200: '#f5b8b8',
-          300: '#ea8888',
-          400: '#dd4b4b',
-          500: '#ce1126',
-          600: '#a90d1f',
-          700: '#830a18',
-          800: '#5c0711',
-          900: '#2e0409',
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf0cd',
+          300: '#86e0ac',
+          400: '#4ade80',
+          500: '#16a34a',
+          600: '#15803d',
+          700: '#166534',
+          800: '#14532d',
+          900: '#0a2e18',
         },
         // Deep navy — matches the dark hero / navbar mock
         navy: {
@@ -36,13 +37,13 @@ export default {
           900: '#0a121e',
           950: '#050d12',
         },
-        // Republic red — hotline bars, emergency CTAs (alias of leaf, kept for landing page clarity)
+        // Barangay Culiat green — hotline bars, emergency CTAs (alias of leaf, kept for landing page clarity)
         flagred: {
-          50: '#fdf0f0',
-          400: '#e14b4b',
-          500: '#ce1126',
-          600: '#a90d1f',
-          700: '#830a18',
+          50: '#f0fdf4',
+          400: '#4ade80',
+          500: '#16a34a',
+          600: '#15803d',
+          700: '#166534',
         },
         ink: {
           700: '#4b5563',
@@ -134,7 +135,7 @@ export default {
         'ember-rise': 'emberRise linear infinite',
       },
       boxShadow: {
-        'glow-leaf': '0 0 35px -5px rgba(206, 17, 38, 0.25)',
+        'glow-leaf': '0 0 35px -5px rgba(22, 163, 74, 0.25)',
         'glow-amber': '0 0 35px -5px rgba(245, 158, 11, 0.22)',
         'glow-navy': '0 0 35px -5px rgba(59, 130, 246, 0.2)',
       },

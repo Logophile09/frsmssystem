@@ -47,6 +47,11 @@ function formatRelativeTime(dateStr: string | null): string {
 // devices have reported a position yet.
 const DEFAULT_CENTER: [number, number] = [14.676, 121.045];
 
+// Free at carto.com/basemaps/apikey. Left undefined in dev/preview
+// deployments that haven't set it yet -- tiles still load, just with
+// CARTO's "API KEY REQUIRED" watermark until a key is added.
+const CARTO_API_KEY = import.meta.env.VITE_CARTO_API_KEY as string | undefined;
+
 // Frames the map around the full Quezon City barangay layer on load, so
 // the choropleth is fully visible without the person needing to manually
 // zoom out first.
@@ -165,7 +170,7 @@ export default function GpsTrackerPage() {
           </div>
           <div>
             <h1 className="module-title">GPS Tracker</h1>
-            <p className="module-description">Live device map, dark basemap by CARTO (free, no API key required).</p>
+            <p className="module-description">Live device map, dark basemap by CARTO.</p>
           </div>
         </div>
         <button onClick={() => setAdding(true)} className="btn-primary">
@@ -177,7 +182,14 @@ export default function GpsTrackerPage() {
         <MapContainer center={DEFAULT_CENTER} zoom={12} scrollWheelZoom style={{ height: '24rem', width: '100%' }}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            // CARTO's raster basemaps started requiring a (free) API key in
+            // 2026 -- without it every tile gets an "API KEY REQUIRED"
+            // watermark. Get one at carto.com/basemaps/apikey and set
+            // VITE_CARTO_API_KEY in frontend/.env.local (and in Vercel's
+            // project env vars for production).
+            url={`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${
+              CARTO_API_KEY ? `?key=${CARTO_API_KEY}` : ''
+            }`}
           />
           <FitToBounds bounds={qcBounds} />
           {located.map((d) => (

@@ -36,7 +36,7 @@ export function AuthBackgroundFX({ variant = 'dark' }: { variant?: 'dark' | 'lig
       {embers.map((e, i) => (
         <span
           key={i}
-          className={`absolute bottom-0 rounded-full ${emberOpacity} shadow-[0_0_8px_rgba(206,17,38,0.7)] animate-ember-rise`}
+          className={`absolute bottom-0 rounded-full ${emberOpacity} shadow-[0_0_8px_rgba(22,163,74,0.7)] animate-ember-rise`}
           style={
             {
               left: e.left,
