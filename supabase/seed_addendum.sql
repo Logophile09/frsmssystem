@@ -51,9 +51,11 @@ insert into establishments (business_name, business_type, owner_name, barangay, 
 ('Culiat Business Center', 'Office Building', 'Regalado Properties Inc.', 'Culiat', 'Visayas Ave., Brgy. Culiat, Quezon City', 'Business', 8, 9800.00, '0917-100-1008', '2020-01-14', 'Active'),
 ('Culiat Cold Storage', 'Warehouse', 'ColdChain Logistics Corp.', 'Culiat', 'Culiat Road, Brgy. Culiat, Quezon City', 'Storage', 1, 5400.00, '0917-100-1009', '2015-09-30', 'Inactive');
 
+-- Same in-Culiat coordinate fix as schema.sql -- GPS-RES-01 stays outside
+-- on purpose as an example of an excluded out-of-area unit.
 insert into gps_devices (device_code, vehicle_id, status, last_lat, last_lng, last_speed_kph, last_heading, last_ping_at) values
-('GPS-ENG-03', (select id from vehicles where unit_code = 'ENG-03'), 'online', 14.7012, 121.0521, 12.0, 180, now() - interval '3 minutes'),
-('GPS-AMB-02', (select id from vehicles where unit_code = 'AMB-02'), 'online', 14.6825, 121.0512, 45.0, 270, now() - interval '30 seconds'),
+('GPS-ENG-03', (select id from vehicles where unit_code = 'ENG-03'), 'online', 14.6700, 121.0620, 12.0, 180, now() - interval '3 minutes'),
+('GPS-AMB-02', (select id from vehicles where unit_code = 'AMB-02'), 'online', 14.6690, 121.0560, 45.0, 270, now() - interval '30 seconds'),
 ('GPS-RES-01', (select id from vehicles where unit_code = 'RES-01'), 'signal_lost', 14.7100, 121.0700, 0, 0, now() - interval '20 minutes')
 on conflict (device_code) do nothing;
 

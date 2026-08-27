@@ -275,11 +275,18 @@ export const violations = [
 // GPS Tracker
 // ---------------------------------------------------------------------
 export const gpsDevices = [
-  { id: 1, device_code: 'GPS-ENG-01', device_token: 'demo-token-1', vehicle_id: 1, status: 'online', last_lat: 14.697, last_lng: 121.068, last_speed_kph: 0, last_heading: 0, last_ping_at: minutesAgo(2) },
-  { id: 2, device_code: 'GPS-ENG-02', device_token: 'demo-token-2', vehicle_id: 2, status: 'online', last_lat: 14.689, last_lng: 121.0455, last_speed_kph: 34.5, last_heading: 90, last_ping_at: minutesAgo(1) },
-  { id: 3, device_code: 'GPS-ENG-03', device_token: 'demo-token-3', vehicle_id: 3, status: 'online', last_lat: 14.7012, last_lng: 121.0521, last_speed_kph: 12.0, last_heading: 180, last_ping_at: minutesAgo(3) },
-  { id: 4, device_code: 'GPS-AMB-01', device_token: 'demo-token-4', vehicle_id: 4, status: 'offline', last_lat: 14.6761, last_lng: 121.044, last_speed_kph: 0, last_heading: 0, last_ping_at: hoursAgo(3) },
-  { id: 5, device_code: 'GPS-AMB-02', device_token: 'demo-token-5', vehicle_id: 5, status: 'online', last_lat: 14.6825, last_lng: 121.0512, last_speed_kph: 45.0, last_heading: 270, last_ping_at: minutesAgo(0.5) },
+  // Coordinates below were verified to fall inside Brgy. Culiat's actual
+  // GeoJSON boundary (frontend/src/lib/qcBarangays.json) -- the previous
+  // seed coordinates were placed loosely "near Culiat" and, it turns out,
+  // landed just outside the real polygon, so the GPS Tracker's inside-
+  // Culiat filter hid every device. GPS-RES-01 is deliberately left
+  // outside so the map still demonstrates an out-of-area unit correctly
+  // getting excluded rather than every device just vanishing.
+  { id: 1, device_code: 'GPS-ENG-01', device_token: 'demo-token-1', vehicle_id: 1, status: 'online', last_lat: 14.666, last_lng: 121.055, last_speed_kph: 0, last_heading: 0, last_ping_at: minutesAgo(2) },
+  { id: 2, device_code: 'GPS-ENG-02', device_token: 'demo-token-2', vehicle_id: 2, status: 'online', last_lat: 14.664, last_lng: 121.050, last_speed_kph: 34.5, last_heading: 90, last_ping_at: minutesAgo(1) },
+  { id: 3, device_code: 'GPS-ENG-03', device_token: 'demo-token-3', vehicle_id: 3, status: 'online', last_lat: 14.670, last_lng: 121.062, last_speed_kph: 12.0, last_heading: 180, last_ping_at: minutesAgo(3) },
+  { id: 4, device_code: 'GPS-AMB-01', device_token: 'demo-token-4', vehicle_id: 4, status: 'offline', last_lat: 14.665, last_lng: 121.048, last_speed_kph: 0, last_heading: 0, last_ping_at: hoursAgo(3) },
+  { id: 5, device_code: 'GPS-AMB-02', device_token: 'demo-token-5', vehicle_id: 5, status: 'online', last_lat: 14.669, last_lng: 121.056, last_speed_kph: 45.0, last_heading: 270, last_ping_at: minutesAgo(0.5) },
   { id: 6, device_code: 'GPS-RES-01', device_token: 'demo-token-6', vehicle_id: 7, status: 'signal_lost', last_lat: 14.71, last_lng: 121.07, last_speed_kph: 0, last_heading: 0, last_ping_at: minutesAgo(20) },
 ].map((d) => ({ ...d, vehicles: vehicleById(d.vehicle_id) ? { unit_code: vehicleById(d.vehicle_id)!.unit_code, vehicle_type: vehicleById(d.vehicle_id)!.vehicle_type } : null }));
 
@@ -515,8 +522,10 @@ export function demoRequest(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: str
     const id = Number(clean.split('/')[2]);
     const d = gpsDevices.find((x) => x.id === id) as any;
     if (d) {
-      d.last_lat = Number(d.last_lat) + (Math.random() - 0.5) * 0.01;
-      d.last_lng = Number(d.last_lng) + (Math.random() - 0.5) * 0.01;
+      // Smaller jitter (~150m) so a device already inside Culiat's small
+      // real boundary doesn't jitter itself back out on every simulated ping.
+      d.last_lat = Number(d.last_lat) + (Math.random() - 0.5) * 0.003;
+      d.last_lng = Number(d.last_lng) + (Math.random() - 0.5) * 0.003;
       d.last_speed_kph = Math.round(Math.random() * 60);
       d.last_ping_at = new Date().toISOString();
       d.status = 'online';

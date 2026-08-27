@@ -455,12 +455,18 @@ insert into post_incident_reports (incident_id, response_time_minutes, outcome, 
 (3, 6, 'extinguished', 0, 0, 5000, 'Grass fire was knocked down with hand tools and a single hose line before it reached the adjacent fence line.', 'Vacant lot has no cleared firebreak; recommend coordinating with the barangay for regular brush clearing.', 'A small grass fire was reported near a vacant lot along Culiat Road. Crews contained and extinguished the fire quickly with no injuries, fatalities, or structural exposure. Estimated damage was minimal.', 'finalized'),
 (5, 4, 'false_alarm', 0, 0, 0, 'Crews confirmed no fire or smoke on arrival; smoke detector was reset and the building was cleared.', 'Detector had recently been serviced and appears to be overly sensitive to cooking smoke; recommend the owner request a sensitivity recalibration.', 'Crews responded to an automatic smoke detector activation in Brgy. Culiat. On arrival, no fire or smoke was found. The activation was determined to be a false alarm consistent with the AI false-alarm scoring already logged on the incident.', 'finalized');
 
+-- Coordinates verified to fall inside Brgy. Culiat's real GeoJSON boundary
+-- (frontend/src/lib/qcBarangays.json) -- the previous seed coordinates were
+-- placed loosely "near Culiat" and landed just outside the real polygon,
+-- so the GPS Tracker's inside-Culiat filter hid every device. GPS-RES-01
+-- is deliberately left outside to demonstrate an out-of-area unit
+-- correctly getting excluded rather than every device just vanishing.
 insert into gps_devices (device_code, vehicle_id, status, last_lat, last_lng, last_speed_kph, last_heading, last_ping_at) values
-('GPS-ENG-01', 1, 'online', 14.6970, 121.0680, 0, 0, now() - interval '2 minutes'),
-('GPS-ENG-02', 2, 'online', 14.6890, 121.0455, 34.5, 90, now() - interval '1 minute'),
-('GPS-ENG-03', 3, 'online', 14.7012, 121.0521, 12.0, 180, now() - interval '3 minutes'),
-('GPS-AMB-01', 4, 'offline', 14.6761, 121.0440, 0, 0, now() - interval '3 hours'),
-('GPS-AMB-02', 5, 'online', 14.6825, 121.0512, 45.0, 270, now() - interval '30 seconds'),
+('GPS-ENG-01', 1, 'online', 14.6660, 121.0550, 0, 0, now() - interval '2 minutes'),
+('GPS-ENG-02', 2, 'online', 14.6640, 121.0500, 34.5, 90, now() - interval '1 minute'),
+('GPS-ENG-03', 3, 'online', 14.6700, 121.0620, 12.0, 180, now() - interval '3 minutes'),
+('GPS-AMB-01', 4, 'offline', 14.6650, 121.0480, 0, 0, now() - interval '3 hours'),
+('GPS-AMB-02', 5, 'online', 14.6690, 121.0560, 45.0, 270, now() - interval '30 seconds'),
 ('GPS-RES-01', 7, 'signal_lost', 14.7100, 121.0700, 0, 0, now() - interval '20 minutes');
 
 
