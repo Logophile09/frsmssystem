@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, GeoJSON, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Radio, Trash2, Gauge, Clock } from 'lucide-react';
@@ -43,9 +43,14 @@ function formatRelativeTime(dateStr: string | null): string {
   return new Date(dateStr).toLocaleDateString();
 }
 
-// Quezon City, PH -- used as the map's default center before any
-// devices have reported a position yet.
-const DEFAULT_CENTER: [number, number] = [14.676, 121.045];
+// Brgy. Culiat, QC -- used as the map's default center before any
+// devices have reported a position yet. FRSMS only covers Culiat, so the
+// map focuses here instead of all of Quezon City.
+const DEFAULT_CENTER: [number, number] = [14.68, 121.05];
+
+// Brand green used for the Culiat boundary highlight -- matches leaf-500
+// in tailwind.config.js (Barangay Culiat's official portal accent color).
+const CULIAT_HIGHLIGHT_COLOR = '#16a34a';
 
 // Free at carto.com/basemaps/apikey. Left undefined in dev/preview
 // deployments that haven't set it yet -- tiles still load, just with
@@ -158,8 +163,17 @@ export default function GpsTrackerPage() {
 
   const located = devices.filter((d) => d.last_lat != null && d.last_lng != null);
 
-  // Quezon City's 142 barangay boundaries, used only to fit/center the map.
-  const qcBounds = useMemo(() => L.geoJSON(qcBarangays as any).getBounds(), []);
+  // FRSMS only serves Brgy. Culiat, so the map focuses on Culiat's own
+  // boundary instead of framing all 142 QC barangays -- same idea as the
+  // Culiat-only location list on the Incidents & Dispatch page.
+  const culiatFeature = useMemo(
+    () => (qcBarangays as any).features.find((f: any) => f.properties?.name === 'Culiat'),
+    []
+  );
+  const culiatBounds = useMemo(
+    () => (culiatFeature ? L.geoJSON(culiatFeature).getBounds() : L.geoJSON(qcBarangays as any).getBounds()),
+    [culiatFeature]
+  );
 
   return (
     <div>
@@ -170,7 +184,7 @@ export default function GpsTrackerPage() {
           </div>
           <div>
             <h1 className="module-title">GPS Tracker</h1>
-            <p className="module-description">Live device map, dark basemap by CARTO.</p>
+            <p className="module-description">Live device map, focused on Brgy. Culiat, dark basemap by CARTO.</p>
           </div>
         </div>
         <button onClick={() => setAdding(true)} className="btn-primary">
@@ -191,7 +205,19 @@ export default function GpsTrackerPage() {
               CARTO_API_KEY ? `?key=${CARTO_API_KEY}` : ''
             }`}
           />
-          <FitToBounds bounds={qcBounds} />
+          <FitToBounds bounds={culiatBounds} />
+          {culiatFeature && (
+            <GeoJSON
+              data={culiatFeature}
+              style={{
+                color: CULIAT_HIGHLIGHT_COLOR,
+                weight: 2.5,
+                fillColor: CULIAT_HIGHLIGHT_COLOR,
+                fillOpacity: 0.12,
+                dashArray: '4 3',
+              }}
+            />
+          )}
           {located.map((d) => (
             <CircleMarker
               key={d.id}
