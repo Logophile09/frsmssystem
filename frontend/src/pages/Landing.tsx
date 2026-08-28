@@ -18,6 +18,7 @@ import {
   GitBranch,
   ClipboardCheck,
   FileCheck,
+  FileText,
   Ban,
   BarChart3,
   UserCog,
@@ -25,6 +26,10 @@ import {
   ArrowRight,
   UserRound,
   UserPlus,
+  Phone,
+  Mail,
+  MessageCircle,
+  Clock,
 } from 'lucide-react';
 
 const NAV_LINKS = [
@@ -100,6 +105,7 @@ const STEPS = [
 
 const MODULES = [
   { icon: Flame, label: 'Incidents & Dispatch' },
+  { icon: FileText, label: 'Post-Incident Reports' },
   { icon: Users, label: 'Personnel' },
   { icon: Truck, label: 'Vehicles' },
   { icon: Wrench, label: 'Equipment' },
@@ -444,6 +450,52 @@ export default function Landing() {
               className="flex items-center gap-2 rounded-lg border border-white/25 px-6 py-3 text-sm font-bold text-white transition-colors duration-300 hover:bg-white/10"
             >
               Call 911
+            </a>
+          </div>
+
+          {/* Barangay Office contact card */}
+          <div className="mx-auto mt-14 max-w-md rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
+            <p className="font-display text-lg font-bold uppercase tracking-wide text-white">Barangay Office</p>
+
+            <div className="mt-4 space-y-2.5">
+              <a
+                href="tel:09625821531"
+                className="flex items-center gap-3 rounded-xl bg-navy-100 px-4 py-3 text-sm font-bold text-navy-900 transition-colors duration-300 hover:bg-white"
+              >
+                <Phone size={16} className="shrink-0 text-flagred-500" /> 0962-582-1531
+              </a>
+              <a
+                href="mailto:brgy.culiat@yahoo.com"
+                className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors duration-300 hover:bg-white/10"
+              >
+                <Mail size={16} className="shrink-0 text-leaf-400" /> brgy.culiat@yahoo.com
+              </a>
+              <a
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-1 pt-1 text-sm font-semibold text-leaf-300 transition-colors duration-300 hover:text-leaf-200"
+              >
+                <MessageCircle size={16} className="shrink-0" /> Facebook page
+              </a>
+            </div>
+
+            <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
+              <div className="flex items-start gap-2.5 text-sm text-navy-100">
+                <MapPin size={16} className="mt-0.5 shrink-0 text-navy-300" />
+                <span>467 Tandang Sora Ave, Quezon City, 1128 Metro Manila</span>
+              </div>
+              <div className="flex items-start gap-2.5 text-sm text-navy-100">
+                <Clock size={16} className="mt-0.5 shrink-0 text-navy-300" />
+                <span>Monday &ndash; Friday, 8:00 AM &ndash; 5:00 PM</span>
+              </div>
+            </div>
+
+            <a
+              href="tel:911"
+              className="mt-4 flex items-center gap-2.5 border-t border-white/10 pt-4 text-sm font-bold text-leaf-300 transition-colors duration-300 hover:text-leaf-200"
+            >
+              <Phone size={16} className="shrink-0" /> Emergency 911
             </a>
           </div>
         </div>
