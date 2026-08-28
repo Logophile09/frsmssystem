@@ -205,12 +205,22 @@ export default function GpsTrackerPage() {
   );
 
   // Only devices whose last known position actually falls inside Brgy.
-  // Culiat's boundary -- a unit that pinged from outside Culiat (e.g. out
-  // on a mutual-aid run) is left off this map rather than shown as a stray
-  // marker outside the barangay.
-  const located = devices.filter(
-    (d) => d.last_lat != null && d.last_lng != null && isInsideCuliat(Number(d.last_lat), Number(d.last_lng), culiatFeature)
-  );
+  // Culiat's boundary -- kept for the "Inside/Outside" flag used by the
+  // popup and the geofenced ETA table below.
+  const located = devices.filter((d) => d.last_lat != null && d.last_lng != null);
+
+  // Frame the map to Culiat's boundary, but extend that frame to include
+  // any located device's position too -- so a unit pinging from just
+  // outside the barangay (e.g. out on a mutual-aid run) still shows up
+  // inside the initial view instead of being panned off-screen.
+  const mapBounds = useMemo(() => {
+    const b = L.latLngBounds(culiatBounds.getSouthWest(), culiatBounds.getNorthEast());
+    for (const d of located) {
+      if (d.last_lat != null && d.last_lng != null) b.extend([Number(d.last_lat), Number(d.last_lng)]);
+    }
+    return b;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [culiatBounds, located.length]);
 
   return (
     <div>
@@ -242,31 +252,36 @@ export default function GpsTrackerPage() {
               CARTO_API_KEY ? `?key=${CARTO_API_KEY}` : ''
             }`}
           />
-          <FitToBounds bounds={culiatBounds} />
-          {located.map((d) => (
-            <CircleMarker
-              key={d.id}
-              center={[Number(d.last_lat), Number(d.last_lng)]}
-              radius={9}
-              pathOptions={{
-                color: '#ffffff',
-                weight: 2,
-                fillColor: STATUS_COLOR[d.status] ?? '#94a3b8',
-                fillOpacity: 1,
-              }}
-            >
-              <Popup>
-                <div className="text-sm">
-                  <p className="font-semibold">{d.device_code}</p>
-                  <p className="text-slate-600">
-                    {d.vehicles?.unit_code ?? 'Unassigned'} {d.vehicles?.vehicle_type ? `· ${d.vehicles.vehicle_type}` : ''}
-                  </p>
-                  <p className="capitalize text-slate-600">{d.status.replace(/_/g, ' ')}</p>
-                  {d.last_speed_kph != null && <p className="text-slate-600">{d.last_speed_kph} kph</p>}
-                </div>
-              </Popup>
-            </CircleMarker>
-          ))}
+          <FitToBounds bounds={mapBounds} />
+          {located.map((d) => {
+            const inside = isInsideCuliat(Number(d.last_lat), Number(d.last_lng), culiatFeature);
+            return (
+              <CircleMarker
+                key={d.id}
+                center={[Number(d.last_lat), Number(d.last_lng)]}
+                radius={9}
+                pathOptions={{
+                  color: '#ffffff',
+                  weight: 2,
+                  fillColor: STATUS_COLOR[d.status] ?? '#94a3b8',
+                  fillOpacity: inside ? 1 : 0.55,
+                  dashArray: inside ? undefined : '3, 3',
+                }}
+              >
+                <Popup>
+                  <div className="text-sm">
+                    <p className="font-semibold">{d.device_code}</p>
+                    <p className="text-slate-600">
+                      {d.vehicles?.unit_code ?? 'Unassigned'} {d.vehicles?.vehicle_type ? `· ${d.vehicles.vehicle_type}` : ''}
+                    </p>
+                    <p className="capitalize text-slate-600">{d.status.replace(/_/g, ' ')}</p>
+                    {d.last_speed_kph != null && <p className="text-slate-600">{d.last_speed_kph} kph</p>}
+                    {!inside && <p className="mt-1 font-medium text-amber-600">Outside Brgy. Culiat</p>}
+                  </div>
+                </Popup>
+              </CircleMarker>
+            );
+          })}
         </MapContainer>
       </div>
 
