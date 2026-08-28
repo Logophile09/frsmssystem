@@ -18,6 +18,7 @@ import {
   GitBranch,
   ClipboardCheck,
   FileCheck,
+  FileText,
   Ban,
   BarChart3,
   UserCog,
@@ -100,6 +101,7 @@ const STEPS = [
 
 const MODULES = [
   { icon: Flame, label: 'Incidents & Dispatch' },
+  { icon: FileText, label: 'Post-Incident Reports' },
   { icon: Users, label: 'Personnel' },
   { icon: Truck, label: 'Vehicles' },
   { icon: Wrench, label: 'Equipment' },
