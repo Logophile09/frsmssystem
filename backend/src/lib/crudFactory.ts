@@ -11,6 +11,35 @@ interface CrudOptions {
   select?: string;
   /** admin-only for write operations (create/update/delete) */
   adminWriteOnly?: boolean;
+  /**
+   * Whitelist of body fields a client is allowed to set on insert/update.
+   * Anything else in req.body is dropped -- this is what stops a client
+   * from smuggling extra columns (id, created_at, foreign keys the UI
+   * never exposes, etc.) into an insert/update just because they exist
+   * on the table. Every crudRouter call must supply this explicitly
+   * (no "allow everything" default) so adding a sensitive column to a
+   * table later doesn't silently become client-writable.
+   */
+  writableFields: string[];
+  /**
+   * Fields set from the server/request context rather than the client
+   * body (e.g. "recorded_by: req.user.id"), applied only on create so a
+   * client can't set or overwrite them via the request body. Wins over
+   * anything with the same key in writableFields.
+   */
+  serverFields?: (req: AuthedRequest) => Record<string, unknown>;
+}
+
+/** Keeps only the whitelisted keys that are actually present in body. */
+function pickWritable(body: unknown, fields: string[]): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  if (!body || typeof body !== 'object') return out;
+  for (const field of fields) {
+    if (Object.prototype.hasOwnProperty.call(body, field)) {
+      out[field] = (body as Record<string, unknown>)[field];
+    }
+  }
+  return out;
 }
 
 /**
@@ -51,7 +80,8 @@ export function crudRouter(opts: CrudOptions): Router {
     if (opts.adminWriteOnly && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Admin access required' });
     }
-    const { data, error } = await supabaseAdmin.from(opts.table).insert(req.body).select().single();
+    const payload = { ...pickWritable(req.body, opts.writableFields), ...(opts.serverFields?.(req) ?? {}) };
+    const { data, error } = await supabaseAdmin.from(opts.table).insert(payload).select().single();
     if (error) return res.status(400).json({ error: error.message });
     res.status(201).json(data);
   });
@@ -60,9 +90,10 @@ export function crudRouter(opts: CrudOptions): Router {
     if (opts.adminWriteOnly && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Admin access required' });
     }
+    const payload = pickWritable(req.body, opts.writableFields);
     const { data, error } = await supabaseAdmin
       .from(opts.table)
-      .update(req.body)
+      .update(payload)
       .eq('id', req.params.id)
       .select()
       .single();
