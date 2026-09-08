@@ -240,7 +240,13 @@ export default function GpsTrackerPage() {
       </div>
 
       <div className="relative isolate mb-6 overflow-hidden rounded-2xl border border-leaf-100 bg-white shadow-sm dark:border-leaf-400/10 dark:bg-navy-800">
-        <MapContainer center={DEFAULT_CENTER} zoom={15} scrollWheelZoom={false} style={{ height: '24rem', width: '100%' }}>
+        <MapContainer
+          center={DEFAULT_CENTER}
+          zoom={15}
+          scrollWheelZoom={false}
+          className="gps-map-darken"
+          style={{ height: '24rem', width: '100%' }}
+        >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             // CARTO's raster basemaps started requiring a (free) API key in

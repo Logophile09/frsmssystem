@@ -180,6 +180,13 @@ textarea,
   }
 }
 
+/* GPS Tracker map -- Voyager tiles are quite bright by default, so this
+   nudges brightness/saturation down a touch for a slightly moodier look
+   without losing the street colors the way the full dark_all style does. */
+.gps-map-darken .leaflet-tile-pane {
+  filter: brightness(0.88) saturate(0.85) contrast(1.05);
+}
+
 /* Print-specific layout rules */
 @media print {
   body {
