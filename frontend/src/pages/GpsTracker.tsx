@@ -231,7 +231,7 @@ export default function GpsTrackerPage() {
           </div>
           <div>
             <h1 className="module-title">GPS Tracker</h1>
-            <p className="module-description">Live device map, focused on Brgy. Culiat, dark basemap by CARTO.</p>
+            <p className="module-description">Live device map, focused on Brgy. Culiat, Voyager basemap by CARTO.</p>
           </div>
         </div>
         <button onClick={() => setAdding(true)} className="btn-primary">
@@ -247,10 +247,15 @@ export default function GpsTrackerPage() {
             // 2026 -- without it every tile gets an "API KEY REQUIRED"
             // watermark. Get one at carto.com/basemaps/apikey and set
             // VITE_CARTO_API_KEY in frontend/.env.local (and in Vercel's
-            // project env vars for production).
-            url={`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${
+            // project env vars for production). Voyager is CARTO's light,
+            // full-color basemap (street labels, subtle terrain shading) --
+            // swap the path back to dark_all/{z}/{x}/{y}{r}.png for the old
+            // dark theme.
+            url={`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${
               CARTO_API_KEY ? `?key=${CARTO_API_KEY}` : ''
             }`}
+            subdomains="abcd"
+            maxZoom={20}
           />
           <FitToBounds bounds={mapBounds} />
           {located.map((d) => {
@@ -259,12 +264,12 @@ export default function GpsTrackerPage() {
               <CircleMarker
                 key={d.id}
                 center={[Number(d.last_lat), Number(d.last_lng)]}
-                radius={9}
+                radius={10}
                 pathOptions={{
                   color: '#ffffff',
-                  weight: 2,
+                  weight: 3,
                   fillColor: STATUS_COLOR[d.status] ?? '#94a3b8',
-                  fillOpacity: inside ? 1 : 0.55,
+                  fillOpacity: inside ? 0.9 : 0.45,
                   dashArray: inside ? undefined : '3, 3',
                 }}
               >
@@ -283,6 +288,15 @@ export default function GpsTrackerPage() {
             );
           })}
         </MapContainer>
+
+        {/* Bottom caption bar, styled after the barangay campaign map --
+            tells the viewer how many devices are on the map and that pins
+            are tappable, without covering the zoom controls up top. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[500] flex justify-start p-3">
+          <div className="pointer-events-auto rounded-lg bg-white/95 px-3 py-2 text-xs font-medium text-slate-600 shadow-md ring-1 ring-slate-900/5 dark:bg-navy-900/90 dark:text-slate-300">
+            {located.length} device{located.length === 1 ? '' : 's'} tracked in Culiat — tap a pin for details.
+          </div>
+        </div>
       </div>
 
       <div className="surface-card mb-6 p-5">
