@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useOnlinePresence } from '../hooks/useOnlinePresence';
 import { api, isBackendUnreachable } from '../lib/api';
 import AmbientGlow from './AmbientGlow';
 import LiveClock from './LiveClock';
@@ -79,6 +80,7 @@ const NAV_GROUPS: {
 export default function Layout() {
   const { profile, signOut, demoMode } = useAuth();
   const { dark, toggle } = useTheme();
+  const { onlineUsers, onlineCount } = useOnlinePresence();
   const location = useLocation();
   const [activeIncidents, setActiveIncidents] = useState<number | null>(null);
   const [online, setOnline] = useState(true);
@@ -263,6 +265,15 @@ export default function Layout() {
               <span className="hidden stat-chip sm:flex">
                 Active Incidents <span className="font-extrabold text-navy-900 dark:text-slate-100">{activeIncidents ?? '—'}</span>
               </span>
+              {!demoMode && (
+                <span
+                  className="hidden stat-chip sm:flex"
+                  title={onlineUsers.length ? onlineUsers.map((u) => u.full_name).join(', ') : 'No other staff online right now'}
+                >
+                  <span className="stat-chip-dot animate-pulse bg-leaf-500" />
+                  Staff Online <span className="font-extrabold text-navy-900 dark:text-slate-100">{onlineCount}</span>
+                </span>
+              )}
               {(demoMode || !online) && (
                 <span className="rounded-full bg-amber-100 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-amber-800 dark:bg-leaf-500/20 dark:text-leaf-300">
                   Demo Data

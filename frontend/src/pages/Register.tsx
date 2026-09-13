@@ -130,13 +130,13 @@ export default function Register() {
           station,
           notes: form.notes,
         });
-        // Already signed in via Google. The account is 'active' the
-        // moment the backend call above returns, but the AuthContext
-        // still has the stale 'pending' profile it loaded at sign-in --
-        // refresh it before navigating so ProtectedRoute doesn't bounce
-        // us straight back to /pending-approval.
+        // Already signed in via Google. The account stays 'pending' until
+        // an administrator approves it -- refresh the profile (it's still
+        // the bare-bones one AuthContext loaded at sign-in) and send them
+        // to the waiting screen; ProtectedRoute would bounce them there
+        // anyway, but navigating explicitly avoids a flash of /dashboard.
         await refreshProfile();
-        navigate('/dashboard', { replace: true });
+        navigate('/pending-approval', { replace: true });
         return;
       }
 
@@ -151,8 +151,9 @@ export default function Register() {
         notes: form.notes,
       });
 
-      // Auto-sign-in so the app has a session; the account is 'active'
-      // immediately, so this lands straight on the dashboard.
+      // Auto-sign-in so the app has a session and can show the waiting
+      // screen right away -- the account itself stays 'pending' until an
+      // administrator approves it from Staff Accounts.
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: form.email,
         password: form.password,
@@ -163,7 +164,7 @@ export default function Register() {
           state: { registered: true },
         });
       } else {
-        navigate('/dashboard', { replace: true });
+        navigate('/pending-approval', { replace: true });
       }
     } catch (err: any) {
       setError(err.message ?? 'Registration failed. Please try again.');
