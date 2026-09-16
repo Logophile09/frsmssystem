@@ -26,6 +26,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useOnlinePresence } from '../hooks/useOnlinePresence';
+import { useRevealOnScroll } from '../hooks/use-reveal';
 import { api, isBackendUnreachable } from '../lib/api';
 import AmbientGlow from './AmbientGlow';
 import LiveClock from './LiveClock';
@@ -87,6 +88,7 @@ export default function Layout() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [confirmingLogout, setConfirmingLogout] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  useRevealOnScroll();
 
   // Close the mobile drawer whenever the route changes (e.g. after tapping a nav link)
   useEffect(() => {
@@ -284,7 +286,7 @@ export default function Layout() {
               <LiveClock />
               <span className="hidden h-6 w-px bg-leaf-100 dark:bg-white/10 sm:block" />
               <button
-                onClick={toggle}
+                onClick={(e) => toggle(e)}
                 title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
                 className="btn-icon !h-9 !w-9"
                 aria-label="Toggle theme"

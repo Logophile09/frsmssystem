@@ -38,7 +38,7 @@ export default function ConfirmDialog({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[2100] flex items-center justify-center overflow-y-auto bg-black/50 p-4 backdrop-blur-sm animate-page-in"
+      className="fixed inset-0 z-[2100] flex items-center justify-center overflow-y-auto bg-foreground/30 p-4 backdrop-blur-sm animate-page-in"
       onClick={(e) => {
         if (e.target === e.currentTarget && !loading) onCancel();
       }}
@@ -47,15 +47,13 @@ export default function ConfirmDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
-        className="w-full max-w-md overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl animate-modal-in dark:border-white/10 dark:bg-navy-800"
+        className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card p-6 text-card-foreground shadow-2xl animate-modal-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-4">
           <div
             className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
-              isDestructive
-                ? 'bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400'
-                : 'bg-leaf-100 text-leaf-700 dark:bg-leaf-950/60 dark:text-leaf-300'
+              isDestructive ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'
             }`}
           >
             {isDestructive ? <AlertTriangle size={24} /> : <Info size={24} />}
@@ -63,11 +61,11 @@ export default function ConfirmDialog({
           <div className="flex-1 min-w-0">
             <h3
               id="confirm-dialog-title"
-              className="font-display text-lg font-bold text-navy-900 dark:text-slate-100"
+              className="font-display text-lg font-bold text-foreground"
             >
               {title}
             </h3>
-            <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            <div className="mt-2 text-sm text-muted-foreground">
               {message}
             </div>
           </div>

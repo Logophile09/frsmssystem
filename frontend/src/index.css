@@ -2,12 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ------------------------------------------------------------------ */
+/* Culiat Public Safety design tokens — copied from the parent site's  */
+/* design system so this subdomain (FRSMS) shares the same colors,     */
+/* radii and light/dark theme. Never hardcode a hex color in a         */
+/* component — use the token utilities (bg-card, text-muted-foreground,*/
+/* border-border, bg-primary/10, text-primary, ...) or the leaf/navy/  */
+/* ink/slate classes already used throughout this app, which are       */
+/* recolored to these same values in tailwind.config.js.               */
+/* ------------------------------------------------------------------ */
+:root {
+  color-scheme: light;
+  --radius: 1rem;
+  --background: 0.985 0.009 145;
+  --foreground: 0.18 0.025 150;
+  --card: 1 0 0;
+  --card-foreground: 0.18 0.025 150;
+  --popover: 1 0 0;
+  --popover-foreground: 0.18 0.025 150;
+  --primary: 0.47 0.145 150; /* deep civic green — the brand color */
+  --primary-foreground: 0.985 0.005 145;
+  --secondary: 0.935 0.03 145;
+  --secondary-foreground: 0.27 0.07 150;
+  --muted: 0.955 0.015 145;
+  --muted-foreground: 0.47 0.025 155;
+  --accent: 0.925 0.055 145;
+  --accent-foreground: 0.3 0.095 150;
+  --destructive: 0.58 0.22 27;
+  --destructive-foreground: 0.985 0.005 145;
+  --border: 0.87 0.03 145;
+  --input: 0.87 0.03 145;
+  --ring: 0.54 0.15 150;
+  --brand-surface: 0.47 0.145 150;
+  --brand-surface-foreground: 0.985 0.005 145;
+  --brand-surface-muted: 0.86 0.045 145;
+  --footer: 0.145 0.025 150;
+  --footer-foreground: 0.965 0.01 145;
+  --footer-muted: 0.69 0.025 150;
+  --footer-accent: 0.76 0.16 145;
+
+  --ease-theme: cubic-bezier(0.65, 0, 0.35, 1);
+  --theme-fill-duration: 1150ms;
+  --theme-fade-duration: 900ms;
+}
+
+.dark {
+  color-scheme: dark;
+  /* Surfaces climb in lightness with elevation so cards read as raised, not painted on. */
+  --background: 0.155 0.022 152;
+  --foreground: 0.96 0.008 145;
+  --card: 0.215 0.028 152;
+  --card-foreground: 0.96 0.008 145;
+  --popover: 0.225 0.028 152;
+  --popover-foreground: 0.96 0.008 145;
+  --primary: 0.76 0.155 148;
+  --primary-foreground: 0.16 0.04 152;
+  --secondary: 0.27 0.035 152;
+  --secondary-foreground: 0.95 0.012 145;
+  --muted: 0.245 0.028 152;
+  --muted-foreground: 0.76 0.028 150;
+  --accent: 0.3 0.06 150;
+  --accent-foreground: 0.93 0.03 145;
+  --destructive: 0.68 0.19 25;
+  --destructive-foreground: 0.97 0.005 145;
+  --border: 0.36 0.038 152;
+  --input: 0.36 0.038 152;
+  --ring: 0.76 0.155 148;
+  /* Full-bleed brand bands stay deep in dark mode — a 0.76-lightness green at that size glares. */
+  --brand-surface: 0.34 0.095 152;
+  --brand-surface-foreground: 0.97 0.01 145;
+  --brand-surface-muted: 0.78 0.05 148;
+  --footer: 0.115 0.018 152;
+  --footer-foreground: 0.95 0.012 145;
+  --footer-muted: 0.7 0.025 150;
+  --footer-accent: 0.78 0.155 148;
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  font-family: 'Inter', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  margin: 0;
+  font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+/* Two soft brand glows keep the dark canvas from flattening into plain black. */
+.dark body {
+  background-image:
+    radial-gradient(110rem 55rem at 78% -12%, color-mix(in oklab, oklch(var(--primary)) 10%, transparent), transparent 62%),
+    radial-gradient(80rem 50rem at 4% 8%, color-mix(in oklab, oklch(var(--primary)) 6%, transparent), transparent 58%);
+  background-attachment: fixed;
 }
 
 /* Selective smooth transitions for interactive surfaces instead of universal selector */
@@ -21,8 +107,8 @@ textarea,
 .badge,
 .table-row {
   transition-property: background-color, border-color, color, fill, stroke, box-shadow, opacity, transform;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  transition-duration: 250ms;
 }
 
 ::-webkit-scrollbar {
@@ -33,150 +119,249 @@ textarea,
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(206, 17, 38, 0.35);
+  background-color: color-mix(in oklab, oklch(var(--primary)) 40%, transparent);
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(206, 17, 38, 0.55);
+  background-color: color-mix(in oklab, oklch(var(--primary)) 60%, transparent);
 }
 
 /* Faint dot-grid canvas texture behind every authenticated page — the same
    quiet "graph paper" backdrop a modern ops console uses so translucent/frosted
    cards feel grounded. Masked with a soft radial falloff. */
 .app-canvas-texture {
-  background-image: radial-gradient(rgba(15, 26, 43, 0.06) 1px, transparent 1px);
+  background-image: radial-gradient(color-mix(in oklab, oklch(var(--foreground)) 6%, transparent) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 .dark .app-canvas-texture {
   background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
 }
 
+/* Small uppercase green eyebrow above a section heading. */
+.section-label {
+  color: oklch(var(--primary));
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+/* THE signature card hover — put this alongside surface-card on anything clickable. */
+.system-card {
+  transition:
+    transform 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 450ms ease,
+    box-shadow 450ms ease;
+}
+.system-card:hover {
+  transform: translateY(-6px);
+  border-color: color-mix(in oklab, oklch(var(--primary)) 50%, transparent);
+  box-shadow: 0 28px 65px -34px color-mix(in oklab, oklch(var(--primary)) 55%, transparent);
+}
+
+/* Inner top highlight + deep drop shadow so dark-mode cards read as raised glass. */
+.dark [class*='bg-white'],
+.dark .surface-card {
+  box-shadow:
+    0 1px 0 0 color-mix(in oklab, white 6%, transparent) inset,
+    0 24px 60px -32px oklch(0 0 0 / 0.85);
+}
+
+/* Scroll reveal, driven by the useRevealOnScroll hook (src/hooks/use-reveal.ts). */
+.reveal-ready [data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+}
+.reveal-ready [data-reveal][data-visible='true'] {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-rise {
+  animation: rise-in 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Theme-toggle circular reveal (see ThemeContext.tsx) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color var(--theme-fade-duration) var(--ease-theme),
+    border-color var(--theme-fade-duration) var(--ease-theme),
+    color var(--theme-fade-duration) var(--ease-theme),
+    fill var(--theme-fade-duration) var(--ease-theme),
+    stroke var(--theme-fade-duration) var(--ease-theme),
+    box-shadow var(--theme-fade-duration) var(--ease-theme) !important;
+  transition-delay: 0s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal-ready [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Shared admin design system — one place for the recurring surface,   */
 /* control and typography patterns used across every module page      */
-/* (Dashboard → Staff Accounts). Keeping these as classes instead of   */
-/* copy-pasted utility strings is what makes the system read as one    */
-/* consistent product instead of 15 separately-styled screens.         */
+/* (Dashboard → Staff Accounts). Restyled to the Culiat Public Safety  */
+/* card/button/input recipe: rounded-3xl cards on bg-card/95 with a    */
+/* blurred backdrop and deep shadow, fully-rounded font-bold buttons,  */
+/* and Sora display headings.                                         */
 /* ------------------------------------------------------------------ */
 @layer components {
   /* Page header: icon chip + title + description, used at the top of every
-     module. Elevated into a soft bordered "hero strip" — a wash of leaf
-     tint plus a hairline dot texture in the corner — so each module opens
-     with the same quiet sense of arrival as the dashboard, instead of a
-     plain heading sitting directly on the page background. */
+     module. A soft bordered "hero strip" wash of primary tint plus a
+     hairline glow in the corner, so each module opens with the same quiet
+     sense of arrival as the dashboard. */
   .module-header {
-    @apply relative mb-6 flex flex-wrap items-start justify-between gap-4 overflow-hidden rounded-3xl border border-leaf-100/90 bg-gradient-to-br from-white/95 via-white/90 to-leaf-50/80 px-5 py-5 shadow-sm shadow-slate-200/50 backdrop-blur-md transition-all duration-300 hover:border-leaf-200 dark:border-white/10 dark:from-navy-800/90 dark:via-navy-800/80 dark:to-navy-900/80 dark:shadow-none dark:hover:border-leaf-400/20 sm:px-6 sm:py-6;
+    @apply relative mb-6 flex flex-wrap items-start justify-between gap-4 overflow-hidden rounded-3xl border border-border bg-card/95 px-5 py-5 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-primary/30 sm:px-6 sm:py-6;
   }
   .module-header::before {
     content: '';
-    @apply pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-gradient-to-br from-leaf-400/15 to-amber-400/10 blur-2xl dark:from-leaf-400/20 dark:to-amber-500/10;
+    @apply pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-gradient-to-br from-primary/15 to-accent/20 blur-2xl;
   }
   .module-header > * {
     @apply relative;
   }
   .module-icon {
-    @apply flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-leaf-500 to-leaf-700 text-white shadow-md shadow-leaf-600/25 ring-4 ring-leaf-500/10 dark:ring-leaf-400/10;
+    @apply grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary transition-all duration-500;
   }
   .module-title {
-    @apply font-display text-xl font-extrabold tracking-tight text-navy-900 dark:text-white sm:text-2xl;
+    @apply font-display text-xl font-extrabold tracking-tight text-foreground sm:text-2xl;
   }
   .module-description {
-    @apply mt-0.5 text-sm text-slate-500 dark:text-slate-400;
+    @apply mt-0.5 text-sm text-muted-foreground;
   }
-  /* Small uppercase eyebrow label with a lead dot — section kickers ("YOUR
-     REGISTRATIONS"-style), used above card headers and grouped content. */
+  /* Small uppercase eyebrow label with a lead dot — section kickers, used
+     above card headers and grouped content. */
   .eyebrow-label {
-    @apply inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-leaf-600/80 dark:text-leaf-300/70;
+    @apply section-label inline-flex items-center gap-1.5 text-[11px] tracking-[0.16em] text-primary/80;
   }
   .eyebrow-label::before {
     content: '';
-    @apply h-1.5 w-1.5 shrink-0 rounded-full bg-leaf-500;
+    @apply h-1.5 w-1.5 shrink-0 rounded-full bg-primary;
   }
 
   /* Generic elevated surface used for tables, form panels, chart cards, etc.
-     Uses backdrop-blur and subtle translucent background so the system
-     ambient glow softly illuminates through surfaces. */
+     The design system's standard content card, everywhere in this app. */
   .surface-card {
-    @apply rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm shadow-slate-200/60 backdrop-blur-md transition-all duration-300 hover:border-leaf-300/50 hover:shadow-md hover:shadow-leaf-500/5 dark:border-white/10 dark:bg-navy-800/85 dark:shadow-none dark:hover:border-leaf-400/25 dark:hover:bg-navy-800/90;
+    @apply system-card rounded-3xl border border-border bg-card/95 shadow-2xl backdrop-blur-xl;
   }
   .surface-card-header {
-    @apply flex flex-wrap items-center justify-between gap-3 border-b border-slate-100/90 px-5 py-3.5 dark:border-white/10;
+    @apply flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3.5;
   }
   .surface-card-title {
-    @apply text-sm font-bold text-navy-900 dark:text-slate-100;
+    @apply font-display text-sm font-bold text-foreground;
   }
   .surface-card-subtitle {
-    @apply text-xs text-slate-500 dark:text-slate-400;
+    @apply text-xs text-muted-foreground;
   }
   /* "View all →" link pattern used in card headers to point at the full module */
   .card-link {
-    @apply inline-flex items-center gap-1 text-xs font-bold text-leaf-600 transition-colors duration-200 hover:text-leaf-700 hover:underline dark:text-leaf-300 dark:hover:text-leaf-200;
+    @apply inline-flex items-center gap-1 text-xs font-bold text-primary transition-colors duration-200 hover:underline;
   }
 
   /* Small rounded stat readouts used in header strips (record counts, quick totals) */
   .stat-chip {
-    @apply flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300;
+    @apply flex items-center gap-2 rounded-full border border-border bg-card/80 px-3.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm backdrop-blur-xl;
   }
   .stat-chip-dot {
     @apply h-1.5 w-1.5 shrink-0 rounded-full;
   }
-  /* Compact icon + value + label tile — used for "at a glance" stat strips
-     (Staff Accounts totals, Dashboard secondary metrics) */
+  /* Compact icon + value + label tile — used for "at a glance" stat strips */
   .mini-stat {
     @apply surface-card flex items-center gap-3 px-4 py-3.5;
   }
   .mini-stat-icon {
-    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5;
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted;
   }
   .mini-stat-value {
-    @apply text-xl font-extrabold leading-tight;
+    @apply font-display text-xl font-black leading-tight text-primary;
   }
   .mini-stat-label {
-    @apply truncate text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500;
+    @apply truncate text-[0.7rem] font-bold uppercase tracking-[0.1em] text-muted-foreground;
   }
 
   /* Avatar chip — initials circle with a soft ring, used for staff/profile identity */
   .avatar-chip {
-    @apply flex shrink-0 items-center justify-center rounded-full font-bold text-white ring-2 ring-white dark:ring-navy-800;
+    @apply flex shrink-0 items-center justify-center rounded-full font-bold text-primary-foreground ring-2 ring-card;
   }
 
-  /* Buttons */
+  /* Buttons — fully rounded, min-height 44px, font-bold, per the design system's Button recipe */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-br from-leaf-500 to-leaf-600 px-4 py-2 text-sm font-bold text-white shadow-sm shadow-leaf-500/25 transition-all duration-200 hover:-translate-y-0.5 hover:from-leaf-600 hover:to-leaf-700 hover:shadow-md hover:shadow-leaf-600/25 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0;
+    @apply inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl active:translate-y-0 disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-slate-300 px-4 py-2 text-sm font-bold text-slate-600 transition-colors duration-200 hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5;
+    @apply inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-card/80 px-5 text-sm font-bold text-foreground shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-rose-600 px-4 py-2 text-sm font-bold text-white shadow-sm shadow-rose-600/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0;
+    @apply inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-destructive px-5 text-sm font-bold text-destructive-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-destructive/90 disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-icon {
-    @apply inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition-colors duration-200 hover:border-leaf-300 hover:bg-leaf-50 hover:text-leaf-700 dark:border-white/10 dark:text-slate-400 dark:hover:border-leaf-400/30 dark:hover:bg-white/5 dark:hover:text-leaf-300;
+    @apply inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-card/80 text-foreground shadow-sm backdrop-blur-xl transition-all duration-300 hover:rotate-6 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40;
   }
   .btn-icon-danger {
-    @apply inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition-colors duration-200 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 dark:border-white/10 dark:text-slate-400 dark:hover:border-rose-400/30 dark:hover:bg-rose-500/10 dark:hover:text-rose-300;
+    @apply inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-card/80 text-foreground shadow-sm backdrop-blur-xl transition-all duration-300 hover:rotate-6 hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40;
   }
 
-  /* Form fields */
+  /* Form fields — rounded-2xl surface wrapping a transparent, outline-free control */
   .field-label {
-    @apply mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400;
+    @apply mb-1 block text-xs font-semibold text-muted-foreground;
   }
   .field-input {
-    @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-navy-900 transition-colors duration-200 placeholder:text-slate-400 focus:border-leaf-400 focus:outline-none focus:ring-2 focus:ring-leaf-400/20 dark:border-white/10 dark:bg-navy-900 dark:text-slate-100 dark:placeholder:text-slate-500;
+    @apply w-full rounded-2xl border border-border bg-muted px-3.5 py-2.5 text-sm text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring/30;
   }
   .field-search {
-    @apply w-full rounded-full border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm text-navy-900 transition-colors duration-200 focus:border-leaf-400 focus:outline-none focus:ring-2 focus:ring-leaf-400/20 dark:border-white/10 dark:bg-navy-900 dark:text-slate-100 dark:placeholder:text-slate-500;
+    @apply w-full rounded-full border border-border bg-muted py-2.5 pl-9 pr-3 text-sm text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring/30;
   }
 
   /* Tables */
   .table-head-cell {
-    @apply px-5 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500;
+    @apply px-5 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground;
   }
   .table-row {
-    @apply transition-colors duration-150 hover:bg-leaf-50/60 dark:hover:bg-white/[0.045];
+    @apply transition-colors duration-150 hover:bg-primary/5;
   }
   .table-cell {
-    @apply px-5 py-3 text-slate-700 dark:text-slate-300;
+    @apply px-5 py-3 text-foreground;
   }
 }
 

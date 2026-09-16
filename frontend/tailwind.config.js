@@ -5,51 +5,126 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Inter', 'Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        sans: ['Inter', 'Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        // Sora = display font: headings, stat numbers, card titles, logo text
+        display: ['Sora', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        // Manrope = body / UI font
+        sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // Barangay Culiat green — primary accent, matches the official
-        // barangayculiat.com portal's nav highlights & CTA buttons
+        // ---- Culiat Public Safety design-system tokens (CSS vars, see index.css) ----
+        // CSS vars hold bare "L C H" oklch channels (no oklch(...) wrapper) so
+        // Tailwind's opacity modifiers (bg-primary/10, bg-card/95, ...) work.
+        background: 'oklch(var(--background) / <alpha-value>)',
+        foreground: 'oklch(var(--foreground) / <alpha-value>)',
+        card: {
+          DEFAULT: 'oklch(var(--card) / <alpha-value>)',
+          foreground: 'oklch(var(--card-foreground) / <alpha-value>)',
+        },
+        popover: {
+          DEFAULT: 'oklch(var(--popover) / <alpha-value>)',
+          foreground: 'oklch(var(--popover-foreground) / <alpha-value>)',
+        },
+        primary: {
+          DEFAULT: 'oklch(var(--primary) / <alpha-value>)',
+          foreground: 'oklch(var(--primary-foreground) / <alpha-value>)',
+        },
+        secondary: {
+          DEFAULT: 'oklch(var(--secondary) / <alpha-value>)',
+          foreground: 'oklch(var(--secondary-foreground) / <alpha-value>)',
+        },
+        muted: {
+          DEFAULT: 'oklch(var(--muted) / <alpha-value>)',
+          foreground: 'oklch(var(--muted-foreground) / <alpha-value>)',
+        },
+        accent: {
+          DEFAULT: 'oklch(var(--accent) / <alpha-value>)',
+          foreground: 'oklch(var(--accent-foreground) / <alpha-value>)',
+        },
+        destructive: {
+          DEFAULT: 'oklch(var(--destructive) / <alpha-value>)',
+          foreground: 'oklch(var(--destructive-foreground) / <alpha-value>)',
+        },
+        border: 'oklch(var(--border) / <alpha-value>)',
+        input: 'oklch(var(--input) / <alpha-value>)',
+        ring: 'oklch(var(--ring) / <alpha-value>)',
+        'brand-surface': {
+          DEFAULT: 'oklch(var(--brand-surface) / <alpha-value>)',
+          foreground: 'oklch(var(--brand-surface-foreground) / <alpha-value>)',
+          muted: 'oklch(var(--brand-surface-muted) / <alpha-value>)',
+        },
+        footer: {
+          DEFAULT: 'oklch(var(--footer) / <alpha-value>)',
+          foreground: 'oklch(var(--footer-foreground) / <alpha-value>)',
+          muted: 'oklch(var(--footer-muted) / <alpha-value>)',
+          accent: 'oklch(var(--footer-accent) / <alpha-value>)',
+        },
+
+        // Barangay Culiat green — primary accent. Recolored to the civic-green
+        // OKLCH ramp from DESIGN-SYSTEM-PROMPT.md so every existing leaf-* class
+        // across the app inherits the new brand color with no per-file edits.
         leaf: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf0cd',
-          300: '#86e0ac',
-          400: '#4ade80',
-          500: '#16a34a',
-          600: '#15803d',
-          700: '#166534',
-          800: '#14532d',
-          900: '#0a2e18',
+          50: 'oklch(0.985 0.009 145)',
+          100: 'oklch(0.955 0.015 145)',
+          200: 'oklch(0.925 0.055 145)',
+          300: 'oklch(0.86 0.09 148)',
+          400: 'oklch(0.76 0.155 148)',
+          500: 'oklch(0.6 0.15 150)',
+          600: 'oklch(0.47 0.145 150)',
+          700: 'oklch(0.4 0.14 150)',
+          800: 'oklch(0.32 0.11 150)',
+          900: 'oklch(0.24 0.08 150)',
         },
-        // Deep navy — matches the dark hero / navbar mock
+        // Deep civic surface — recolored to the dark-mode background/card ramp
         navy: {
-          50: '#eef1f6',
-          100: '#d3dae7',
-          200: '#a6b6cf',
-          300: '#71889f',
-          400: '#3f597a',
-          500: '#26405e',
-          600: '#1b3049',
-          700: '#14243a',
-          800: '#0f1a2b',
-          900: '#0a121e',
-          950: '#050d12',
+          50: 'oklch(0.985 0.009 145)',
+          100: 'oklch(0.955 0.015 145)',
+          200: 'oklch(0.87 0.03 145)',
+          300: 'oklch(0.69 0.025 150)',
+          400: 'oklch(0.47 0.025 155)',
+          500: 'oklch(0.36 0.028 152)',
+          600: 'oklch(0.27 0.035 152)',
+          700: 'oklch(0.215 0.028 152)',
+          800: 'oklch(0.185 0.025 152)',
+          900: 'oklch(0.155 0.022 152)',
+          950: 'oklch(0.115 0.018 152)',
         },
-        // Barangay Culiat green — hotline bars, emergency CTAs (alias of leaf, kept for landing page clarity)
+        // Kept as an alias of leaf, per the original comment
         flagred: {
-          50: '#f0fdf4',
-          400: '#4ade80',
-          500: '#16a34a',
-          600: '#15803d',
-          700: '#166534',
+          50: 'oklch(0.985 0.009 145)',
+          400: 'oklch(0.76 0.155 148)',
+          500: 'oklch(0.6 0.15 150)',
+          600: 'oklch(0.47 0.145 150)',
+          700: 'oklch(0.4 0.14 150)',
         },
         ink: {
-          700: '#4b5563',
-          800: '#1e293b',
-          900: '#0f1a2b',
+          700: 'oklch(0.47 0.025 155)',
+          800: 'oklch(0.27 0.035 152)',
+          900: 'oklch(0.18 0.025 150)',
         },
+        // Neutral gray recolored with a faint civic-green tint (hue ~150) to
+        // match the design system's foreground/border/muted family, instead
+        // of plain neutral slate.
+        slate: {
+          50: 'oklch(0.985 0.008 150)',
+          100: 'oklch(0.955 0.012 150)',
+          200: 'oklch(0.9 0.016 150)',
+          300: 'oklch(0.82 0.02 150)',
+          400: 'oklch(0.65 0.022 152)',
+          500: 'oklch(0.53 0.024 152)',
+          600: 'oklch(0.44 0.026 152)',
+          700: 'oklch(0.36 0.026 152)',
+          800: 'oklch(0.27 0.026 152)',
+          900: 'oklch(0.2 0.025 150)',
+          950: 'oklch(0.145 0.022 150)',
+        },
+      },
+      borderRadius: {
+        sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 2px)',
+        lg: 'var(--radius)',
+        xl: 'calc(var(--radius) + 4px)',
+        '2xl': 'calc(var(--radius) + 8px)',
+        '3xl': 'calc(var(--radius) + 12px)',
       },
       keyframes: {
         pageIn: {
