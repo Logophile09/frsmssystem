@@ -251,7 +251,7 @@ export default function Layout() {
 
       <div className="app-canvas-texture flex min-h-screen flex-1 flex-col">
         <div className="px-4 pt-4 sm:px-6 sm:pt-6">
-          <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-leaf-100/90 bg-white/85 px-4 py-3 shadow-sm shadow-slate-200/50 backdrop-blur-md transition-all duration-300 dark:border-white/10 dark:bg-navy-800/80 dark:shadow-none sm:px-5">
+          <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-leaf-100/90 bg-white/85 px-4 py-3 shadow-sm shadow-slate-200/50 backdrop-blur-md transition-all duration-300 dark:border-white/10 dark:bg-navy-950/95 dark:shadow-none sm:px-5">
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <button
                 onClick={() => setMobileNavOpen(true)}

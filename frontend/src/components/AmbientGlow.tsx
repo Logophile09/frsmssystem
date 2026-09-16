@@ -87,19 +87,19 @@ export default function AmbientGlow({
       }
     >
       {/* 1. Primary Emergency Flame/Ruby Orb (Top-Left quadrant) */}
-      <div className="absolute -left-20 -top-28 h-[34rem] w-[34rem] rounded-full bg-gradient-to-br from-leaf-400/30 via-flagred-500/25 to-rose-500/10 blur-[100px] animate-glow-drift-a animate-glow-pulse dark:from-leaf-500/28 dark:via-flagred-600/20 dark:to-rose-900/15" />
+      <div className="absolute -left-20 -top-28 h-[34rem] w-[34rem] rounded-full bg-gradient-to-br from-leaf-400/30 via-flagred-500/25 to-rose-500/10 blur-[100px] animate-glow-drift-a animate-glow-pulse dark:from-leaf-500/14 dark:via-flagred-600/10 dark:to-rose-900/8" />
 
       {/* 2. Deep Electric Navy / Cyber Indigo Orb (Right-Center quadrant) */}
-      <div className="absolute -right-24 top-1/4 h-[38rem] w-[38rem] rounded-full bg-gradient-to-bl from-navy-400/25 via-blue-600/20 to-indigo-600/15 blur-[120px] animate-glow-drift-b dark:from-navy-400/35 dark:via-blue-500/20 dark:to-indigo-500/25" />
+      <div className="absolute -right-24 top-1/4 h-[38rem] w-[38rem] rounded-full bg-gradient-to-bl from-navy-400/25 via-blue-600/20 to-indigo-600/15 blur-[120px] animate-glow-drift-b dark:from-navy-400/18 dark:via-blue-500/10 dark:to-indigo-500/12" />
 
       {/* 3. Warm Rescue Fire Amber Orb (Bottom-Left / Center) */}
-      <div className="absolute bottom-[-10%] left-[20%] h-[30rem] w-[30rem] rounded-full bg-gradient-to-tr from-amber-500/20 via-orange-500/15 to-leaf-400/10 blur-[100px] animate-glow-drift-c dark:from-amber-600/20 dark:via-orange-600/15 dark:to-leaf-500/15" />
+      <div className="absolute bottom-[-10%] left-[20%] h-[30rem] w-[30rem] rounded-full bg-gradient-to-tr from-amber-500/20 via-orange-500/15 to-leaf-400/10 blur-[100px] animate-glow-drift-c dark:from-amber-600/10 dark:via-orange-600/8 dark:to-leaf-500/8" />
 
       {/* 4. High-Tech Emergency Cyan / Aqua Accent Beacon (Bottom-Right quadrant) */}
-      <div className="absolute -bottom-24 -right-16 h-[26rem] w-[26rem] rounded-full bg-gradient-to-tl from-cyan-500/15 via-sky-600/12 to-navy-500/15 blur-[90px] animate-glow-drift-d dark:from-cyan-400/18 dark:via-sky-500/15 dark:to-navy-400/20" />
+      <div className="absolute -bottom-24 -right-16 h-[26rem] w-[26rem] rounded-full bg-gradient-to-tl from-cyan-500/15 via-sky-600/12 to-navy-500/15 blur-[90px] animate-glow-drift-d dark:from-cyan-400/10 dark:via-sky-500/8 dark:to-navy-400/10" />
 
       {/* 5. Center Diffused Radial Bloom (Atmospheric Wash) */}
-      <div className="absolute left-1/2 top-1/3 h-[45rem] w-[45rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-radial from-leaf-400/10 via-amber-400/5 to-transparent blur-[140px] animate-glow-pulse-slow dark:from-leaf-500/12 dark:via-blue-600/6 dark:to-transparent" />
+      <div className="absolute left-1/2 top-1/3 h-[45rem] w-[45rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-radial from-leaf-400/10 via-amber-400/5 to-transparent blur-[140px] animate-glow-pulse-slow dark:from-leaf-500/6 dark:via-blue-600/3 dark:to-transparent" />
 
       {/* 6. Smooth Mouse-Follow Spotlight Aura */}
       {interactive && (
