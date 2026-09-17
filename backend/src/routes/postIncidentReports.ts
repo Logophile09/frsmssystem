@@ -57,6 +57,7 @@ router.get('/by-incident/:incidentId', async (req, res) => {
 router.post('/', async (req: AuthedRequest, res) => {
   const {
     incident_id,
+    caller_name,
     response_time_minutes,
     outcome,
     injuries_count,
@@ -76,6 +77,7 @@ router.post('/', async (req: AuthedRequest, res) => {
     .from('post_incident_reports')
     .insert({
       incident_id,
+      caller_name: caller_name ?? null,
       response_time_minutes: response_time_minutes ?? null,
       outcome: outcome ?? 'other',
       injuries_count: injuries_count ?? 0,
@@ -96,6 +98,7 @@ router.post('/', async (req: AuthedRequest, res) => {
 
 router.put('/:id', async (req: AuthedRequest, res) => {
   const {
+    caller_name,
     response_time_minutes,
     outcome,
     injuries_count,
@@ -108,6 +111,7 @@ router.put('/:id', async (req: AuthedRequest, res) => {
   } = req.body ?? {};
 
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (caller_name !== undefined) patch.caller_name = caller_name;
   if (response_time_minutes !== undefined) patch.response_time_minutes = response_time_minutes;
   if (outcome !== undefined) patch.outcome = outcome;
   if (injuries_count !== undefined) patch.injuries_count = injuries_count;

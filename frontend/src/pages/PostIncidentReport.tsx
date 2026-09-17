@@ -18,6 +18,7 @@ interface IncidentRef {
 interface Report {
   id: number;
   incident_id: number;
+  caller_name: string | null;
   response_time_minutes: number | null;
   outcome: string;
   injuries_count: number;
@@ -36,6 +37,7 @@ interface Report {
 const OUTCOMES = ['extinguished', 'contained', 'rescued', 'treated_transported', 'false_alarm', 'other'];
 
 const emptyForm = {
+  caller_name: '',
   response_time_minutes: '' as number | '',
   outcome: 'other',
   injuries_count: 0,
@@ -84,6 +86,7 @@ export default function PostIncidentReportPage() {
     setEditingIncident(report.incidents);
     setEditingReport(report);
     setForm({
+      caller_name: report.caller_name ?? '',
       response_time_minutes: report.response_time_minutes ?? '',
       outcome: report.outcome,
       injuries_count: report.injuries_count,
@@ -296,6 +299,17 @@ export default function PostIncidentReportPage() {
             {editingIncident.location} — Alert Level {editingIncident.severity}
           </div>
 
+          <div className="mb-3">
+            <label className="field-label">Name of Caller</label>
+            <input
+              type="text"
+              value={form.caller_name}
+              onChange={(e) => setForm({ ...form, caller_name: e.target.value })}
+              className="field-input"
+              placeholder="Who called in this incident…"
+            />
+          </div>
+
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div>
               <label className="field-label">Response Time (minutes)</label>
@@ -426,6 +440,10 @@ export default function PostIncidentReportPage() {
                 {printing.incidents?.incident_number} — {printing.incidents?.incident_type}
               </p>
               <dl className="mb-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                <div>
+                  <dt className="font-semibold">Name of Caller</dt>
+                  <dd>{printing.caller_name || 'Not recorded'}</dd>
+                </div>
                 <div>
                   <dt className="font-semibold">Location</dt>
                   <dd>{printing.incidents?.location}</dd>
