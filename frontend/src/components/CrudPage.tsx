@@ -15,8 +15,8 @@ import {
 } from 'lucide-react';
 import { api } from '../lib/api';
 import Modal from './Modal';
-import SelectField from './SelectField';
 import ConfirmDialog from './ConfirmDialog';
+import Select from './Select';
 import { SkeletonTableRow } from './Skeleton';
 import { useToast } from '../context/ToastContext';
 
@@ -474,12 +474,17 @@ export default function CrudPage<T extends { id: number | string }>({
               <div key={f.name}>
                 <label className="field-label">{f.label}</label>
                 {f.type === 'select' ? (
-                  <SelectField
+                  <Select
                     value={(form[f.name] as string) ?? ''}
                     onChange={(v) => setForm({ ...form, [f.name]: v })}
-                    options={(f.options ?? []).map((o) =>
-                      typeof o === 'string' ? { value: o, label: o.replace(/_/g, ' ') } : o,
-                    )}
+                    options={
+                      f.options?.map((o) =>
+                        typeof o === 'string'
+                          ? { value: o, label: o.replace(/_/g, ' ') }
+                          : o
+                      ) ?? []
+                    }
+                    required={f.required}
                   />
                 ) : f.type === 'textarea' ? (
                   <textarea
