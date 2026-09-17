@@ -1,143 +1,130 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { ChevronDown, Check } from 'lucide-react';
-
-export interface SelectOption {
-  value: string | number;
-  label: string;
-}
+import { useEffect, useRef, useState } from 'react';
+import { Check, ChevronDown } from 'lucide-react';
 
 /**
- * Drop-in replacement for a native <select>.
+ * Custom dropdown that replaces native <select>/<option>.
  *
- * A native <select>'s dropdown is positioned entirely by the browser, which
- * tries to align the currently-selected option with the trigger — for a long
- * list with a selection near the bottom, that pushes the whole panel *up*
- * and off the top of the screen. On top of that, our edit forms live inside
- * a scrollable Modal (`overflow-y-auto`), so even a plain CSS-positioned
- * dropdown would get clipped instead of floating above the dialog.
- *
- * This component measures the trigger itself and portals the panel to
- * document.body with `position: fixed`, so it always renders below the
- * field (falling back to "above" only on the rare occasion there truly
- * isn't room below), is never clipped by the modal, and stays put while the
- * modal scrolls underneath it.
+ * Native selects hand their open dropdown list off to the OS/browser to
+ * render, and on some platforms (seen on Windows + Brave) that popup shows
+ * up as an oversized, mostly-blank white box that swallows the option text
+ * — completely unstylable from our CSS since it's outside the page's paint
+ * layer. Rendering our own listbox keeps it inside the page (same dark
+ * glass styling as the rest of the auth forms) so it always looks the same
+ * regardless of OS/browser.
  */
-export default function SelectField({
+type SelectOption = string | { value: string | number; label: string };
+
+function optionValue(opt: SelectOption): string {
+  return typeof opt === 'string' ? opt : String(opt.value);
+}
+
+function optionLabel(opt: SelectOption): string {
+  return typeof opt === 'string' ? opt : opt.label;
+}
+
+export default function Select({
   value,
   onChange,
   options,
   placeholder = 'Select…',
+  required,
+  disabled,
+  className = '',
 }: {
   value: string;
   onChange: (value: string) => void;
   options: SelectOption[];
   placeholder?: string;
+  required?: boolean;
+  disabled?: boolean;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [placement, setPlacement] = useState<{ top: number; left: number; width: number; maxHeight: number; openUp: boolean } | null>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  const selected = options.find((o) => String(o.value) === String(value));
-
-  const reposition = () => {
-    const el = triggerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const gap = 6;
-    const spaceBelow = window.innerHeight - rect.bottom - gap;
-    const spaceAbove = rect.top - gap;
-    const desired = 264; // ~ max-h-64 plus a little breathing room
-    const openUp = spaceBelow < 140 && spaceAbove > spaceBelow;
-    const maxHeight = Math.max(120, Math.min(desired, openUp ? spaceAbove : spaceBelow));
-    setPlacement({
-      top: openUp ? rect.top - gap : rect.bottom + gap,
-      left: rect.left,
-      width: rect.width,
-      maxHeight,
-      openUp,
-    });
-  };
-
-  useLayoutEffect(() => {
-    if (!open) return;
-    reposition();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  // Whether the panel has room to open downward. Recomputed each time the
+  // dropdown opens, so a select near the bottom of the viewport (e.g. inside
+  // a modal) flips its list above the trigger instead of overflowing off
+  // screen or under other content.
+  const [openUp, setOpenUp] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const PANEL_MAX_HEIGHT = 256; // matches max-h-64 below
 
   useEffect(() => {
     if (!open) return;
-    const handlePointerDown = (e: MouseEvent) => {
-      if (triggerRef.current?.contains(e.target as Node)) return;
-      if (panelRef.current?.contains(e.target as Node)) return;
-      setOpen(false);
-    };
-    const handleKey = (e: KeyboardEvent) => {
+    function onDocClick(e: MouseEvent) {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') setOpen(false);
-    };
-    const handleScrollOrResize = () => reposition();
-    document.addEventListener('mousedown', handlePointerDown);
-    document.addEventListener('keydown', handleKey);
-    window.addEventListener('resize', handleScrollOrResize);
-    window.addEventListener('scroll', handleScrollOrResize, true);
+    }
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('mousedown', handlePointerDown);
-      document.removeEventListener('keydown', handleKey);
-      window.removeEventListener('resize', handleScrollOrResize);
-      window.removeEventListener('scroll', handleScrollOrResize, true);
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKey);
     };
   }, [open]);
 
+  function handleToggle() {
+    if (!open && rootRef.current) {
+      const rect = rootRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      // Only flip up when below is genuinely too tight AND above has more
+      // room — otherwise default stays down, which is the expected reading
+      // direction for a dropdown.
+      setOpenUp(spaceBelow < PANEL_MAX_HEIGHT && spaceAbove > spaceBelow);
+    }
+    setOpen((o) => !o);
+  }
+
   return (
-    <>
+    <div ref={rootRef} className={`relative ${className}`}>
+      {/* Hidden native input so HTML5 `required` validation still applies
+          on form submit, without using a real <select>. */}
+      {required && <input tabIndex={-1} aria-hidden className="sr-only" required value={value} onChange={() => {}} />}
       <button
-        ref={triggerRef}
         type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="field-input flex items-center justify-between gap-2 text-left"
+        disabled={disabled}
+        onClick={handleToggle}
+        className={`flex w-full items-center justify-between rounded-xl border px-3.5 py-2.5 text-left text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60 ${
+          open
+            ? 'border-primary bg-primary/10 text-foreground'
+            : 'border-border bg-muted/60 text-foreground hover:border-primary/40 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-white/20'
+        }`}
       >
-        <span className={selected ? '' : 'text-muted-foreground'}>{selected ? selected.label : placeholder}</span>
-        <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        <span className={value ? 'text-foreground dark:text-white font-medium' : 'text-muted-foreground dark:text-navy-400'}>
+          {value ? optionLabel(options.find((o) => optionValue(o) === value) ?? value) : placeholder}
+        </span>
+        <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180 text-primary' : ''}`} />
       </button>
 
-      {open &&
-        placement &&
-        createPortal(
-          <div
-            ref={panelRef}
-            style={{
-              position: 'fixed',
-              top: placement.openUp ? undefined : placement.top,
-              bottom: placement.openUp ? window.innerHeight - placement.top : undefined,
-              left: placement.left,
-              width: placement.width,
-              maxHeight: placement.maxHeight,
-            }}
-            className="z-[2100] overflow-y-auto rounded-2xl border border-border bg-card p-1 shadow-2xl animate-page-in"
-          >
-            {options.map((o) => {
-              const isSelected = String(o.value) === String(value);
-              return (
-                <button
-                  key={o.value}
-                  type="button"
-                  onClick={() => {
-                    onChange(String(o.value));
-                    setOpen(false);
-                  }}
-                  className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors duration-150 ${
-                    isSelected ? 'bg-primary/10 font-semibold text-primary' : 'text-foreground hover:bg-accent'
-                  }`}
-                >
-                  <span className="truncate">{o.label}</span>
-                  {isSelected && <Check size={14} className="shrink-0" />}
-                </button>
-              );
-            })}
-          </div>,
-          document.body,
-        )}
-    </>
+      {open && (
+        <div
+          className={`absolute left-0 right-0 z-30 max-h-64 overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-navy-900 ${
+            openUp ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+          }`}
+        >
+          {options.map((opt) => {
+            const optVal = optionValue(opt);
+            return (
+              <button
+                key={optVal}
+                type="button"
+                onClick={() => {
+                  onChange(optVal);
+                  setOpen(false);
+                }}
+                className={`flex w-full items-center justify-between px-3.5 py-2 text-left text-sm transition-colors duration-150 hover:bg-accent hover:text-foreground ${
+                  optVal === value ? 'font-bold text-primary dark:text-leaf-300 bg-primary/5' : 'text-foreground dark:text-white/90'
+                }`}
+              >
+                {optionLabel(opt)}
+                {optVal === value && <Check size={14} className="shrink-0 text-primary dark:text-leaf-300" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
