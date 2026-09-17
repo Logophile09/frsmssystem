@@ -18,12 +18,20 @@ interface Inspection {
 
 export default function InspectionsPage() {
   const [establishmentOptions, setEstablishmentOptions] = useState<{ value: string | number; label: string }[]>([]);
+  const [personnelOptions, setPersonnelOptions] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
     api
       .get('/establishments')
       .then((rows: { id: number; business_name: string }[]) => setEstablishmentOptions(rows.map((r) => ({ value: r.id, label: r.business_name }))))
       .catch(() => setEstablishmentOptions([]));
+
+    api
+      .get('/personnel')
+      .then((rows: { full_name: string; rank_title?: string }[]) =>
+        setPersonnelOptions(rows.map((r) => ({ value: r.full_name, label: r.rank_title ? `${r.full_name} — ${r.rank_title}` : r.full_name })))
+      )
+      .catch(() => setPersonnelOptions([]));
   }, []);
 
   return (
@@ -43,7 +51,7 @@ export default function InspectionsPage() {
         { name: 'establishment_id', label: 'Establishment', type: 'select', options: establishmentOptions, required: true },
         { name: 'inspection_type', label: 'Inspection Type', type: 'select', options: ['Initial', 'Annual', 'Follow-up', 'Renewal', 'Complaint-based'], required: true },
         { name: 'inspection_date', label: 'Inspection Date', type: 'date', required: true },
-        { name: 'inspector_name', label: 'Inspector Name', type: 'text', required: true },
+        { name: 'inspector_name', label: 'Inspector Name', type: 'select', options: personnelOptions, required: true },
         { name: 'status', label: 'Status', type: 'select', options: ['Compliant', 'Non-Compliant', 'Pending', 'Scheduled'], required: true },
         { name: 'findings_summary', label: 'Findings Summary', type: 'textarea' },
         { name: 'next_inspection_due', label: 'Next Inspection Due', type: 'date' },
