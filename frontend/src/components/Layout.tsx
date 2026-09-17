@@ -128,15 +128,6 @@ export default function Layout() {
 
   const sidebarContent = (
     <>
-      {/* Ambient red glow behind the nav modules (Dashboard -> Staff Accounts).
-          -z-10 within the relative aside paints above the aside's own solid
-          background but below the nav rows/header/footer, so it reads as a
-          soft red haze behind the module list rather than covering it. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-16 top-16 h-56 w-56 rounded-full bg-destructive/25 blur-3xl animate-glow-drift-a animate-glow-pulse dark:bg-destructive/20" />
-        <div className="absolute -right-20 top-1/2 h-64 w-64 rounded-full bg-destructive/20 blur-3xl animate-glow-drift-b dark:bg-destructive/20" />
-        <div className="absolute -left-10 bottom-24 h-48 w-48 rounded-full bg-destructive/15 blur-3xl animate-glow-drift-a dark:bg-destructive/15" />
-      </div>
       <div className="flex items-center gap-3 border-b border-border px-5 py-5">
         <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-primary/70 bg-card shadow-sm ring-4 ring-primary/10">
           <img src="/barangay-culiat-seal.png" alt="Barangay Culiat seal" className="h-full w-full object-cover" />
