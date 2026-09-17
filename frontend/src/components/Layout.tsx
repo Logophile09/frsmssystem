@@ -133,27 +133,27 @@ export default function Layout() {
           background but below the nav rows/header/footer, so it reads as a
           soft red haze behind the module list rather than covering it. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-16 top-16 h-56 w-56 rounded-full bg-flagred-400/25 blur-3xl animate-glow-drift-a animate-glow-pulse dark:bg-flagred-500/20" />
-        <div className="absolute -right-20 top-1/2 h-64 w-64 rounded-full bg-flagred-500/20 blur-3xl animate-glow-drift-b dark:bg-flagred-400/20" />
-        <div className="absolute -left-10 bottom-24 h-48 w-48 rounded-full bg-flagred-400/15 blur-3xl animate-glow-drift-a dark:bg-flagred-500/15" />
+        <div className="absolute -left-16 top-16 h-56 w-56 rounded-full bg-destructive/25 blur-3xl animate-glow-drift-a animate-glow-pulse dark:bg-destructive/20" />
+        <div className="absolute -right-20 top-1/2 h-64 w-64 rounded-full bg-destructive/20 blur-3xl animate-glow-drift-b dark:bg-destructive/20" />
+        <div className="absolute -left-10 bottom-24 h-48 w-48 rounded-full bg-destructive/15 blur-3xl animate-glow-drift-a dark:bg-destructive/15" />
       </div>
-      <div className="flex items-center gap-3 border-b border-leaf-100 px-5 py-5 dark:border-leaf-400/15">
-        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-500/70 bg-white shadow-sm ring-4 ring-leaf-500/10 dark:border-leaf-200 dark:ring-leaf-400/10">
+      <div className="flex items-center gap-3 border-b border-border px-5 py-5">
+        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-primary/70 bg-card shadow-sm ring-4 ring-primary/10">
           <img src="/barangay-culiat-seal.png" alt="Barangay Culiat seal" className="h-full w-full object-cover" />
           <span
-            className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white transition-colors duration-300 dark:border-navy-950 ${
+            className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card transition-colors duration-300 ${
               online ? 'bg-leaf-500' : 'bg-rose-500'
             }`}
             aria-hidden="true"
           />
         </div>
         <div className="min-w-0">
-          <p className="font-display text-sm font-extrabold leading-tight tracking-tight text-ink-900 dark:text-white">FRSMS</p>
-          <p className="truncate text-[11px] leading-tight text-ink-700 dark:text-slate-400">Fire &amp; Rescue Mgmt.</p>
+          <p className="font-display text-sm font-extrabold leading-tight tracking-tight text-foreground">FRSMS</p>
+          <p className="truncate text-[11px] leading-tight text-muted-foreground">Fire &amp; Rescue Mgmt.</p>
         </div>
         <button
           onClick={() => setMobileNavOpen(false)}
-          className="ml-auto rounded-lg p-1.5 text-ink-700 hover:bg-leaf-50 dark:text-slate-300 dark:hover:bg-white/5 md:hidden"
+          className="ml-auto rounded-lg p-1.5 text-muted-foreground hover:bg-accent md:hidden"
           aria-label="Close menu"
         >
           <X size={20} />
@@ -162,7 +162,7 @@ export default function Layout() {
       <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
         {NAV_GROUPS.map((group) => (
           <div key={group.label}>
-            <p className="px-3 pb-1.5 text-[10.5px] font-extrabold uppercase tracking-widest text-leaf-600/70 dark:text-leaf-200/45">
+            <p className="px-3 pb-1.5 text-[10.5px] font-extrabold uppercase tracking-widest text-primary/70">
               {group.label}
             </p>
             <div className="space-y-0.5">
@@ -179,8 +179,8 @@ export default function Layout() {
                       className={({ isActive }) =>
                         `group relative flex items-center gap-2.5 rounded-full py-2 pl-3 pr-3.5 text-sm transition-all duration-300 ease-out ${
                           isActive
-                            ? 'bg-gradient-to-br from-leaf-500 to-leaf-700 font-bold text-white shadow-md shadow-leaf-600/30'
-                            : 'text-ink-700 hover:translate-x-0.5 hover:bg-leaf-50 hover:text-leaf-700 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-leaf-200'
+                            ? 'bg-gradient-to-br from-leaf-500 to-leaf-700 font-bold text-white shadow-md shadow-primary/30'
+                            : 'text-muted-foreground hover:translate-x-0.5 hover:bg-accent hover:text-primary'
                         }`
                       }
                     >
@@ -188,7 +188,7 @@ export default function Layout() {
                         <>
                           <span
                             className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors duration-300 ${
-                              isActive ? 'bg-white/20' : 'bg-transparent group-hover:bg-leaf-100 dark:group-hover:bg-white/10'
+                              isActive ? 'bg-white/20' : 'bg-transparent group-hover:bg-accent'
                             }`}
                           >
                             <Icon size={15} className="shrink-0" />
@@ -204,18 +204,18 @@ export default function Layout() {
           </div>
         ))}
       </nav>
-      <div className="flex items-center gap-3 border-t border-leaf-100 px-4 py-4 dark:border-leaf-400/15">
-        <div className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl bg-leaf-50/70 px-3 py-2.5 dark:bg-white/[0.04]">
+      <div className="flex items-center gap-3 border-t border-border px-4 py-4">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl bg-muted/60 px-3 py-2.5">
           <Avatar
             name={profile?.full_name ?? 'Demo Administrator'}
             avatarUrl={profile?.avatar_url}
             className="h-8 w-8 text-[11px]"
           />
           <div className="min-w-0 flex-1 text-xs">
-            <p className="truncate font-bold text-ink-900 dark:text-white">{profile?.full_name ?? 'System Administrator'}</p>
+            <p className="truncate font-bold text-foreground">{profile?.full_name ?? 'System Administrator'}</p>
             <button
               onClick={() => setConfirmingLogout(true)}
-              className="text-ink-700 transition-colors duration-300 hover:text-leaf-600 dark:text-slate-400 dark:hover:text-leaf-300"
+              className="text-muted-foreground transition-colors duration-300 hover:text-primary"
             >
               Log out
             </button>
@@ -231,7 +231,7 @@ export default function Layout() {
       <AmbientGlow position="fixed" variant="system" showEmbers interactive />
 
       {/* Desktop sidebar — frosted glass backdrop with subtle border */}
-      <aside className="relative hidden w-64 shrink-0 flex-col overflow-hidden border-r border-leaf-100/80 bg-white/80 text-ink-900 backdrop-blur-md dark:border-white/10 dark:bg-navy-950/80 dark:text-slate-200 md:flex">
+      <aside className="relative hidden w-64 shrink-0 flex-col overflow-hidden border-r border-border bg-card/80 text-foreground backdrop-blur-md md:flex">
         {sidebarContent}
       </aside>
 
@@ -243,7 +243,7 @@ export default function Layout() {
             onClick={() => setMobileNavOpen(false)}
             aria-hidden="true"
           />
-          <aside className="relative z-[1501] flex h-full w-72 max-w-[85vw] flex-col overflow-hidden border-r border-leaf-100/80 bg-white/95 text-ink-900 shadow-2xl backdrop-blur-md dark:border-white/10 dark:bg-navy-950/95 dark:text-slate-200">
+          <aside className="relative z-[1501] flex h-full w-72 max-w-[85vw] flex-col overflow-hidden border-r border-border bg-card/95 text-foreground shadow-2xl backdrop-blur-md">
             {sidebarContent}
           </aside>
         </div>
@@ -251,11 +251,11 @@ export default function Layout() {
 
       <div className="app-canvas-texture flex min-h-screen flex-1 flex-col">
         <div className="px-4 pt-4 sm:px-6 sm:pt-6">
-          <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-leaf-100/90 bg-white/85 px-4 py-3 shadow-sm shadow-slate-200/50 backdrop-blur-md transition-all duration-300 dark:border-white/10 dark:bg-navy-950/95 dark:shadow-none sm:px-5">
+          <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card/95 px-4 py-3 shadow-sm backdrop-blur-md transition-all duration-300 dark:shadow-none sm:px-5">
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <button
                 onClick={() => setMobileNavOpen(true)}
-                className="rounded-lg border border-leaf-100 p-2 text-ink-900 hover:bg-leaf-50 dark:border-leaf-400/15 dark:text-slate-300 dark:hover:bg-white/5 md:hidden"
+                className="rounded-lg border border-border p-2 text-foreground hover:bg-accent md:hidden"
                 aria-label="Open menu"
               >
                 <Menu size={20} />
@@ -277,7 +277,7 @@ export default function Layout() {
                 </span>
               )}
               {(demoMode || !online) && (
-                <span className="rounded-full bg-amber-100 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-amber-800 dark:bg-leaf-500/20 dark:text-leaf-300">
+                <span className="rounded-full bg-amber-100 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-amber-800 dark:bg-primary/20 dark:text-primary">
                   Demo Data
                 </span>
               )}
