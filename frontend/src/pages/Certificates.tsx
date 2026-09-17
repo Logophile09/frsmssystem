@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import CrudPage from '../components/CrudPage';
 import { FileCheck, Printer } from 'lucide-react';
 import Badge from '../components/Badge';
@@ -22,9 +22,41 @@ interface Certificate {
   } | null;
 }
 
+// Maps a certificate type to the prefix used in its auto-generated number.
+const CERT_PREFIXES: Record<string, string> = {
+  'FSIC-Business Permit': 'FSIC-BP',
+  'FSIC-Occupancy': 'FSIC-OC',
+  FSEC: 'FSEC',
+};
+
+// Builds the next sequential certificate number for a given type, e.g.
+// "FSIC-BP-2026-00001". The sequence is scoped to the certificate type's
+// own prefix and the current year, so each type keeps its own numbering.
+function generateCertificateNumber(certType: string, existing: Certificate[]): string {
+  const prefix = CERT_PREFIXES[certType] ?? certType.replace(/\s+/g, '').toUpperCase();
+  const year = new Date().getFullYear();
+  const pattern = new RegExp(`^${prefix}-${year}-(\\d+)$`);
+
+  let maxSeq = 0;
+  existing.forEach((c) => {
+    const match = c.certificate_number?.match(pattern);
+    if (match) {
+      const seq = parseInt(match[1], 10);
+      if (seq > maxSeq) maxSeq = seq;
+    }
+  });
+
+  const nextSeq = String(maxSeq + 1).padStart(5, '0');
+  return `${prefix}-${year}-${nextSeq}`;
+}
+
 export default function CertificatesPage() {
   const [establishmentOptions, setEstablishmentOptions] = useState<{ value: string | number; label: string }[]>([]);
   const [printingCert, setPrintingCert] = useState<Certificate | null>(null);
+  // Tracks whether the current certificate_number in the form was set by
+  // the auto-generator (vs. typed by hand), so switching Certificate Type
+  // keeps refreshing the suggestion but a manual edit isn't overwritten.
+  const autoFilledNumber = useRef(false);
 
   useEffect(() => {
     api
@@ -65,6 +97,20 @@ export default function CertificatesPage() {
           </button>
         )}
         onBeforeSave={(values) => ({ ...values, establishment_id: Number(values.establishment_id) })}
+        onFieldChange={({ name, value, form, rows, isNew }) => {
+          if (name === 'certificate_number') {
+            // User is typing their own number — stop auto-overwriting it.
+            autoFilledNumber.current = false;
+            return;
+          }
+          if (name === 'certificate_type' && isNew) {
+            const current = (form.certificate_number as string) ?? '';
+            if (!current || autoFilledNumber.current) {
+              autoFilledNumber.current = true;
+              return { certificate_number: generateCertificateNumber(value as string, rows) };
+            }
+          }
+        }}
       />
 
       {printingCert && (

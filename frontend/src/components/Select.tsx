@@ -20,6 +20,16 @@ export type SelectOption = string | { value: string | number; label: string };
  * opens directly below the field, so it always looks and behaves the same
  * regardless of OS/browser.
  */
+type SelectOption = string | { value: string | number; label: string };
+
+function optionValue(opt: SelectOption): string {
+  return typeof opt === 'string' ? opt : String(opt.value);
+}
+
+function optionLabel(opt: SelectOption): string {
+  return typeof opt === 'string' ? opt : opt.label;
+}
+
 export default function Select({
   value,
   onChange,
@@ -38,7 +48,13 @@ export default function Select({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+  // Whether the panel has room to open downward. Recomputed each time the
+  // dropdown opens, so a select near the bottom of the viewport (e.g. inside
+  // a modal) flips its list above the trigger instead of overflowing off
+  // screen or under other content.
+  const [openUp, setOpenUp] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const PANEL_MAX_HEIGHT = 256; // matches max-h-64 below
 
   const normalized = options.map((o) =>
     typeof o === 'string' ? { value: o, label: o } : { value: String(o.value), label: o.label },
@@ -61,6 +77,19 @@ export default function Select({
     };
   }, [open]);
 
+  function handleToggle() {
+    if (!open && rootRef.current) {
+      const rect = rootRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      // Only flip up when below is genuinely too tight AND above has more
+      // room — otherwise default stays down, which is the expected reading
+      // direction for a dropdown.
+      setOpenUp(spaceBelow < PANEL_MAX_HEIGHT && spaceAbove > spaceBelow);
+    }
+    setOpen((o) => !o);
+  }
+
   return (
     <div ref={rootRef} className={`relative ${className}`}>
       {/* Hidden native input so HTML5 `required` validation still applies
@@ -69,37 +98,45 @@ export default function Select({
       <button
         type="button"
         disabled={disabled}
-        onClick={() => setOpen((o) => !o)}
+        onClick={handleToggle}
         className={`flex w-full items-center justify-between rounded-xl border px-3.5 py-2.5 text-left text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60 ${
           open
             ? 'border-primary bg-primary/10 text-foreground'
             : 'border-border bg-muted/60 text-foreground hover:border-primary/40 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-white/20'
         }`}
       >
-        <span className={selected ? 'text-foreground dark:text-white font-medium' : 'text-muted-foreground dark:text-navy-400'}>
-          {selected?.label || placeholder}
+<span className={value ? 'text-foreground dark:text-white font-medium' : 'text-muted-foreground dark:text-navy-400'}>
+          {value ? optionLabel(options.find((o) => optionValue(o) === value) ?? value) : placeholder}
+
         </span>
         <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180 text-primary' : ''}`} />
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-30 mt-1.5 max-h-64 overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-navy-900">
-          {normalized.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => {
-                onChange(opt.value);
-                setOpen(false);
-              }}
-              className={`flex w-full items-center justify-between px-3.5 py-2 text-left text-sm transition-colors duration-150 hover:bg-accent hover:text-foreground ${
-                opt.value === value ? 'font-bold text-primary dark:text-leaf-300 bg-primary/5' : 'text-foreground dark:text-white/90'
-              }`}
-            >
-              {opt.label}
-              {opt.value === value && <Check size={14} className="shrink-0 text-primary dark:text-leaf-300" />}
-            </button>
-          ))}
+<div
+          className={`absolute left-0 right-0 z-30 max-h-64 overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-navy-900 ${
+            openUp ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+          }`}
+        >
+          {options.map((opt) => {
+            const optVal = optionValue(opt);
+            return (
+              <button
+                key={optVal}
+                type="button"
+                onClick={() => {
+                  onChange(optVal);
+                  setOpen(false);
+                }}
+                className={`flex w-full items-center justify-between px-3.5 py-2 text-left text-sm transition-colors duration-150 hover:bg-accent hover:text-foreground ${
+                  optVal === value ? 'font-bold text-primary dark:text-leaf-300 bg-primary/5' : 'text-foreground dark:text-white/90'
+                }`}
+              >
+                {optionLabel(opt)}
+                {optVal === value && <Check size={14} className="shrink-0 text-primary dark:text-leaf-300" />}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

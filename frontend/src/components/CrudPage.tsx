@@ -477,9 +477,13 @@ export default function CrudPage<T extends { id: number | string }>({
                   <Select
                     value={(form[f.name] as string) ?? ''}
                     onChange={(v) => setForm({ ...form, [f.name]: v })}
-                    options={(f.options ?? []).map((o) =>
-                      typeof o === 'string' ? { value: o, label: o.replace(/_/g, ' ') } : o,
-                    )}
+options={
+                      f.options?.map((o) =>
+                        typeof o === 'string'
+                          ? { value: o, label: o.replace(/_/g, ' ') }
+                          : o
+                      ) ?? []
+                    }
                     placeholder="Select…"
                     required={f.required}
                   />
