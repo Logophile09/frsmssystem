@@ -7,6 +7,14 @@ import { Check, ChevronDown } from 'lucide-react';
 // dropdowns) can both use this component without extra mapping.
 export type SelectOption = string | { value: string | number; label: string };
 
+function optionValue(opt: SelectOption): string {
+  return typeof opt === 'string' ? opt : String(opt.value);
+}
+
+function optionLabel(opt: SelectOption): string {
+  return typeof opt === 'string' ? opt : opt.label;
+}
+
 /**
  * Custom dropdown that replaces native <select>/<option>.
  *
@@ -17,19 +25,9 @@ export type SelectOption = string | { value: string | number; label: string };
  * layer, and positioned/flipped however the OS decides (often upward, if
  * the field sits low on screen). Rendering our own listbox keeps it inside
  * the page (same dark glass styling as the rest of the app) and always
- * opens directly below the field, so it always looks and behaves the same
- * regardless of OS/browser.
+ * opens directly below the field unless there's genuinely no room, so it
+ * always looks and behaves the same regardless of OS/browser.
  */
-type SelectOption = string | { value: string | number; label: string };
-
-function optionValue(opt: SelectOption): string {
-  return typeof opt === 'string' ? opt : String(opt.value);
-}
-
-function optionLabel(opt: SelectOption): string {
-  return typeof opt === 'string' ? opt : opt.label;
-}
-
 export default function Select({
   value,
   onChange,
@@ -56,10 +54,7 @@ export default function Select({
   const rootRef = useRef<HTMLDivElement>(null);
   const PANEL_MAX_HEIGHT = 256; // matches max-h-64 below
 
-  const normalized = options.map((o) =>
-    typeof o === 'string' ? { value: o, label: o } : { value: String(o.value), label: o.label },
-  );
-  const selected = normalized.find((o) => o.value === value);
+  const selectedOption = options.find((o) => optionValue(o) === value);
 
   useEffect(() => {
     if (!open) return;
@@ -105,15 +100,14 @@ export default function Select({
             : 'border-border bg-muted/60 text-foreground hover:border-primary/40 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-white/20'
         }`}
       >
-<span className={value ? 'text-foreground dark:text-white font-medium' : 'text-muted-foreground dark:text-navy-400'}>
-          {value ? optionLabel(options.find((o) => optionValue(o) === value) ?? value) : placeholder}
-
+        <span className={selectedOption ? 'text-foreground dark:text-white font-medium' : 'text-muted-foreground dark:text-navy-400'}>
+          {selectedOption ? optionLabel(selectedOption) : placeholder}
         </span>
         <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180 text-primary' : ''}`} />
       </button>
 
       {open && (
-<div
+        <div
           className={`absolute left-0 right-0 z-30 max-h-64 overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-navy-900 ${
             openUp ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
           }`}

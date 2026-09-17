@@ -45,6 +45,18 @@ interface CrudPageProps<T extends { id: number | string }> {
   fields: FieldDef[];
   canDelete?: boolean;
   onBeforeSave?: (values: Record<string, unknown>) => Record<string, unknown>;
+  // Called whenever a single field's value changes in the Add/Edit form,
+  // after that field's new value has already been applied to `form`.
+  // Return a partial object to merge additional field updates into the
+  // form (e.g. auto-filling a derived value); return void/undefined to
+  // leave the rest of the form untouched.
+  onFieldChange?: (ctx: {
+    name: string;
+    value: unknown;
+    form: Record<string, unknown>;
+    rows: T[];
+    isNew: boolean;
+  }) => Record<string, unknown> | void;
   extraActions?: (row: T) => React.ReactNode;
   headerActions?: React.ReactNode;
 }
@@ -58,6 +70,7 @@ export default function CrudPage<T extends { id: number | string }>({
   fields,
   canDelete = true,
   onBeforeSave,
+  onFieldChange,
   extraActions,
   headerActions,
 }: CrudPageProps<T>) {
@@ -116,6 +129,15 @@ export default function CrudPage<T extends { id: number | string }>({
   function openEdit(row: T) {
     setForm({ ...row });
     setEditing(row);
+  }
+
+  function updateField(name: string, value: unknown) {
+    setForm((prev) => {
+      const next = { ...prev, [name]: value };
+      if (!onFieldChange) return next;
+      const patch = onFieldChange({ name, value, form: next, rows, isNew: editing === 'new' });
+      return patch ? { ...next, ...patch } : next;
+    });
   }
 
   async function save() {
@@ -476,8 +498,8 @@ export default function CrudPage<T extends { id: number | string }>({
                 {f.type === 'select' ? (
                   <Select
                     value={(form[f.name] as string) ?? ''}
-                    onChange={(v) => setForm({ ...form, [f.name]: v })}
-options={
+                    onChange={(v) => updateField(f.name, v)}
+                    options={
                       f.options?.map((o) =>
                         typeof o === 'string'
                           ? { value: o, label: o.replace(/_/g, ' ') }
@@ -490,7 +512,7 @@ options={
                 ) : f.type === 'textarea' ? (
                   <textarea
                     value={(form[f.name] as string) ?? ''}
-                    onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
+                    onChange={(e) => updateField(f.name, e.target.value)}
                     rows={3}
                     className="field-input"
                   />
@@ -500,7 +522,7 @@ options={
                     step={f.step}
                     required={f.required}
                     value={(form[f.name] as string) ?? ''}
-                    onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
+                    onChange={(e) => updateField(f.name, e.target.value)}
                     className="field-input"
                   />
                 )}
