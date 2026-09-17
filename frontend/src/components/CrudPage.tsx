@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { api } from '../lib/api';
 import Modal from './Modal';
+import SelectField from './SelectField';
 import ConfirmDialog from './ConfirmDialog';
 import { SkeletonTableRow } from './Skeleton';
 import { useToast } from '../context/ToastContext';
@@ -44,19 +45,6 @@ interface CrudPageProps<T extends { id: number | string }> {
   fields: FieldDef[];
   canDelete?: boolean;
   onBeforeSave?: (values: Record<string, unknown>) => Record<string, unknown>;
-  /**
-   * Called whenever a field in the Add/Edit form changes. Return a partial
-   * object of extra field values to merge into the form (e.g. to
-   * auto-populate one field based on another), or void/undefined to do
-   * nothing extra.
-   */
-  onFieldChange?: (params: {
-    name: string;
-    value: unknown;
-    form: Record<string, unknown>;
-    rows: T[];
-    isNew: boolean;
-  }) => Record<string, unknown> | void;
   extraActions?: (row: T) => React.ReactNode;
   headerActions?: React.ReactNode;
 }
@@ -70,7 +58,6 @@ export default function CrudPage<T extends { id: number | string }>({
   fields,
   canDelete = true,
   onBeforeSave,
-  onFieldChange,
   extraActions,
   headerActions,
 }: CrudPageProps<T>) {
@@ -129,17 +116,6 @@ export default function CrudPage<T extends { id: number | string }>({
   function openEdit(row: T) {
     setForm({ ...row });
     setEditing(row);
-  }
-
-  function setField(name: string, value: unknown) {
-    setForm((prev) => {
-      const next = { ...prev, [name]: value };
-      if (onFieldChange) {
-        const extra = onFieldChange({ name, value, form: next, rows, isNew: editing === 'new' });
-        if (extra) return { ...next, ...extra };
-      }
-      return next;
-    });
   }
 
   async function save() {
@@ -498,28 +474,17 @@ export default function CrudPage<T extends { id: number | string }>({
               <div key={f.name}>
                 <label className="field-label">{f.label}</label>
                 {f.type === 'select' ? (
-                  <select
+                  <SelectField
                     value={(form[f.name] as string) ?? ''}
-                    onChange={(e) => setField(f.name, e.target.value)}
-                    className="field-input"
-                  >
-                    <option value="" disabled>
-                      Select…
-                    </option>
-                    {f.options?.map((o) => {
-                      const value = typeof o === 'string' ? o : o.value;
-                      const label = typeof o === 'string' ? o.replace(/_/g, ' ') : o.label;
-                      return (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      );
-                    })}
-                  </select>
+                    onChange={(v) => setForm({ ...form, [f.name]: v })}
+                    options={(f.options ?? []).map((o) =>
+                      typeof o === 'string' ? { value: o, label: o.replace(/_/g, ' ') } : o,
+                    )}
+                  />
                 ) : f.type === 'textarea' ? (
                   <textarea
                     value={(form[f.name] as string) ?? ''}
-                    onChange={(e) => setField(f.name, e.target.value)}
+                    onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
                     rows={3}
                     className="field-input"
                   />
@@ -529,7 +494,7 @@ export default function CrudPage<T extends { id: number | string }>({
                     step={f.step}
                     required={f.required}
                     value={(form[f.name] as string) ?? ''}
-                    onChange={(e) => setField(f.name, e.target.value)}
+                    onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
                     className="field-input"
                   />
                 )}
