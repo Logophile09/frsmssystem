@@ -154,7 +154,7 @@ export default function Login() {
         {/* Hero + sign-in card */}
         <section className="relative overflow-hidden bg-slate-50/70 transition-colors duration-500 dark:bg-navy-950">
           <div
-            className="absolute inset-0 bg-cover bg-center opacity-15 transition-opacity duration-500 dark:opacity-30"
+            className="absolute inset-0 bg-cover bg-center opacity-30 transition-opacity duration-500 dark:opacity-30"
             style={{ backgroundImage: "url('/station-photo.png')", backgroundPosition: 'center 30%' }}
           />
           <div
@@ -162,7 +162,7 @@ export default function Login() {
             style={{
               background: dark
                 ? 'linear-gradient(115deg, rgba(8,15,28,0.97) 20%, rgba(10,18,30,0.88) 55%, rgba(10,18,30,0.65) 100%)'
-                : 'linear-gradient(115deg, rgba(255,255,255,0.97) 20%, rgba(248,250,252,0.92) 55%, rgba(240,253,244,0.75) 100%)',
+                : 'linear-gradient(115deg, rgba(255,255,255,0.95) 20%, rgba(248,250,252,0.75) 55%, rgba(240,253,244,0.45) 100%)',
             }}
           />
           <AuthBackgroundFX variant={dark ? 'dark' : 'light'} />
@@ -378,4 +378,3 @@ function GoogleIcon() {
     </svg>
   );
 }
-
