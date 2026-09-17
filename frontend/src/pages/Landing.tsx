@@ -339,7 +339,7 @@ export default function Landing() {
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s) => (
               <div key={s.n} className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                <p className="font-display text-3xl font-bold text-leaf-400/70">{s.n}</p>
+                <p className="font-display text-3xl font-bold text-leaf-400">{s.n}</p>
                 <h3 className="mt-3 font-display text-base font-bold text-white">{s.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-navy-200">{s.desc}</p>
               </div>
