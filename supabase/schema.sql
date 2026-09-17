@@ -255,6 +255,7 @@ create type post_incident_outcome as enum (
 create table post_incident_reports (
   id                        bigserial primary key,
   incident_id               bigint not null unique references incidents(id) on delete cascade,
+  caller_name               text,
   response_time_minutes     numeric,
   outcome                   post_incident_outcome not null default 'other',
   injuries_count            integer not null default 0,
@@ -468,5 +469,3 @@ insert into gps_devices (device_code, vehicle_id, status, last_lat, last_lng, la
 ('GPS-AMB-01', 4, 'offline', 14.6650, 121.0480, 0, 0, now() - interval '3 hours'),
 ('GPS-AMB-02', 5, 'online', 14.6690, 121.0560, 45.0, 270, now() - interval '30 seconds'),
 ('GPS-RES-01', 7, 'signal_lost', 14.7100, 121.0700, 0, 0, now() - interval '20 minutes');
-
-
