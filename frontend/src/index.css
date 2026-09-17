@@ -14,32 +14,32 @@
 :root {
   color-scheme: light;
   --radius: 1rem;
-  --background: 0.985 0.009 145;
-  --foreground: 0.18 0.025 150;
+  --background: 0.99 0.002 145;
+  --foreground: 0.16 0.006 150;
   --card: 1 0 0;
-  --card-foreground: 0.18 0.025 150;
+  --card-foreground: 0.16 0.006 150;
   --popover: 1 0 0;
-  --popover-foreground: 0.18 0.025 150;
-  --primary: 0.47 0.145 150; /* deep civic green — the brand color */
-  --primary-foreground: 0.985 0.005 145;
-  --secondary: 0.935 0.03 145;
+  --popover-foreground: 0.16 0.006 150;
+  --primary: 0.47 0.145 150; /* deep civic green — the brand color, the one hue carrier */
+  --primary-foreground: 0.99 0.003 145;
+  --secondary: 0.95 0.004 150;
   --secondary-foreground: 0.27 0.07 150;
-  --muted: 0.955 0.015 145;
-  --muted-foreground: 0.47 0.025 155;
-  --accent: 0.925 0.055 145;
+  --muted: 0.96 0.003 150;
+  --muted-foreground: 0.46 0.006 150;
+  --accent: 0.94 0.045 148;
   --accent-foreground: 0.3 0.095 150;
   --destructive: 0.58 0.22 27;
-  --destructive-foreground: 0.985 0.005 145;
-  --border: 0.87 0.03 145;
-  --input: 0.87 0.03 145;
+  --destructive-foreground: 0.99 0.003 145;
+  --border: 0.89 0.006 150;
+  --input: 0.89 0.006 150;
   --ring: 0.54 0.15 150;
   --brand-surface: 0.47 0.145 150;
-  --brand-surface-foreground: 0.985 0.005 145;
+  --brand-surface-foreground: 0.99 0.003 145;
   --brand-surface-muted: 0.86 0.045 145;
-  --footer: 0.145 0.025 150;
-  --footer-foreground: 0.965 0.01 145;
-  --footer-muted: 0.69 0.025 150;
-  --footer-accent: 0.76 0.16 145;
+  --footer: 0.16 0.006 150;
+  --footer-foreground: 0.97 0.003 145;
+  --footer-muted: 0.66 0.008 150;
+  --footer-accent: 0.72 0.17 147;
 
   --ease-theme: cubic-bezier(0.65, 0, 0.35, 1);
   --theme-fill-duration: 1150ms;
@@ -48,34 +48,38 @@
 
 .dark {
   color-scheme: dark;
-  /* Surfaces climb in lightness with elevation so cards read as raised, not painted on. */
-  --background: 0.155 0.022 152;
-  --foreground: 0.96 0.008 145;
-  --card: 0.215 0.028 152;
-  --card-foreground: 0.96 0.008 145;
-  --popover: 0.225 0.028 152;
-  --popover-foreground: 0.96 0.008 145;
-  --primary: 0.76 0.155 148;
-  --primary-foreground: 0.16 0.04 152;
-  --secondary: 0.27 0.035 152;
-  --secondary-foreground: 0.95 0.012 145;
-  --muted: 0.245 0.028 152;
-  --muted-foreground: 0.76 0.028 150;
-  --accent: 0.3 0.06 150;
-  --accent-foreground: 0.93 0.03 145;
+  /* True-dark, near-neutral surfaces (hue kept, chroma kept intentionally
+     tiny) so the canvas reads as black, not tinted moss-green. Green is
+     spent entirely on primary/accent/ring/brand-surface below, so it pops
+     as a distinct highlight instead of blending into the background. */
+  --background: 0.115 0.004 150;
+  --foreground: 0.97 0.004 150;
+  --card: 0.165 0.006 150;
+  --card-foreground: 0.97 0.004 150;
+  --popover: 0.18 0.006 150;
+  --popover-foreground: 0.97 0.004 150;
+  --primary: 0.74 0.19 148; /* vivid, saturated green — the only hue carrier in dark mode */
+  --primary-foreground: 0.13 0.03 152;
+  --secondary: 0.225 0.008 150;
+  --secondary-foreground: 0.95 0.006 150;
+  --muted: 0.195 0.007 150;
+  --muted-foreground: 0.68 0.01 150;
+  --accent: 0.25 0.07 148;
+  --accent-foreground: 0.92 0.04 148;
   --destructive: 0.68 0.19 25;
   --destructive-foreground: 0.97 0.005 145;
-  --border: 0.36 0.038 152;
-  --input: 0.36 0.038 152;
-  --ring: 0.76 0.155 148;
-  /* Full-bleed brand bands stay deep in dark mode — a 0.76-lightness green at that size glares. */
-  --brand-surface: 0.34 0.095 152;
+  --border: 0.29 0.012 150;
+  --input: 0.29 0.012 150;
+  --ring: 0.74 0.19 148;
+  /* Full-bleed brand bands: deep saturated green, distinct from the neutral
+     background rather than a slightly-lighter shade of the same near-black. */
+  --brand-surface: 0.22 0.09 150;
   --brand-surface-foreground: 0.97 0.01 145;
-  --brand-surface-muted: 0.78 0.05 148;
-  --footer: 0.115 0.018 152;
-  --footer-foreground: 0.95 0.012 145;
-  --footer-muted: 0.7 0.025 150;
-  --footer-accent: 0.78 0.155 148;
+  --brand-surface-muted: 0.8 0.06 148;
+  --footer: 0.08 0.003 150;
+  --footer-foreground: 0.95 0.006 150;
+  --footer-muted: 0.64 0.01 150;
+  --footer-accent: 0.76 0.19 148;
 }
 
 html {

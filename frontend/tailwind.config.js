@@ -59,63 +59,66 @@ export default {
           accent: 'oklch(var(--footer-accent) / <alpha-value>)',
         },
 
-        // Barangay Culiat green — primary accent. Recolored to the civic-green
-        // OKLCH ramp from DESIGN-SYSTEM-PROMPT.md so every existing leaf-* class
-        // across the app inherits the new brand color with no per-file edits.
+        // Barangay Culiat green — the ONE saturated hue in the palette.
+        // Pushed a touch more vivid at every step so it reads as a distinct
+        // highlight against the now-neutral navy/slate surfaces below,
+        // instead of just another shade of the same green-black.
         leaf: {
-          50: 'oklch(0.985 0.009 145)',
-          100: 'oklch(0.955 0.015 145)',
-          200: 'oklch(0.925 0.055 145)',
-          300: 'oklch(0.86 0.09 148)',
-          400: 'oklch(0.76 0.155 148)',
-          500: 'oklch(0.6 0.15 150)',
-          600: 'oklch(0.47 0.145 150)',
-          700: 'oklch(0.4 0.14 150)',
-          800: 'oklch(0.32 0.11 150)',
-          900: 'oklch(0.24 0.08 150)',
+          50: 'oklch(0.985 0.006 145)',
+          100: 'oklch(0.955 0.02 145)',
+          200: 'oklch(0.92 0.065 146)',
+          300: 'oklch(0.85 0.115 148)',
+          400: 'oklch(0.74 0.19 148)',
+          500: 'oklch(0.6 0.175 150)',
+          600: 'oklch(0.47 0.16 150)',
+          700: 'oklch(0.39 0.15 150)',
+          800: 'oklch(0.32 0.12 150)',
+          900: 'oklch(0.24 0.09 150)',
         },
-        // Deep civic surface — recolored to the dark-mode background/card ramp
+        // Deep civic surface — true neutral (near-zero chroma) so dark
+        // shades read as black, not a tinted moss-green. Green lives only
+        // in leaf/primary now, never in this "black" ramp.
         navy: {
-          50: 'oklch(0.985 0.009 145)',
-          100: 'oklch(0.955 0.015 145)',
-          200: 'oklch(0.87 0.03 145)',
-          300: 'oklch(0.69 0.025 150)',
-          400: 'oklch(0.47 0.025 155)',
-          500: 'oklch(0.36 0.028 152)',
-          600: 'oklch(0.27 0.035 152)',
-          700: 'oklch(0.215 0.028 152)',
-          800: 'oklch(0.185 0.025 152)',
-          900: 'oklch(0.155 0.022 152)',
-          950: 'oklch(0.115 0.018 152)',
+          50: 'oklch(0.985 0.002 150)',
+          100: 'oklch(0.955 0.003 150)',
+          200: 'oklch(0.87 0.005 150)',
+          300: 'oklch(0.69 0.007 150)',
+          400: 'oklch(0.47 0.008 150)',
+          500: 'oklch(0.36 0.009 150)',
+          600: 'oklch(0.27 0.01 150)',
+          700: 'oklch(0.205 0.008 150)',
+          800: 'oklch(0.16 0.006 150)',
+          900: 'oklch(0.115 0.004 150)',
+          950: 'oklch(0.08 0.003 150)',
         },
         // Kept as an alias of leaf, per the original comment
         flagred: {
-          50: 'oklch(0.985 0.009 145)',
-          400: 'oklch(0.76 0.155 148)',
-          500: 'oklch(0.6 0.15 150)',
-          600: 'oklch(0.47 0.145 150)',
-          700: 'oklch(0.4 0.14 150)',
+          50: 'oklch(0.985 0.006 145)',
+          400: 'oklch(0.74 0.19 148)',
+          500: 'oklch(0.6 0.175 150)',
+          600: 'oklch(0.47 0.16 150)',
+          700: 'oklch(0.39 0.15 150)',
         },
         ink: {
-          700: 'oklch(0.47 0.025 155)',
-          800: 'oklch(0.27 0.035 152)',
-          900: 'oklch(0.18 0.025 150)',
+          700: 'oklch(0.47 0.008 150)',
+          800: 'oklch(0.27 0.01 150)',
+          900: 'oklch(0.18 0.006 150)',
         },
-        // Neutral gray recolored with a faint civic-green tint (hue ~150) to
-        // match the design system's foreground/border/muted family, instead
-        // of plain neutral slate.
+        // Plain neutral gray — chroma dropped to near-zero (was faintly
+        // green-tinted) so it stays true gray at every step instead of
+        // compounding the moss effect alongside navy.
         slate: {
-          50: 'oklch(0.985 0.008 150)',
-          100: 'oklch(0.955 0.012 150)',
-          200: 'oklch(0.9 0.016 150)',
-          300: 'oklch(0.82 0.02 150)',
-          400: 'oklch(0.65 0.022 152)',
-          500: 'oklch(0.53 0.024 152)',
-          600: 'oklch(0.44 0.026 152)',
-          700: 'oklch(0.36 0.026 152)',
-          800: 'oklch(0.27 0.026 152)',
-          900: 'oklch(0.2 0.025 150)',
-          950: 'oklch(0.145 0.022 150)',
+          50: 'oklch(0.985 0.002 150)',
+          100: 'oklch(0.955 0.003 150)',
+          200: 'oklch(0.9 0.004 150)',
+          300: 'oklch(0.82 0.005 150)',
+          400: 'oklch(0.65 0.006 150)',
+          500: 'oklch(0.53 0.007 150)',
+          600: 'oklch(0.44 0.007 150)',
+          700: 'oklch(0.36 0.007 150)',
+          800: 'oklch(0.27 0.006 150)',
+          900: 'oklch(0.2 0.005 150)',
+          950: 'oklch(0.12 0.004 150)',
         },
       },
       borderRadius: {

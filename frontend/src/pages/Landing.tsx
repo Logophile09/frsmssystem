@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { AuthBackgroundFX } from '../components/AuthBackgroundFX';
 import {
   Flame,
@@ -34,6 +35,8 @@ import {
   Workflow,
   Blocks,
   Info,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 const NAV_LINKS = [
@@ -128,6 +131,7 @@ const MODULES = [
 export default function Landing() {
   const navigate = useNavigate();
   const { session, demoMode } = useAuth();
+  const { dark, toggle } = useTheme();
   const [leaving, setLeaving] = useState(false);
   const [activeSection, setActiveSection] = useState(NAV_LINKS[0].href.slice(1));
 
@@ -171,23 +175,23 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <div
         className={`transition-all duration-500 ease-smooth ${
           leaving ? '-translate-y-2 opacity-0' : 'translate-y-0 opacity-100'
         }`}
       >
       {/* Navbar */}
-      <header className="sticky top-0 z-50 border-b border-navy-700/40 bg-navy-900">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-400 bg-white shadow-[0_0_14px_rgba(224,160,23,0.35)]">
+            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-primary bg-white shadow-[0_0_14px_rgba(224,160,23,0.35)]">
               <img src="/barangay-culiat-seal.png" alt="Barangay Culiat seal" className="h-full w-full object-cover" />
             </div>
             <div className="leading-tight">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-leaf-400">Republic of the Philippines</p>
-              <p className="font-display text-base font-bold text-white">Barangay Culiat</p>
-              <p className="text-[11px] text-navy-200">Quezon City &middot; Emergency Response System</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-primary">Republic of the Philippines</p>
+              <p className="font-display text-base font-bold text-foreground">Barangay Culiat</p>
+              <p className="text-[11px] text-muted-foreground">Quezon City &middot; Emergency Response System</p>
             </div>
           </div>
 
@@ -201,8 +205,8 @@ export default function Landing() {
                   href={l.href}
                   className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 ${
                     isActive
-                      ? 'bg-leaf-500 text-white shadow-lg'
-                      : 'text-navy-100 hover:bg-white/10 hover:text-white'
+                      ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   }`}
                 >
                   <Icon size={16} className="shrink-0" />
@@ -213,10 +217,18 @@ export default function Landing() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={(e) => toggle(e)}
+              title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label="Toggle theme"
+              className="btn-icon !h-10 !w-10"
+            >
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
             <Link
               to="/login"
               onClick={goToLogin}
-              className="hidden items-center gap-2 rounded-lg border border-white/25 px-4 py-2 text-sm font-semibold text-white transition-colors duration-300 hover:border-leaf-400/50 hover:bg-white/10 sm:flex"
+              className="hidden items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors duration-300 hover:border-primary/40 hover:bg-accent sm:flex"
             >
               <UserRound size={15} /> Sign In
             </Link>
@@ -319,14 +331,14 @@ export default function Landing() {
       </section>
 
       {/* Stats */}
-      <section className="border-b border-slate-200 bg-slate-50">
+      <section className="border-b border-border bg-secondary/40">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-6 py-8 sm:grid-cols-4">
           {STATS.map((s) => (
             <div key={s.label} className="flex items-center gap-3">
-              <s.icon size={26} className="shrink-0 text-flagred-500" />
+              <s.icon size={26} className="shrink-0 text-primary" />
               <div>
-                <p className="font-display text-xl font-bold text-navy-900">{s.value}</p>
-                <p className="text-xs text-slate-500">{s.label}</p>
+                <p className="font-display text-xl font-bold text-foreground">{s.value}</p>
+                <p className="text-xs text-muted-foreground">{s.label}</p>
               </div>
             </div>
           ))}
@@ -336,11 +348,11 @@ export default function Landing() {
       {/* Features */}
       <section id="features" className="mx-auto max-w-7xl px-6 py-20">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-flagred-500">Features</p>
-          <h2 className="mt-2 font-display text-3xl font-bold text-navy-900 sm:text-4xl">
+          <p className="text-xs font-bold uppercase tracking-widest text-primary">Features</p>
+          <h2 className="mt-2 font-display text-3xl font-bold text-foreground sm:text-4xl">
             Everything a modern fire &amp; rescue station needs
           </h2>
-          <p className="mt-3 text-slate-600">
+          <p className="mt-3 text-muted-foreground">
             Built for the realities of barangay-level emergency response — fast, accountable, and easy to use
             under pressure.
           </p>
@@ -350,34 +362,34 @@ export default function Landing() {
           {FEATURES.map((f) => (
             <div
               key={f.title}
-              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-lg hover:shadow-leaf-500/10"
+              className="rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow duration-300 hover:shadow-lg hover:shadow-primary/10"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-navy-900">
-                <f.icon size={20} className="text-leaf-400" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+                <f.icon size={20} className="text-primary" />
               </div>
-              <h3 className="mt-4 font-display text-lg font-bold text-navy-900">{f.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{f.desc}</p>
+              <h3 className="mt-4 font-display text-lg font-bold text-foreground">{f.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="bg-navy-950">
+      <section id="how-it-works" className="border-y border-border bg-secondary/40">
         <div className="mx-auto max-w-7xl px-6 py-20">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-bold uppercase tracking-widest text-leaf-300">How It Works</p>
-            <h2 className="mt-2 font-display text-3xl font-bold text-white sm:text-4xl">
+            <p className="text-xs font-bold uppercase tracking-widest text-primary">How It Works</p>
+            <h2 className="mt-2 font-display text-3xl font-bold text-foreground sm:text-4xl">
               From the first call to close-out
             </h2>
           </div>
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s) => (
-              <div key={s.n} className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                <p className="font-display text-3xl font-bold text-leaf-400">{s.n}</p>
-                <h3 className="mt-3 font-display text-base font-bold text-white">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-navy-200">{s.desc}</p>
+              <div key={s.n} className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                <p className="font-display text-3xl font-bold text-primary">{s.n}</p>
+                <h3 className="mt-3 font-display text-base font-bold text-foreground">{s.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -388,11 +400,11 @@ export default function Landing() {
       <section id="ai" className="mx-auto max-w-7xl px-6 py-20">
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-flagred-500">AI Technology</p>
-            <h2 className="mt-2 font-display text-3xl font-bold text-navy-900 sm:text-4xl">
+            <p className="text-xs font-bold uppercase tracking-widest text-primary">AI Technology</p>
+            <h2 className="mt-2 font-display text-3xl font-bold text-foreground sm:text-4xl">
               Smarter triage, fewer wasted trips
             </h2>
-            <p className="mt-4 leading-relaxed text-slate-600">
+            <p className="mt-4 leading-relaxed text-muted-foreground">
               An AI scoring model reviews incoming reports for signs of a false alarm — repeat callers, sensor
               patterns, and report details — so responders can prioritize genuine emergencies without slowing
               down the ones that matter.
@@ -403,13 +415,15 @@ export default function Landing() {
                 'Flags likely false alarms for dispatcher review',
                 'Learns from confirmed outcomes over time',
               ].map((t) => (
-                <li key={t} className="flex items-start gap-2 text-sm text-slate-700">
-                  <CheckCircle2 size={17} className="mt-0.5 shrink-0 text-leaf-500" /> {t}
+                <li key={t} className="flex items-start gap-2 text-sm text-foreground/90">
+                  <CheckCircle2 size={17} className="mt-0.5 shrink-0 text-primary" /> {t}
                 </li>
               ))}
             </ul>
           </div>
-          <div className="rounded-2xl border border-navy-100 bg-navy-900 p-8 shadow-xl">
+          {/* This console preview stays a fixed dark surface in both themes —
+              it's meant to read as a screenshot of the (always-dark) app UI. */}
+          <div className="rounded-2xl border border-navy-800 bg-navy-900 p-8 shadow-xl">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-leaf-400/15">
                 <BrainCircuit size={22} className="text-leaf-300" />
@@ -438,11 +452,11 @@ export default function Landing() {
       </section>
 
       {/* Modules */}
-      <section id="modules" className="border-y border-slate-200 bg-slate-50">
+      <section id="modules" className="border-y border-border bg-background">
         <div className="mx-auto max-w-7xl px-6 py-20">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-bold uppercase tracking-widest text-flagred-500">Modules</p>
-            <h2 className="mt-2 font-display text-3xl font-bold text-navy-900 sm:text-4xl">
+            <p className="text-xs font-bold uppercase tracking-widest text-primary">Modules</p>
+            <h2 className="mt-2 font-display text-3xl font-bold text-foreground sm:text-4xl">
               One system, every workflow
             </h2>
           </div>
@@ -450,25 +464,26 @@ export default function Landing() {
             {MODULES.map((m) => (
               <div
                 key={m.label}
-                className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
+                className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm"
               >
-                <m.icon size={18} className="shrink-0 text-flagred-500" />
-                <span className="text-sm font-semibold text-navy-900">{m.label}</span>
+                <m.icon size={18} className="shrink-0 text-primary" />
+                <span className="text-sm font-semibold text-foreground">{m.label}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* About / CTA */}
-      <section id="about" className="relative overflow-hidden bg-navy-900">
+      {/* About / CTA — a deliberately full-bleed brand-green band, distinct
+          from the neutral background either side of it, in both themes. */}
+      <section id="about" className="relative overflow-hidden bg-brand-surface">
         <AuthBackgroundFX variant="dark" />
         <div className="relative mx-auto max-w-4xl px-6 py-20 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-leaf-300">About</p>
-          <h2 className="mt-2 font-display text-3xl font-bold text-white sm:text-4xl">
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-surface-muted">About</p>
+          <h2 className="mt-2 font-display text-3xl font-bold text-brand-surface-foreground sm:text-4xl">
             Serving Barangay Culiat, District 6, Quezon City
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-navy-100">
+          <p className="mx-auto mt-4 max-w-2xl text-brand-surface-foreground/80">
             This platform was built for Barangay Culiat's fire and rescue station to bring live dispatch,
             unit tracking, fire-safety compliance, and reporting together under one roof — in service of the
             Bagong Pilipinas governance agenda.
@@ -477,59 +492,59 @@ export default function Landing() {
             <Link
               to="/login"
               onClick={goToLogin}
-              className="flex items-center gap-2 rounded-lg bg-leaf-400 px-6 py-3 text-sm font-bold text-navy-950 shadow-lg shadow-leaf-500/20 transition-colors duration-300 hover:bg-leaf-300"
+              className="flex items-center gap-2 rounded-lg bg-background px-6 py-3 text-sm font-bold text-foreground shadow-lg transition-colors duration-300 hover:bg-background/90"
             >
               Admin / Responder Login <ArrowRight size={16} />
             </Link>
             <a
               href="tel:911"
-              className="flex items-center gap-2 rounded-lg border border-white/25 px-6 py-3 text-sm font-bold text-white transition-colors duration-300 hover:bg-white/10"
+              className="flex items-center gap-2 rounded-lg border border-brand-surface-foreground/25 px-6 py-3 text-sm font-bold text-brand-surface-foreground transition-colors duration-300 hover:bg-brand-surface-foreground/10"
             >
               Call 911
             </a>
           </div>
 
           {/* Barangay Office contact card */}
-          <div className="mx-auto mt-14 max-w-md rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
-            <p className="font-display text-lg font-bold uppercase tracking-wide text-white">Barangay Office</p>
+          <div className="mx-auto mt-14 max-w-md rounded-2xl border border-brand-surface-foreground/15 bg-brand-surface-foreground/5 p-6 text-left">
+            <p className="font-display text-lg font-bold uppercase tracking-wide text-brand-surface-foreground">Barangay Office</p>
 
             <div className="mt-4 space-y-2.5">
               <a
                 href="tel:09625821531"
-                className="flex items-center gap-3 rounded-xl bg-navy-100 px-4 py-3 text-sm font-bold text-navy-900 transition-colors duration-300 hover:bg-white"
+                className="flex items-center gap-3 rounded-xl bg-brand-surface-foreground/90 px-4 py-3 text-sm font-bold text-brand-surface transition-colors duration-300 hover:bg-brand-surface-foreground"
               >
-                <Phone size={16} className="shrink-0 text-flagred-500" /> 0962-582-1531
+                <Phone size={16} className="shrink-0 text-primary" /> 0962-582-1531
               </a>
               <a
                 href="mailto:brgy.culiat@yahoo.com"
-                className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors duration-300 hover:bg-white/10"
+                className="flex items-center gap-3 rounded-xl border border-brand-surface-foreground/15 bg-brand-surface-foreground/5 px-4 py-3 text-sm font-semibold text-brand-surface-foreground transition-colors duration-300 hover:bg-brand-surface-foreground/10"
               >
-                <Mail size={16} className="shrink-0 text-leaf-400" /> brgy.culiat@yahoo.com
+                <Mail size={16} className="shrink-0 text-brand-surface-muted" /> brgy.culiat@yahoo.com
               </a>
               <a
                 href="#"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-1 pt-1 text-sm font-semibold text-leaf-300 transition-colors duration-300 hover:text-leaf-200"
+                className="flex items-center gap-2 px-1 pt-1 text-sm font-semibold text-brand-surface-muted transition-colors duration-300 hover:text-brand-surface-foreground"
               >
                 <MessageCircle size={16} className="shrink-0" /> Facebook page
               </a>
             </div>
 
-            <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
-              <div className="flex items-start gap-2.5 text-sm text-navy-100">
-                <MapPin size={16} className="mt-0.5 shrink-0 text-navy-300" />
+            <div className="mt-4 space-y-2 border-t border-brand-surface-foreground/15 pt-4">
+              <div className="flex items-start gap-2.5 text-sm text-brand-surface-foreground/85">
+                <MapPin size={16} className="mt-0.5 shrink-0 text-brand-surface-foreground/60" />
                 <span>467 Tandang Sora Ave, Quezon City, 1128 Metro Manila</span>
               </div>
-              <div className="flex items-start gap-2.5 text-sm text-navy-100">
-                <Clock size={16} className="mt-0.5 shrink-0 text-navy-300" />
+              <div className="flex items-start gap-2.5 text-sm text-brand-surface-foreground/85">
+                <Clock size={16} className="mt-0.5 shrink-0 text-brand-surface-foreground/60" />
                 <span>Monday &ndash; Friday, 8:00 AM &ndash; 5:00 PM</span>
               </div>
             </div>
 
             <a
               href="tel:911"
-              className="mt-4 flex items-center gap-2.5 border-t border-white/10 pt-4 text-sm font-bold text-leaf-300 transition-colors duration-300 hover:text-leaf-200"
+              className="mt-4 flex items-center gap-2.5 border-t border-brand-surface-foreground/15 pt-4 text-sm font-bold text-brand-surface-muted transition-colors duration-300 hover:text-brand-surface-foreground"
             >
               <Phone size={16} className="shrink-0" /> Emergency 911
             </a>
@@ -538,28 +553,28 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-navy-950 py-8">
+      <footer className="bg-footer py-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 text-center sm:flex-row sm:text-left">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-leaf-400/50 bg-white">
+            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-primary/50 bg-white">
               <img src="/barangay-culiat-seal.png" alt="Barangay Culiat seal" className="h-full w-full object-cover" />
             </div>
-            <p className="text-xs text-navy-300">
+            <p className="text-xs text-footer-muted">
               &copy; {new Date().getFullYear()} Barangay Culiat, Quezon City &mdash; Fire &amp; Rescue Service
               Management System
             </p>
           </div>
-          <p className="text-xs text-navy-400">Bagong Pilipinas &middot; AI-Enhanced Emergency Response</p>
+          <p className="text-xs text-footer-muted">Bagong Pilipinas &middot; AI-Enhanced Emergency Response</p>
         </div>
       </footer>
       </div>
 
       {leaving && (
-        <div className="fixed inset-0 z-[2000] flex flex-col items-center justify-center gap-4 bg-navy-900 animate-page-in">
-          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-400 bg-white shadow-[0_0_30px_rgba(206,17,38,0.4)]">
+        <div className="fixed inset-0 z-[2000] flex flex-col items-center justify-center gap-4 bg-background animate-page-in">
+          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-primary bg-white shadow-[0_0_30px_rgba(22,163,74,0.35)]">
             <img src="/barangay-culiat-seal.png" alt="" className="h-full w-full object-cover" />
           </div>
-          <p className="font-display text-lg font-semibold text-white">Taking you to sign in&hellip;</p>
+          <p className="font-display text-lg font-semibold text-foreground">Taking you to sign in&hellip;</p>
         </div>
       )}
     </div>
