@@ -26,7 +26,7 @@ interface Certificate {
 const CERT_PREFIXES: Record<string, string> = {
   'FSIC-Business Permit': 'FSIC-BP',
   'FSIC-Occupancy': 'FSIC-OC',
-  'FSEC': 'FSEC',
+  'FSEC-Building Permit': 'FSEC_BP',
 };
 
 // Builds the next sequential certificate number for a given type, e.g.
