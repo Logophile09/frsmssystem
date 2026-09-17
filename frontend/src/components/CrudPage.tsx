@@ -44,6 +44,19 @@ interface CrudPageProps<T extends { id: number | string }> {
   fields: FieldDef[];
   canDelete?: boolean;
   onBeforeSave?: (values: Record<string, unknown>) => Record<string, unknown>;
+  /**
+   * Called whenever a field in the Add/Edit form changes. Return a partial
+   * object of extra field values to merge into the form (e.g. to
+   * auto-populate one field based on another), or void/undefined to do
+   * nothing extra.
+   */
+  onFieldChange?: (params: {
+    name: string;
+    value: unknown;
+    form: Record<string, unknown>;
+    rows: T[];
+    isNew: boolean;
+  }) => Record<string, unknown> | void;
   extraActions?: (row: T) => React.ReactNode;
   headerActions?: React.ReactNode;
 }
@@ -57,6 +70,7 @@ export default function CrudPage<T extends { id: number | string }>({
   fields,
   canDelete = true,
   onBeforeSave,
+  onFieldChange,
   extraActions,
   headerActions,
 }: CrudPageProps<T>) {
@@ -115,6 +129,17 @@ export default function CrudPage<T extends { id: number | string }>({
   function openEdit(row: T) {
     setForm({ ...row });
     setEditing(row);
+  }
+
+  function setField(name: string, value: unknown) {
+    setForm((prev) => {
+      const next = { ...prev, [name]: value };
+      if (onFieldChange) {
+        const extra = onFieldChange({ name, value, form: next, rows, isNew: editing === 'new' });
+        if (extra) return { ...next, ...extra };
+      }
+      return next;
+    });
   }
 
   async function save() {
@@ -475,7 +500,7 @@ export default function CrudPage<T extends { id: number | string }>({
                 {f.type === 'select' ? (
                   <select
                     value={(form[f.name] as string) ?? ''}
-                    onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
+                    onChange={(e) => setField(f.name, e.target.value)}
                     className="field-input"
                   >
                     <option value="" disabled>
@@ -494,7 +519,7 @@ export default function CrudPage<T extends { id: number | string }>({
                 ) : f.type === 'textarea' ? (
                   <textarea
                     value={(form[f.name] as string) ?? ''}
-                    onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
+                    onChange={(e) => setField(f.name, e.target.value)}
                     rows={3}
                     className="field-input"
                   />
@@ -504,7 +529,7 @@ export default function CrudPage<T extends { id: number | string }>({
                     step={f.step}
                     required={f.required}
                     value={(form[f.name] as string) ?? ''}
-                    onChange={(e) => setForm({ ...form, [f.name]: e.target.value })}
+                    onChange={(e) => setField(f.name, e.target.value)}
                     className="field-input"
                   />
                 )}
