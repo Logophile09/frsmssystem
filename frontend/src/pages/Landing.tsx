@@ -30,14 +30,18 @@ import {
   Mail,
   MessageCircle,
   Clock,
+  LayoutGrid,
+  Workflow,
+  Blocks,
+  Info,
 } from 'lucide-react';
 
 const NAV_LINKS = [
-  { href: '#features', label: 'Features' },
-  { href: '#how-it-works', label: 'How It Works' },
-  { href: '#ai', label: 'AI Technology' },
-  { href: '#modules', label: 'Modules' },
-  { href: '#about', label: 'About' },
+  { href: '#features', label: 'Features', icon: LayoutGrid },
+  { href: '#how-it-works', label: 'How It Works', icon: Workflow },
+  { href: '#ai', label: 'AI Technology', icon: BrainCircuit },
+  { href: '#modules', label: 'Modules', icon: Blocks },
+  { href: '#about', label: 'About', icon: Info },
 ];
 
 const STATS = [
@@ -125,6 +129,7 @@ export default function Landing() {
   const navigate = useNavigate();
   const { session, demoMode } = useAuth();
   const [leaving, setLeaving] = useState(false);
+  const [activeSection, setActiveSection] = useState(NAV_LINKS[0].href.slice(1));
 
   // Supabase OAuth (Google/Facebook) redirects back to the site's root URL
   // after login, not to /login. If a session is already present when this
@@ -135,6 +140,28 @@ export default function Landing() {
   useEffect(() => {
     if (session || demoMode) navigate('/dashboard', { replace: true });
   }, [session, demoMode, navigate]);
+
+  // Highlight the nav item for whichever section is currently scrolled
+  // into view, so the pill nav tracks the page the way a multi-page
+  // "current page" indicator would.
+  useEffect(() => {
+    const sectionIds = NAV_LINKS.map((l) => l.href.slice(1));
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        });
+      },
+      { rootMargin: '-45% 0px -50% 0px', threshold: 0 }
+    );
+    sections.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   function goToLogin(e: MouseEvent) {
     e.preventDefault();
@@ -164,16 +191,25 @@ export default function Landing() {
             </div>
           </div>
 
-          <nav className="hidden items-center gap-7 lg:flex">
-            {NAV_LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                className="text-sm font-medium text-navy-100 transition-colors duration-300 hover:text-leaf-300"
-              >
-                {l.label}
-              </a>
-            ))}
+          <nav className="hidden items-center gap-1.5 lg:flex">
+            {NAV_LINKS.map((l) => {
+              const Icon = l.icon;
+              const isActive = activeSection === l.href.slice(1);
+              return (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 ${
+                    isActive
+                      ? 'bg-leaf-500 text-white shadow-lg'
+                      : 'text-navy-100 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <Icon size={16} className="shrink-0" />
+                  {l.label}
+                </a>
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-3">
