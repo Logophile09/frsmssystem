@@ -57,16 +57,20 @@ export default function Select({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
-        className={`flex w-full items-center justify-between rounded-lg border px-3.5 py-2.5 text-left text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-leaf-400/20 disabled:opacity-60 ${
-          open ? 'border-leaf-400 bg-white/10' : 'border-white/10 bg-white/5 hover:border-white/20'
+        className={`flex w-full items-center justify-between rounded-xl border px-3.5 py-2.5 text-left text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60 ${
+          open
+            ? 'border-primary bg-primary/10 text-foreground'
+            : 'border-border bg-muted/60 text-foreground hover:border-primary/40 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-white/20'
         }`}
       >
-        <span className={value ? 'text-white' : 'text-navy-400'}>{value || placeholder}</span>
-        <ChevronDown size={16} className={`shrink-0 text-navy-300 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        <span className={value ? 'text-foreground dark:text-white font-medium' : 'text-muted-foreground dark:text-navy-400'}>
+          {value || placeholder}
+        </span>
+        <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180 text-primary' : ''}`} />
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-30 mt-1.5 max-h-64 overflow-y-auto rounded-lg border border-white/10 bg-navy-900 py-1 shadow-xl shadow-black/40">
+        <div className="absolute left-0 right-0 top-full z-30 mt-1.5 max-h-64 overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-navy-900">
           {options.map((opt) => (
             <button
               key={opt}
@@ -75,12 +79,12 @@ export default function Select({
                 onChange(opt);
                 setOpen(false);
               }}
-              className={`flex w-full items-center justify-between px-3.5 py-2 text-left text-sm transition-colors duration-150 hover:bg-white/10 ${
-                opt === value ? 'text-leaf-300' : 'text-white/90'
+              className={`flex w-full items-center justify-between px-3.5 py-2 text-left text-sm transition-colors duration-150 hover:bg-accent hover:text-foreground ${
+                opt === value ? 'font-bold text-primary dark:text-leaf-300 bg-primary/5' : 'text-foreground dark:text-white/90'
               }`}
             >
               {opt}
-              {opt === value && <Check size={14} className="shrink-0" />}
+              {opt === value && <Check size={14} className="shrink-0 text-primary dark:text-leaf-300" />}
             </button>
           ))}
         </div>

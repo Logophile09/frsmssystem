@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { ArrowRight, Radio, ShieldCheck, UserPlus, UserRound } from 'lucide-react';
+import { ArrowRight, Radio, ShieldCheck, UserPlus, UserRound, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { registerAccount, completeOAuthRegistration } from '../lib/api';
 import { AuthModeSwitch, AuthFlipTransition } from '../components/AuthModeSwitch';
@@ -46,14 +47,14 @@ const STATION_OPTIONS = [
   OTHER,
 ];
 
-// Dark-glass input/label styling — matches the sign-in card on Login.tsx
-// exactly, so the two auth screens read as one continuous experience.
+// Dual-theme adaptive input and label styling
 const inputClass =
-  'w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder:text-navy-400 focus:border-leaf-400 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-leaf-400/20';
-const labelClass = 'mb-1.5 block text-xs font-semibold text-navy-200';
+  'w-full rounded-xl border border-border bg-muted/60 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-navy-400 dark:focus:border-leaf-400 dark:focus:bg-white/10';
+const labelClass = 'mb-1.5 block text-xs font-semibold text-foreground/85 dark:text-navy-200';
 
 export default function Register() {
   const { session, demoMode, profile, loading, refreshProfile } = useAuth();
+  const { dark, toggle } = useTheme();
   const navigate = useNavigate();
 
   // A session with no *approved* profile yet means "Continue with Google"
@@ -178,26 +179,26 @@ export default function Register() {
   // signup form at someone who just finished signing in with Google.
   if (loading && session) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-navy-900 text-sm text-navy-300">
+      <div className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground">
         Loading your account…
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="animate-page-in">
-        {/* Navbar — identical to Login so Sign In / Register are always reachable */}
-        <header className="sticky top-0 z-50 border-b border-navy-700/40 bg-navy-900">
+        {/* Navbar */}
+        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
             <Link to="/" className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-400 bg-white shadow-[0_0_14px_rgba(224,160,23,0.35)]">
+              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-primary bg-white shadow-[0_0_14px_rgba(224,160,23,0.35)]">
                 <img src="/barangay-culiat-seal.png" alt="Barangay Culiat seal" className="h-full w-full object-cover" />
               </div>
               <div className="leading-tight">
-                <p className="text-[11px] font-bold uppercase tracking-widest text-leaf-400">Republic of the Philippines</p>
-                <p className="font-display text-base font-bold text-white">Barangay Culiat</p>
-                <p className="text-[11px] text-navy-200">Quezon City &middot; Emergency Response System</p>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-primary">Republic of the Philippines</p>
+                <p className="font-display text-base font-bold text-foreground">Barangay Culiat</p>
+                <p className="text-[11px] text-muted-foreground">Quezon City &middot; Emergency Response System</p>
               </div>
             </Link>
 
@@ -206,7 +207,7 @@ export default function Register() {
                 <a
                   key={l.href}
                   href={l.href}
-                  className="text-sm font-medium text-navy-100 transition-colors duration-300 hover:text-leaf-300"
+                  className="text-sm font-medium text-muted-foreground transition-colors duration-300 hover:text-primary"
                 >
                   {l.label}
                 </a>
@@ -214,53 +215,61 @@ export default function Register() {
             </nav>
 
             <div className="flex items-center gap-3">
+              <button
+                onClick={(e) => toggle(e)}
+                title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+                aria-label="Toggle theme"
+                className="btn-icon !h-10 !w-10"
+              >
+                {dark ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
               <Link
                 to="/login"
-                className="hidden items-center gap-2 rounded-lg border border-white/25 px-4 py-2 text-sm font-semibold text-white transition-colors duration-300 hover:border-leaf-400/50 hover:bg-white/10 sm:flex"
+                className="hidden items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors duration-300 hover:border-primary/40 hover:bg-accent sm:flex"
               >
                 <UserRound size={15} /> Sign In
               </Link>
-              <span className="flex items-center gap-2 rounded-lg border border-leaf-400/50 bg-leaf-400/10 px-4 py-2 text-sm font-semibold text-leaf-300">
+              <span className="flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
                 <UserPlus size={15} /> Register
               </span>
             </div>
           </div>
 
           {/* Hotline bar */}
-          <div className="bg-flagred-500">
-            <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-6 py-2 text-sm font-semibold text-white">
-              <Radio size={15} className="shrink-0" />
-              24/7 Emergency Hotline: <span className="font-extrabold">911</span>
+          <div className="bg-primary transition-colors duration-300">
+            <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-6 py-2 text-sm font-semibold text-primary-foreground">
+              <Radio size={15} className="shrink-0 animate-pulse" />
+              24/7 Emergency Hotline: <a href="tel:911" className="font-extrabold underline underline-offset-2 hover:opacity-90">911</a>
             </div>
           </div>
         </header>
 
-        {/* Dark hero panel — same station-photo + gradient + drifting glow
-            treatment as Login, so the form card sits in an identical scene. */}
-        <section className="relative overflow-hidden bg-navy-900 py-14 sm:py-20">
+        {/* Hero panel with dual-theme background */}
+        <section className="relative overflow-hidden bg-slate-50/70 transition-colors duration-500 dark:bg-navy-950 py-14 sm:py-20">
           <div
-            className="absolute inset-0 bg-cover bg-center opacity-30"
+            className="absolute inset-0 bg-cover bg-center opacity-15 transition-opacity duration-500 dark:opacity-30"
             style={{ backgroundImage: "url('/station-photo.png')", backgroundPosition: 'center 30%' }}
           />
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 transition-opacity duration-500"
             style={{
-              background:
-                'linear-gradient(115deg, rgba(10,18,30,0.97) 20%, rgba(10,18,30,0.85) 55%, rgba(10,18,30,0.6) 100%)',
+              background: dark
+                ? 'linear-gradient(115deg, rgba(8,15,28,0.97) 20%, rgba(10,18,30,0.88) 55%, rgba(10,18,30,0.65) 100%)'
+                : 'linear-gradient(115deg, rgba(255,255,255,0.97) 20%, rgba(248,250,252,0.92) 55%, rgba(240,253,244,0.75) 100%)',
             }}
           />
-          <AuthBackgroundFX variant="dark" />
+          <AuthBackgroundFX variant={dark ? 'dark' : 'light'} />
 
           <div className="relative mx-auto w-full max-w-2xl px-6">
             <div className="mb-8 flex flex-col items-center text-center">
-              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-leaf-400 bg-white shadow-[0_0_18px_rgba(206,17,38,0.35)]">
+              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-primary bg-white shadow-[0_0_18px_rgba(22,163,74,0.35)]">
                 <img src="/barangay-culiat-seal.png" alt="Barangay Culiat seal" className="h-full w-full object-cover" />
               </div>
-              <p className="mt-4 text-[11px] font-bold uppercase tracking-widest text-leaf-300">Barangay Culiat &middot; Quezon City</p>
-              <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-white sm:text-4xl">
+              <p className="mt-4 text-[11px] font-bold uppercase tracking-widest text-primary dark:text-leaf-300">Barangay Culiat &middot; Quezon City</p>
+              <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-foreground dark:text-white sm:text-4xl">
                 {oauthCompletion ? 'Complete Your Registration' : 'FRSMS Staff Registration'}
               </h1>
-              <p className="mt-2 max-w-md text-sm text-navy-200">
+              <p className="mt-2 max-w-md text-sm text-muted-foreground dark:text-navy-200">
                 {oauthCompletion
                   ? "You're signed in with Google -- just a few more details and you're in."
                   : 'Register for access as a responder or staff member. Your account is ready to use as soon as you sign up.'}
@@ -277,7 +286,7 @@ export default function Register() {
             <AuthFlipTransition>
             <form
               onSubmit={handleSubmit}
-              className="rounded-2xl border border-white/10 bg-navy-950/90 p-7 shadow-2xl shadow-black/50 backdrop-blur-xl sm:p-9"
+              className="rounded-2xl border border-border bg-card/95 p-7 shadow-2xl backdrop-blur-xl transition-colors duration-300 sm:p-9 dark:border-white/10 dark:bg-navy-950/90"
             >
           <div className="space-y-6">
             <div>
@@ -353,7 +362,7 @@ export default function Register() {
                   placeholder="you@agency.gov"
                   className={`${inputClass} ${oauthCompletion ? 'opacity-60' : ''}`}
                 />
-                {oauthCompletion && <p className="mt-1 text-[11px] text-navy-400">Linked to your Google account.</p>}
+                {oauthCompletion && <p className="mt-1 text-[11px] text-muted-foreground dark:text-navy-400">Linked to your Google account.</p>}
               </div>
               <div>
                 <label className={labelClass}>Phone Number</label>
@@ -409,19 +418,19 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="mb-1.5 flex items-center gap-1 text-xs font-semibold text-navy-200">
-                Terms<span className="text-flagred-400">*</span>
+              <label className="mb-1.5 flex items-center gap-1 text-xs font-semibold text-foreground/85 dark:text-navy-200">
+                Terms<span className="text-destructive">*</span>
               </label>
-              <label className="flex items-start gap-2.5 text-sm text-navy-200">
+              <label className="flex items-start gap-2.5 text-sm text-foreground/85 dark:text-navy-200 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-flagred-500 focus:ring-flagred-400"
+                  className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary"
                 />
                 <span>
                   I agree to the{' '}
-                  <a href="#" className="font-medium text-leaf-300 hover:text-leaf-200">
+                  <a href="#" className="font-semibold text-primary hover:underline">
                     terms and conditions
                   </a>
                   .
@@ -429,18 +438,18 @@ export default function Register() {
               </label>
             </div>
 
-            {error && <p className="rounded-lg bg-rose-500/10 px-3.5 py-2.5 text-sm text-rose-300">{error}</p>}
+            {error && <p className="rounded-xl bg-destructive/10 border border-destructive/20 px-3.5 py-2.5 text-sm text-destructive font-medium">{error}</p>}
 
             <button
               type="submit"
               disabled={submitting}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-flagred-500 py-3 text-sm font-bold uppercase tracking-wide text-white shadow-lg shadow-flagred-500/25 transition-colors duration-300 hover:bg-flagred-600 disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-bold uppercase tracking-wide text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 hover:bg-primary/90 disabled:opacity-60"
             >
               {submitting ? 'Submitting…' : oauthCompletion ? 'Complete Registration' : 'Register'} <ArrowRight size={15} />
             </button>
 
-            <div className="flex items-start gap-2 rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-navy-200">
-              <ShieldCheck size={15} className="mt-0.5 shrink-0 text-leaf-300" />
+            <div className="flex items-start gap-2.5 rounded-xl border border-border bg-muted/60 p-3 text-xs text-muted-foreground dark:border-white/10 dark:bg-white/5 dark:text-navy-200">
+              <ShieldCheck size={16} className="mt-0.5 shrink-0 text-primary" />
               <span>You'll be signed in and taken straight to the FRSMS dashboard.</span>
             </div>
           </div>
@@ -448,11 +457,11 @@ export default function Register() {
             </AuthFlipTransition>
           </div>
 
-          {/* Flag-colored divider — same sign-off as Login's hero section */}
+          {/* Philippine Flag Divider (Royal Blue, Sun Red, Sun Yellow) */}
           <div className="relative flex h-1.5 w-full">
-            <div className="flex-1 bg-navy-500" />
-            <div className="flex-1 bg-flagred-500" />
-            <div className="flex-1 bg-leaf-400" />
+            <div className="flex-1 bg-[#0038a8]" title="Peace, truth and justice" />
+            <div className="flex-1 bg-[#ce1126]" title="Patriotism and valor" />
+            <div className="flex-1 bg-[#fcd116]" title="Sovereignty and freedom" />
           </div>
         </section>
       </div>
@@ -461,8 +470,7 @@ export default function Register() {
 }
 
 // Small "signed in as ... via Google" pill shown instead of the Sign
-// in/Register toggle when completing an OAuth registration -- with an
-// escape hatch in case they authenticated with the wrong Google account.
+// in/Register toggle when completing an OAuth registration
 function OAuthSignedInBadge({ email }: { email: string | null }) {
   const { signOut } = useAuth();
   const navigate = useNavigate();
@@ -473,11 +481,11 @@ function OAuthSignedInBadge({ email }: { email: string | null }) {
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-navy-200">
+    <div className="flex items-center justify-between gap-3 rounded-full border border-border bg-card/80 px-4 py-2 text-xs text-foreground backdrop-blur-md dark:border-white/10 dark:bg-white/5 dark:text-navy-200">
       <span className="truncate">
-        Signed in as <span className="font-semibold text-white">{email ?? 'your Google account'}</span>
+        Signed in as <span className="font-semibold text-foreground dark:text-white">{email ?? 'your Google account'}</span>
       </span>
-      <button type="button" onClick={switchAccount} className="shrink-0 font-semibold text-leaf-300 hover:text-leaf-200">
+      <button type="button" onClick={switchAccount} className="shrink-0 font-semibold text-primary hover:underline">
         Not you?
       </button>
     </div>

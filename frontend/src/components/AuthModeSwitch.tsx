@@ -23,17 +23,19 @@ export function AuthModeSwitch({ active }: { active: 'signin' | 'register' }) {
   }
 
   return (
-    <div className="relative grid grid-cols-2 rounded-full border border-white/10 bg-white/5 p-1 text-sm font-semibold">
+    <div className="relative grid grid-cols-2 rounded-full border border-border bg-muted/70 p-1 text-sm font-semibold transition-colors dark:border-white/10 dark:bg-white/5">
       {/* sliding highlight */}
       <div
-        className="absolute inset-y-1 w-[calc(50%-4px)] rounded-full bg-flagred-500 shadow-md shadow-flagred-500/30 transition-transform duration-300 ease-smooth"
+        className="absolute inset-y-1 w-[calc(50%-4px)] rounded-full bg-primary shadow-md shadow-primary/30 transition-transform duration-300 ease-smooth"
         style={{ transform: active === 'signin' ? 'translateX(0%)' : 'translateX(calc(100% + 8px))' }}
       />
       <button
         type="button"
         onClick={() => go('signin')}
         className={`relative z-10 rounded-full py-2 transition-colors duration-300 ${
-          active === 'signin' ? 'text-white' : 'text-navy-300 hover:text-navy-100'
+          active === 'signin'
+            ? 'text-primary-foreground font-bold'
+            : 'text-muted-foreground hover:text-foreground dark:text-navy-300 dark:hover:text-white'
         }`}
       >
         Sign in
@@ -42,7 +44,9 @@ export function AuthModeSwitch({ active }: { active: 'signin' | 'register' }) {
         type="button"
         onClick={() => go('register')}
         className={`relative z-10 rounded-full py-2 transition-colors duration-300 ${
-          active === 'register' ? 'text-white' : 'text-navy-300 hover:text-navy-100'
+          active === 'register'
+            ? 'text-primary-foreground font-bold'
+            : 'text-muted-foreground hover:text-foreground dark:text-navy-300 dark:hover:text-white'
         }`}
       >
         Register

@@ -37,6 +37,8 @@ import {
   Info,
   Sun,
   Moon,
+  Menu,
+  X,
 } from 'lucide-react';
 
 const NAV_LINKS = [
@@ -134,6 +136,7 @@ export default function Landing() {
   const { dark, toggle } = useTheme();
   const [leaving, setLeaving] = useState(false);
   const [activeSection, setActiveSection] = useState(NAV_LINKS[0].href.slice(1));
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Supabase OAuth (Google/Facebook) redirects back to the site's root URL
   // after login, not to /login. If a session is already present when this
@@ -216,7 +219,7 @@ export default function Landing() {
             })}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={(e) => toggle(e)}
               title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -228,117 +231,178 @@ export default function Landing() {
             <Link
               to="/login"
               onClick={goToLogin}
-              className="hidden items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors duration-300 hover:border-primary/40 hover:bg-accent sm:flex"
+              className="hidden items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-semibold text-foreground transition-all duration-300 hover:border-primary/40 hover:bg-accent sm:flex"
             >
               <UserRound size={15} /> Sign In
             </Link>
             <Link
-              to="/login"
-              onClick={goToLogin}
-              className="flex items-center gap-2 rounded-lg bg-flagred-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-flagred-500/20 transition-colors duration-300 hover:bg-flagred-600"
+              to="/register"
+              className="hidden items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:bg-primary/90 hover:shadow-xl sm:flex"
             >
               <UserPlus size={15} /> Register
             </Link>
+            <button
+              onClick={() => setMobileMenuOpen((o) => !o)}
+              className="btn-icon !h-10 !w-10 lg:hidden"
+              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            >
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
           </div>
         </div>
 
+        {/* Mobile slide-down navigation drawer */}
+        {mobileMenuOpen && (
+          <div className="border-b border-border bg-background/98 px-6 py-4 backdrop-blur-xl lg:hidden animate-page-in">
+            <nav className="flex flex-col gap-1.5">
+              {NAV_LINKS.map((l) => {
+                const Icon = l.icon;
+                const isActive = activeSection === l.href.slice(1);
+                return (
+                  <a
+                    key={l.href}
+                    href={l.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+                      isActive
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                    }`}
+                  >
+                    <Icon size={16} /> {l.label}
+                  </a>
+                );
+              })}
+            </nav>
+            <div className="mt-4 flex flex-col gap-2 border-t border-border pt-4 sm:hidden">
+              <Link
+                to="/login"
+                onClick={(e) => {
+                  setMobileMenuOpen(false);
+                  goToLogin(e);
+                }}
+                className="flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-bold text-foreground hover:bg-accent"
+              >
+                <UserRound size={15} /> Sign In
+              </Link>
+              <Link
+                to="/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-md shadow-primary/20 hover:bg-primary/90"
+              >
+                <UserPlus size={15} /> Register
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Hotline bar */}
-        <div className="bg-flagred-500">
-          <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-6 py-2 text-sm font-semibold text-white">
-            <Radio size={15} className="shrink-0" />
-            24/7 Emergency Hotline: <span className="font-extrabold">911</span>
+        <div className="bg-primary transition-colors duration-300">
+          <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-6 py-2 text-sm font-semibold text-primary-foreground">
+            <Radio size={15} className="shrink-0 animate-pulse" />
+            24/7 Emergency Hotline: <a href="tel:911" className="font-extrabold underline underline-offset-2 hover:opacity-90">911</a>
           </div>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-navy-900">
+      {/* Hero — Seamlessly rendered in Light Mode and Dark Mode */}
+      <section className="relative overflow-hidden bg-slate-50/70 transition-colors duration-500 dark:bg-navy-950">
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-30"
+          className="absolute inset-0 bg-cover bg-center opacity-15 transition-opacity duration-500 dark:opacity-30"
           style={{ backgroundImage: "url('/station-photo.png')", backgroundPosition: 'center 30%' }}
         />
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 transition-opacity duration-500"
           style={{
-            background:
-              'linear-gradient(115deg, rgba(10,18,30,0.97) 20%, rgba(10,18,30,0.85) 55%, rgba(10,18,30,0.6) 100%)',
+            background: dark
+              ? 'linear-gradient(115deg, rgba(8,15,28,0.97) 20%, rgba(10,18,30,0.88) 55%, rgba(10,18,30,0.65) 100%)'
+              : 'linear-gradient(115deg, rgba(255,255,255,0.97) 20%, rgba(248,250,252,0.92) 55%, rgba(240,253,244,0.75) 100%)',
           }}
         />
-        {/* Same drifting glow + ember effect that carries through
-            Login/Register and every dashboard page after sign-in, so the
-            visual identity is continuous from the very first screen. */}
-        <AuthBackgroundFX variant="dark" />
+        {/* Ambient atmospheric drifting glow + particle embers */}
+        <AuthBackgroundFX variant={dark ? 'dark' : 'light'} />
+
         <div className="relative mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:py-28">
           <div>
-            <div className="mb-5 flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-leaf-400/50 bg-leaf-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-leaf-300">
+            <div className="mb-5 flex flex-wrap items-center gap-2.5">
+              <span className="rounded-full border border-emerald-600/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-extrabold uppercase tracking-wide text-emerald-700 transition-colors dark:border-leaf-400/50 dark:bg-leaf-400/10 dark:text-leaf-300">
                 Bagong Pilipinas
               </span>
-              <span className="flex items-center gap-1.5 rounded-full border border-white/25 bg-white/5 px-3 py-1 text-xs font-semibold text-white/90">
-                <BrainCircuit size={13} /> AI-Enhanced Emergency Response
+              <span className="flex items-center gap-1.5 rounded-full border border-slate-300/80 bg-white/80 px-3.5 py-1 text-xs font-semibold text-slate-800 shadow-sm backdrop-blur transition-colors dark:border-white/25 dark:bg-white/5 dark:text-white/90">
+                <BrainCircuit size={13} className="text-emerald-600 dark:text-leaf-300" /> AI-Enhanced Emergency Response
               </span>
             </div>
 
-            <h1 className="font-display text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
-              When seconds matter, <span className="text-leaf-300">we respond faster.</span>
+            <h1 className="font-display text-4xl font-bold leading-tight text-slate-950 transition-colors sm:text-5xl lg:text-6xl dark:text-white">
+              When seconds matter, <span className="text-emerald-600 drop-shadow-sm dark:text-leaf-300">we respond faster.</span>
             </h1>
 
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-navy-100 sm:text-lg">
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-slate-600 transition-colors sm:text-lg dark:text-navy-100">
               The official emergency response system of Barangay Culiat, Quezon City — connecting citizens
               with responders through an AI-powered platform under the Bagong Pilipinas governance agenda.
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-3.5">
               <a
                 href="tel:911"
-                className="flex items-center gap-2 rounded-lg bg-flagred-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-flagred-500/25 transition-colors duration-300 hover:bg-flagred-600"
+                className="group flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-600 to-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/30 transition-all duration-300 hover:-translate-y-0.5 hover:from-emerald-500 hover:to-emerald-600 hover:shadow-xl hover:shadow-emerald-600/40"
               >
-                <Flame size={16} /> Report an Emergency
+                <Phone size={16} className="transition-transform duration-300 group-hover:scale-110" /> Report an Emergency
               </a>
               <Link
                 to="/login"
-              onClick={goToLogin}
-                className="flex items-center gap-2 rounded-lg border border-white/25 bg-white/5 px-5 py-3 text-sm font-bold text-white backdrop-blur transition-colors duration-300 hover:border-leaf-400/50 hover:bg-white/10"
+                onClick={goToLogin}
+                className="flex items-center gap-2 rounded-xl border border-slate-300/90 bg-white/90 px-5 py-3 text-sm font-bold text-slate-800 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-500/60 hover:bg-emerald-50/50 hover:text-emerald-800 dark:border-white/20 dark:bg-white/5 dark:text-white dark:hover:border-leaf-400/50 dark:hover:bg-white/10"
               >
                 <ShieldCheck size={16} /> Admin / Responder Login
               </Link>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5">
               {['PWD-Accessible', 'Works Offline (PWA)', 'Real-Time GPS', 'Role-Based Security'].map((t) => (
-                <span key={t} className="flex items-center gap-2 text-sm text-navy-100">
-                  <CheckCircle2 size={15} className="text-leaf-400" /> {t}
+                <span key={t} className="flex items-center gap-2 text-sm font-medium text-slate-700 transition-colors dark:text-navy-100">
+                  <CheckCircle2 size={16} className="text-emerald-600 dark:text-leaf-400 shrink-0" /> {t}
                 </span>
               ))}
             </div>
           </div>
 
-          <div className="flex flex-col items-center">
-            <div className="flex h-56 w-56 items-center justify-center overflow-hidden rounded-full border-4 border-leaf-400/80 bg-white shadow-[0_0_50px_rgba(224,160,23,0.25)] sm:h-64 sm:w-64">
+          <div className="flex flex-col items-center text-center">
+            <div className="relative flex h-56 w-56 items-center justify-center overflow-hidden rounded-full border-4 border-emerald-500/80 bg-white shadow-[0_12px_45px_rgba(16,185,129,0.22)] transition-all duration-500 hover:scale-105 sm:h-64 sm:w-64 dark:border-leaf-400/80 dark:shadow-[0_0_55px_rgba(22,163,74,0.35)]">
               <img src="/barangay-culiat-seal.png" alt="Official seal of Barangay Culiat" className="h-full w-full object-cover" />
+              <div className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/20" />
             </div>
-            <p className="mt-4 text-xs font-bold uppercase tracking-widest text-leaf-300">Official Seal</p>
-            <p className="text-sm text-navy-200">Barangay Culiat &middot; Quezon City</p>
+            <p className="mt-4 text-xs font-black uppercase tracking-[0.2em] text-emerald-700 transition-colors dark:text-leaf-300">
+              Official Seal
+            </p>
+            <p className="text-sm font-medium text-slate-600 transition-colors dark:text-navy-200">
+              Barangay Culiat &middot; Quezon City
+            </p>
           </div>
         </div>
 
-        {/* Flag-colored divider */}
+        {/* Philippine Flag Divider (Royal Blue, Sun Red, Sun Yellow) */}
         <div className="flex h-1.5 w-full">
-          <div className="flex-1 bg-navy-500" />
-          <div className="flex-1 bg-flagred-500" />
-          <div className="flex-1 bg-leaf-400" />
+          <div className="flex-1 bg-[#0038a8]" title="Peace, truth and justice" />
+          <div className="flex-1 bg-[#ce1126]" title="Patriotism and valor" />
+          <div className="flex-1 bg-[#fcd116]" title="Sovereignty and freedom" />
         </div>
       </section>
 
       {/* Stats */}
-      <section className="border-b border-border bg-secondary/40">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-6 py-8 sm:grid-cols-4">
+      <section className="border-b border-border bg-slate-100/50 transition-colors duration-300 dark:bg-card/40">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-6 py-8 sm:grid-cols-4 sm:gap-6">
           {STATS.map((s) => (
-            <div key={s.label} className="flex items-center gap-3">
-              <s.icon size={26} className="shrink-0 text-primary" />
-              <div>
-                <p className="font-display text-xl font-bold text-foreground">{s.value}</p>
-                <p className="text-xs text-muted-foreground">{s.label}</p>
+            <div
+              key={s.label}
+              className="flex items-center gap-3.5 rounded-2xl border border-border/80 bg-card p-4 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-105">
+                <s.icon size={24} />
+              </div>
+              <div className="min-w-0">
+                <p className="font-display text-xl font-black tracking-tight text-foreground sm:text-2xl">{s.value}</p>
+                <p className="truncate text-xs font-semibold text-muted-foreground">{s.label}</p>
               </div>
             </div>
           ))}
@@ -362,10 +426,10 @@ export default function Landing() {
           {FEATURES.map((f) => (
             <div
               key={f.title}
-              className="rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow duration-300 hover:shadow-lg hover:shadow-primary/10"
+              className="group rounded-2xl border border-border bg-card p-6 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
-                <f.icon size={20} className="text-primary" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
+                <f.icon size={22} />
               </div>
               <h3 className="mt-4 font-display text-lg font-bold text-foreground">{f.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
@@ -375,7 +439,7 @@ export default function Landing() {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="border-y border-border bg-secondary/40">
+      <section id="how-it-works" className="border-y border-border bg-slate-100/40 transition-colors duration-300 dark:bg-card/25">
         <div className="mx-auto max-w-7xl px-6 py-20">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-bold uppercase tracking-widest text-primary">How It Works</p>
@@ -386,8 +450,13 @@ export default function Landing() {
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s) => (
-              <div key={s.n} className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                <p className="font-display text-3xl font-bold text-primary">{s.n}</p>
+              <div
+                key={s.n}
+                className="group relative rounded-2xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg"
+              >
+                <p className="font-display text-3xl font-extrabold text-primary transition-transform duration-300 group-hover:scale-105">
+                  {s.n}
+                </p>
                 <h3 className="mt-3 font-display text-base font-bold text-foreground">{s.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
               </div>
@@ -415,34 +484,44 @@ export default function Landing() {
                 'Flags likely false alarms for dispatcher review',
                 'Learns from confirmed outcomes over time',
               ].map((t) => (
-                <li key={t} className="flex items-start gap-2 text-sm text-foreground/90">
+                <li key={t} className="flex items-start gap-2 text-sm text-foreground/90 font-medium">
                   <CheckCircle2 size={17} className="mt-0.5 shrink-0 text-primary" /> {t}
                 </li>
               ))}
             </ul>
           </div>
-          {/* This console preview stays a fixed dark surface in both themes —
-              it's meant to read as a screenshot of the (always-dark) app UI. */}
-          <div className="rounded-2xl border border-navy-800 bg-navy-900 p-8 shadow-xl">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-leaf-400/15">
-                <BrainCircuit size={22} className="text-leaf-300" />
+          {/* Scoring Engine Console Preview — Beautiful across both Light and Dark themes */}
+          <div className="rounded-2xl border border-border/80 bg-card p-8 shadow-2xl backdrop-blur-xl transition-colors duration-300 dark:border-navy-800 dark:bg-navy-900">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <BrainCircuit size={22} />
+                </div>
+                <div>
+                  <p className="font-display text-base font-bold text-foreground">False-Alarm Scoring Engine</p>
+                  <p className="text-xs text-muted-foreground">Active Triage Neural Model v2.4</p>
+                </div>
               </div>
-              <p className="font-display text-lg font-bold text-white">False-Alarm Scoring Engine</p>
+              <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+                Live Analysis
+              </span>
             </div>
-            <div className="mt-6 space-y-3">
+            <div className="mt-6 space-y-4">
               {[
                 { label: 'Report credibility', pct: 92 },
                 { label: 'Location plausibility', pct: 88 },
                 { label: 'Caller history match', pct: 96 },
               ].map((row) => (
                 <div key={row.label}>
-                  <div className="flex justify-between text-xs text-navy-200">
+                  <div className="flex justify-between text-xs font-semibold text-muted-foreground">
                     <span>{row.label}</span>
-                    <span className="font-bold text-leaf-300">{row.pct}%</span>
+                    <span className="font-bold text-primary">{row.pct}%</span>
                   </div>
-                  <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-white/10">
-                    <div className="h-full rounded-full bg-gradient-to-r from-leaf-400 to-leaf-500" style={{ width: `${row.pct}%` }} />
+                  <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 dark:from-leaf-400 dark:to-leaf-500 transition-all duration-500"
+                      style={{ width: `${row.pct}%` }}
+                    />
                   </div>
                 </div>
               ))}
@@ -464,9 +543,11 @@ export default function Landing() {
             {MODULES.map((m) => (
               <div
                 key={m.label}
-                className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm"
+                className="group flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
               >
-                <m.icon size={18} className="shrink-0 text-primary" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
+                  <m.icon size={18} />
+                </div>
                 <span className="text-sm font-semibold text-foreground">{m.label}</span>
               </div>
             ))}
@@ -474,10 +555,9 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* About / CTA — a deliberately full-bleed brand-green band, distinct
-          from the neutral background either side of it, in both themes. */}
+      {/* About / CTA */}
       <section id="about" className="relative overflow-hidden bg-brand-surface">
-        <AuthBackgroundFX variant="dark" />
+        <AuthBackgroundFX variant={dark ? 'dark' : 'light'} />
         <div className="relative mx-auto max-w-4xl px-6 py-20 text-center">
           <p className="text-xs font-bold uppercase tracking-widest text-brand-surface-muted">About</p>
           <h2 className="mt-2 font-display text-3xl font-bold text-brand-surface-foreground sm:text-4xl">

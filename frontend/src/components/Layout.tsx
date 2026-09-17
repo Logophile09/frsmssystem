@@ -226,7 +226,7 @@ export default function Layout() {
   );
 
   return (
-    <div className="relative flex min-h-screen bg-leaf-50/60 transition-colors duration-300 dark:bg-navy-950">
+    <div className="relative flex min-h-screen bg-background transition-colors duration-300 dark:bg-navy-950">
       {/* System-wide ambient background glow covering entire viewport behind all surfaces */}
       <AmbientGlow position="fixed" variant="system" showEmbers interactive />
 
@@ -265,7 +265,7 @@ export default function Layout() {
                 {online ? 'System Online' : 'System Offline'}
               </span>
               <span className="hidden stat-chip sm:flex">
-                Active Incidents <span className="font-extrabold text-navy-900 dark:text-slate-100">{activeIncidents ?? '—'}</span>
+                Active Incidents <span className="font-extrabold text-foreground">{activeIncidents ?? '—'}</span>
               </span>
               {!demoMode && (
                 <span
@@ -273,18 +273,18 @@ export default function Layout() {
                   title={onlineUsers.length ? onlineUsers.map((u) => u.full_name).join(', ') : 'No other staff online right now'}
                 >
                   <span className="stat-chip-dot animate-pulse bg-leaf-500" />
-                  Staff Online <span className="font-extrabold text-navy-900 dark:text-slate-100">{onlineCount}</span>
+                  Staff Online <span className="font-extrabold text-foreground">{onlineCount}</span>
                 </span>
               )}
               {(demoMode || !online) && (
-                <span className="rounded-full bg-amber-100 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-amber-800 dark:bg-primary/20 dark:text-primary">
+                <span className="rounded-full bg-amber-500/15 border border-amber-500/25 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-amber-700 dark:text-amber-300">
                   Demo Data
                 </span>
               )}
             </div>
             <div className="flex items-center gap-2.5">
               <LiveClock />
-              <span className="hidden h-6 w-px bg-leaf-100 dark:bg-white/10 sm:block" />
+              <span className="hidden h-6 w-px bg-border sm:block" />
               <button
                 onClick={(e) => toggle(e)}
                 title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -294,8 +294,8 @@ export default function Layout() {
                 {dark ? <Sun size={16} /> : <Moon size={16} />}
               </button>
               <div className="hidden text-right sm:block">
-                <p className="text-sm font-bold leading-tight text-ink-900 dark:text-slate-100">{profile?.full_name ?? 'Demo Administrator'}</p>
-                <p className="text-xs capitalize leading-tight text-ink-700 dark:text-slate-400">{profile?.role ?? 'Admin'}</p>
+                <p className="text-sm font-bold leading-tight text-foreground">{profile?.full_name ?? 'Demo Administrator'}</p>
+                <p className="text-xs capitalize leading-tight text-muted-foreground">{profile?.role ?? 'Admin'}</p>
               </div>
               <Avatar
                 name={profile?.full_name ?? 'Demo Administrator'}
