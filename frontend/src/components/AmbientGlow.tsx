@@ -86,8 +86,8 @@ export default function AmbientGlow({
         } as React.CSSProperties
       }
     >
-      {/* 1. Primary Emergency Flame/Ruby Orb (Top-Left quadrant) */}
-      <div className="absolute -left-20 -top-28 h-[34rem] w-[34rem] rounded-full bg-gradient-to-br from-leaf-400/30 via-flagred-500/25 to-rose-500/10 blur-[100px] animate-glow-drift-a animate-glow-pulse dark:from-leaf-500/14 dark:via-flagred-600/10 dark:to-rose-900/8" />
+      {/* 1. Primary Flame/Amber Orb (Top-Left quadrant) */}
+      <div className="absolute -left-20 -top-28 h-[34rem] w-[34rem] rounded-full bg-gradient-to-br from-leaf-400/30 via-amber-400/20 to-leaf-500/10 blur-[100px] animate-glow-drift-a animate-glow-pulse dark:from-leaf-500/14 dark:via-amber-500/10 dark:to-leaf-700/8" />
 
       {/* 2. Deep Electric Navy / Cyber Indigo Orb (Right-Center quadrant) */}
       <div className="absolute -right-24 top-1/4 h-[38rem] w-[38rem] rounded-full bg-gradient-to-bl from-navy-400/25 via-blue-600/20 to-indigo-600/15 blur-[120px] animate-glow-drift-b dark:from-navy-400/18 dark:via-blue-500/10 dark:to-indigo-500/12" />
@@ -118,7 +118,7 @@ export default function AmbientGlow({
           {embers.map((e, i) => (
             <span
               key={i}
-              className="absolute bottom-0 rounded-full bg-gradient-to-t from-flagred-500 to-amber-400 shadow-[0_0_8px_rgba(206,17,38,0.8)] animate-ember-rise"
+              className="absolute bottom-0 rounded-full bg-gradient-to-t from-amber-500 to-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.8)] animate-ember-rise"
               style={
                 {
                   left: e.left,
