@@ -3,12 +3,15 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function ProtectedRoute({ children, adminOnly }: { children: React.ReactNode; adminOnly?: boolean }) {
-  const { session, profile, loading, demoMode } = useAuth();
+  const { session, profile, loading, demoMode, requiresOtp } = useAuth();
 
   if (loading) {
     return <div className="flex h-screen items-center justify-center text-slate-500">Loading…</div>;
   }
   if (!session && !demoMode) return <Navigate to="/login" replace />;
+  // Google sign-in landed here (e.g. a stale /dashboard bookmark) before
+  // clearing the emailed OTP step -- send them to finish that first.
+  if (requiresOtp) return <Navigate to="/verify-otp" replace />;
   if (!demoMode && profile?.status === 'pending') return <Navigate to="/pending-approval" replace />;
   if (!demoMode && profile?.status === 'disabled') {
     return (

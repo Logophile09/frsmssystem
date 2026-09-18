@@ -53,15 +53,16 @@ const inputClass =
 const labelClass = 'mb-1.5 block text-xs font-semibold text-foreground/85 dark:text-navy-200';
 
 export default function Register() {
-  const { session, demoMode, profile, loading, refreshProfile } = useAuth();
+  const { session, demoMode, profile, loading, refreshProfile, requiresOtp } = useAuth();
   const { dark, toggle } = useTheme();
   const navigate = useNavigate();
 
   // A session with no *approved* profile yet means "Continue with Google"
-  // brought them here (see Login.tsx's handleOAuth redirectTo) -- they're
-  // already authenticated, just missing the position/station/phone fields
-  // the email/password form below collects. Show a shorter completion
-  // form instead of asking them to invent a password for an account they
+  // brought them here, after clearing the /verify-otp step (see Login.tsx's
+  // handleOAuth redirectTo and VerifyOtp.tsx) -- they're already
+  // authenticated, just missing the position/station/phone fields the
+  // email/password form below collects. Show a shorter completion form
+  // instead of asking them to invent a password for an account they
   // already signed into with Google.
   const oauthCompletion = !loading && Boolean(session) && !demoMode && profile?.status !== 'active';
 
@@ -101,6 +102,9 @@ export default function Register() {
 
   if (demoMode) return <Navigate to="/dashboard" replace />;
   if (!loading && profile?.status === 'active') return <Navigate to="/dashboard" replace />;
+  // Bounced back here (e.g. browser back button) before finishing the
+  // emailed OTP step -- finish that before filling in position/station/phone.
+  if (requiresOtp) return <Navigate to="/verify-otp" replace />;
 
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));

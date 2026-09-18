@@ -79,8 +79,12 @@ export default function Login() {
     setError(null);
     setOauthLoading(provider);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      // Land back on /verify-otp, not /register -- a Google sign-in now
+      // has to clear the emailed OTP step before it can reach the
+      // registration-completion form or the dashboard. VerifyOtp.tsx
+      // forwards to the right place afterward.
       provider,
-      options: { redirectTo: `${window.location.origin}/register` },
+      options: { redirectTo: `${window.location.origin}/verify-otp` },
     });
     if (oauthError) {
       setError(oauthError.message);

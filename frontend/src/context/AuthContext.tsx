@@ -23,9 +23,44 @@ interface AuthContextValue {
   signInDemo: () => void;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  /** True while a Google sign-in exists but the post-Google email OTP step hasn't been completed yet. */
+  requiresOtp: boolean;
+  /** Marks the current session's OTP step as complete (called by VerifyOtp.tsx after a successful verifyOtp). */
+  markOtpVerified: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+// Only Google sign-ins go through the email OTP step -- password accounts
+// (self-registered or admin-created in Staff Accounts) already proved
+// control of their inbox differently and aren't gated here.
+function isGoogleUser(user: User): boolean {
+  return user.app_metadata?.provider === 'google';
+}
+
+// The OTP check is meant to happen once per browser session, not on every
+// reload of an already-verified tab -- so we remember it in sessionStorage
+// (cleared when the tab/browser closes) keyed by user id, rather than in
+// plain component state which would forget on refresh, or localStorage
+// which would skip the check on the person's next visit entirely.
+function otpStorageKey(userId: string) {
+  return `frsms_otp_verified_${userId}`;
+}
+function readOtpVerified(userId: string): boolean {
+  try {
+    return sessionStorage.getItem(otpStorageKey(userId)) === '1';
+  } catch {
+    return false;
+  }
+}
+function writeOtpVerified(userId: string) {
+  try {
+    sessionStorage.setItem(otpStorageKey(userId), '1');
+  } catch {
+    // sessionStorage unavailable (private mode, etc.) -- OTP will just be
+    // asked again on next check within this session, which is safe.
+  }
+}
 
 // When the backend (and its `profiles` table) can't be reached, we still
 // have the signed-in Supabase Auth user available on the client -- so we
@@ -73,6 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [demoMode, setDemoMode] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
 
   async function loadProfile(currentUser: User | null | undefined) {
     try {
@@ -104,7 +140,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .getSession()
       .then(async ({ data }) => {
         setSession(data.session);
-        if (data.session) await loadProfile(data.session.user);
+        if (data.session) {
+          setOtpVerified(readOtpVerified(data.session.user.id));
+          await loadProfile(data.session.user);
+        }
       })
       .catch(() => {
         // Supabase project unreachable/misconfigured -- fall through to
@@ -122,9 +161,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(newSession);
       if (newSession) {
         setDemoMode(false);
+        setOtpVerified(readOtpVerified(newSession.user.id));
         await loadProfile(newSession.user);
       } else {
         setProfile(null);
+        setOtpVerified(false);
       }
     });
 
@@ -169,8 +210,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (session) await loadProfile(session.user);
   }
 
+  function markOtpVerified() {
+    if (session) writeOtpVerified(session.user.id);
+    setOtpVerified(true);
+  }
+
+  const requiresOtp = !demoMode && !!session && isGoogleUser(session.user) && !otpVerified;
+
   return (
-    <AuthContext.Provider value={{ session, profile, loading, demoMode, signIn, signInDemo, signOut, refreshProfile }}>
+    <AuthContext.Provider
+      value={{ session, profile, loading, demoMode, signIn, signInDemo, signOut, refreshProfile, requiresOtp, markOtpVerified }}
+    >
       {children}
     </AuthContext.Provider>
   );
