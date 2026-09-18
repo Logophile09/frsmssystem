@@ -17,6 +17,23 @@ interface Violation {
   establishments?: { business_name: string } | null;
 }
 
+// Generates the next sequential violation code, e.g. "VC-2026-0007".
+// Looks at whatever violations are already loaded, finds the highest
+// existing number for the current year, and increments it.
+function nextViolationCode(rows: Violation[]): string {
+  const year = new Date().getFullYear();
+  const prefix = `VC-${year}-`;
+  let max = 0;
+  rows.forEach((r) => {
+    const code = r.violation_code ?? '';
+    if (code.startsWith(prefix)) {
+      const n = parseInt(code.slice(prefix.length), 10);
+      if (!isNaN(n) && n > max) max = n;
+    }
+  });
+  return `${prefix}${String(max + 1).padStart(4, '0')}`;
+}
+
 export default function ViolationsPage() {
   const [establishmentOptions, setEstablishmentOptions] = useState<{ value: string | number; label: string }[]>([]);
 
@@ -42,7 +59,7 @@ export default function ViolationsPage() {
       ]}
       fields={[
         { name: 'establishment_id', label: 'Establishment', type: 'select', options: establishmentOptions, required: true },
-        { name: 'violation_code', label: 'Violation Code', type: 'text', required: true },
+        { name: 'violation_code', label: 'Violation Code', type: 'text', required: true, readOnly: true, autoValue: nextViolationCode },
         { name: 'description', label: 'Description', type: 'textarea', required: true },
         { name: 'severity', label: 'Severity', type: 'select', options: ['Minor', 'Major', 'Critical'], required: true },
         { name: 'date_issued', label: 'Date Issued', type: 'date', required: true },

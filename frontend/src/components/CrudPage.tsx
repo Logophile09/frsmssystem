@@ -27,6 +27,13 @@ export interface FieldDef {
   options?: (string | { value: string | number; label: string })[];
   required?: boolean;
   step?: string;
+  // Marks the field as system-generated: rendered disabled in the form so
+  // the user can view it but never type into it.
+  readOnly?: boolean;
+  // Computed once when the "Add" form opens (new records only), using the
+  // currently loaded rows — e.g. to auto-generate the next code/number.
+  // Pair with readOnly so the user can't override the generated value.
+  autoValue?: (rows: any[]) => string;
 }
 
 export interface ColumnDef<T> {
@@ -121,7 +128,7 @@ export default function CrudPage<T extends { id: number | string }>({
 
   function openNew() {
     const blank: Record<string, unknown> = {};
-    fields.forEach((f) => (blank[f.name] = ''));
+    fields.forEach((f) => (blank[f.name] = f.autoValue ? f.autoValue(rows) : ''));
     setForm(blank);
     setEditing('new');
   }
@@ -494,8 +501,21 @@ export default function CrudPage<T extends { id: number | string }>({
           <div className="space-y-3">
             {fields.map((f) => (
               <div key={f.name}>
-                <label className="field-label">{f.label}</label>
-                {f.type === 'select' ? (
+                <label className="field-label">
+                  {f.label}
+                  {f.readOnly && (
+                    <span className="ml-1.5 font-normal text-slate-400 dark:text-slate-500">(auto-generated)</span>
+                  )}
+                </label>
+                {f.readOnly ? (
+                  <input
+                    type="text"
+                    readOnly
+                    disabled
+                    value={(form[f.name] as string) ?? ''}
+                    className="field-input cursor-not-allowed bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400"
+                  />
+                ) : f.type === 'select' ? (
                   <Select
                     value={(form[f.name] as string) ?? ''}
                     onChange={(v) => updateField(f.name, v)}

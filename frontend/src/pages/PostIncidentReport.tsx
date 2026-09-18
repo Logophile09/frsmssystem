@@ -105,8 +105,20 @@ export default function PostIncidentReportPage() {
     setEditingReport(null);
   }
 
+  // Groq needs actual case details to draft from — block it until the
+  // fields that feed the narrative have been filled in, so it never
+  // drafts off an empty report.
+  const missingForDraft = useMemo(() => {
+    const missing: string[] = [];
+    if (form.response_time_minutes === '') missing.push('Response Time');
+    if (!form.actions_taken.trim()) missing.push('Actions Taken');
+    if (!form.lessons_learned.trim()) missing.push('Lessons Learned');
+    return missing;
+  }, [form.response_time_minutes, form.actions_taken, form.lessons_learned]);
+  const canDraft = missingForDraft.length === 0;
+
   async function draftNarrative() {
-    if (!editingIncident) return;
+    if (!editingIncident || !canDraft) return;
     setDrafting(true);
     setDraftError(null);
     try {
@@ -394,7 +406,8 @@ export default function PostIncidentReportPage() {
               <button
                 type="button"
                 onClick={draftNarrative}
-                disabled={drafting}
+                disabled={drafting || !canDraft}
+                title={!canDraft ? `Fill in ${missingForDraft.join(', ')} first` : undefined}
                 className="flex items-center gap-1 text-xs font-medium text-leaf-600 hover:underline disabled:cursor-not-allowed disabled:opacity-40 dark:text-leaf-400"
               >
                 <Sparkles size={12} /> {drafting ? 'Drafting with Groq…' : 'Draft with Groq (AI)'}
@@ -408,10 +421,16 @@ export default function PostIncidentReportPage() {
               placeholder="Full after-action narrative…"
             />
             {draftError && <p className="mt-1 text-xs text-rose-600">{draftError}</p>}
-            <p className="mt-1 text-xs text-slate-400">
-              Groq drafts from the incident record plus the fields above; review and edit before finalizing — nothing
-              is written automatically.
-            </p>
+            {!canDraft ? (
+              <p className="mt-1 text-xs text-amber-500">
+                Fill in {missingForDraft.join(', ')} before drafting with Groq — it needs those details to write from.
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-slate-400">
+                Groq drafts from the incident record plus the fields above; review and edit before finalizing —
+                nothing is written automatically.
+              </p>
+            )}
           </div>
 
           <div className="mt-5 flex flex-wrap justify-end gap-2">
