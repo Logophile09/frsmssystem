@@ -3,6 +3,7 @@ import { AlertTriangle, Pencil, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 import Modal from '../components/Modal';
 import Badge from '../components/Badge';
+import IncidentDetailsModal from '../components/IncidentDetailsModal';
 import { SEVERITY_LABELS, INCIDENT_TYPES } from '../lib/dispatchRecommendation';
 
 interface Incident {
@@ -63,6 +64,7 @@ export default function IncidentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Incident | 'new' | null>(null);
+  const [viewingId, setViewingId] = useState<number | null>(null);
   const [form, setForm] = useState<any>({});
   const [saving, setSaving] = useState(false);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
@@ -144,6 +146,8 @@ export default function IncidentsPage() {
     }
   }
 
+  const viewing = viewingId != null ? rows.find((r) => r.id === viewingId) ?? null : null;
+
   async function remove(row: Incident) {
     if (!confirm('Delete this incident?')) return;
     await api.del(`/incidents/${row.id}`);
@@ -203,7 +207,22 @@ export default function IncidentsPage() {
                 </tr>
               )}
               {rows.map((r) => (
-                <tr key={r.id} className="table-row">
+                <tr
+                  key={r.id}
+                  className="table-row cursor-pointer hover:bg-accent/50 focus-visible:bg-accent/50 focus-visible:outline-none"
+                  onClick={() => setViewingId(r.id)}
+                  onKeyDown={(e) => {
+                    // Only react to keys pressed on the row itself, not on the edit/delete buttons inside it.
+                    if (e.target !== e.currentTarget) return;
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setViewingId(r.id);
+                    }
+                  }}
+                  tabIndex={0}
+                  title="Click to view incident details"
+                  aria-label={`View details for incident ${r.incident_number}`}
+                >
                   <td className="table-cell font-semibold text-navy-900 dark:text-slate-100">{r.incident_number}</td>
                   <td className="table-cell">{r.incident_type}</td>
                   <td className="table-cell">{r.location}</td>
@@ -226,7 +245,7 @@ export default function IncidentsPage() {
                       '—'
                     )}
                   </td>
-                  <td className="whitespace-nowrap px-5 py-2.5 text-right">
+                  <td className="whitespace-nowrap px-5 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-1.5">
                       <button onClick={() => openEdit(r)} title="Edit" className="btn-icon">
                         <Pencil size={13} />
@@ -242,6 +261,17 @@ export default function IncidentsPage() {
           </table>
         </div>
       </div>
+
+      {viewing && (
+        <IncidentDetailsModal
+          incident={viewing}
+          onClose={() => setViewingId(null)}
+          onEdit={() => {
+            setViewingId(null);
+            openEdit(viewing);
+          }}
+        />
+      )}
 
       {editing && (
         <Modal title={editing === 'new' ? 'Log Incident' : `Edit ${(editing as Incident).incident_number}`} onClose={() => setEditing(null)} wide>
