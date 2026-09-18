@@ -445,11 +445,11 @@ insert into certificates (establishment_id, certificate_type, certificate_number
 (9, 'FSIC-Business Permit', 'FSIC-2023-00032', '2023-05-22', '2024-05-22', 'Expired');
 
 insert into violations (establishment_id, inspection_id, violation_code, description, severity, date_issued, compliance_deadline, status) values
-(2, 2, 'FC-105', 'No automatic fire suppression system in hazardous fuel area', 'Critical', '2026-02-18', '2026-08-18', 'Open'),
-(4, 4, 'FC-212', 'Secondary fire exit obstructed by stored furniture', 'Major', '2026-03-15', '2026-09-15', 'Open'),
-(3, 3, 'FC-045', 'Minor: fire exit signage faded, needs replacement', 'Minor', '2026-03-02', '2026-04-02', 'Resolved'),
-(9, 9, 'FC-212', 'Emergency exits blocked by pallet storage in warehouse', 'Critical', '2026-05-22', '2026-07-22', 'Overdue'),
-(7, 7, 'FC-301', 'Missing fire drill records for current school year', 'Major', '2026-04-20', '2026-06-20', 'Open');
+(2, 2, 'FV-105', 'No automatic fire suppression system in hazardous fuel area', 'Critical', '2026-02-18', '2026-08-18', 'Open'),
+(4, 4, 'FV-212', 'Secondary fire exit obstructed by stored furniture', 'Major', '2026-03-15', '2026-09-15', 'Open'),
+(3, 3, 'FV-045', 'Minor: fire exit signage faded, needs replacement', 'Minor', '2026-03-02', '2026-04-02', 'Resolved'),
+(9, 9, 'FV-212', 'Emergency exits blocked by pallet storage in warehouse', 'Critical', '2026-05-22', '2026-07-22', 'Overdue'),
+(7, 7, 'FV-301', 'Missing fire drill records for current school year', 'Major', '2026-04-20', '2026-06-20', 'Open');
 
 insert into post_incident_reports (incident_id, response_time_minutes, outcome, injuries_count, fatalities_count, property_damage_estimate, actions_taken, lessons_learned, narrative, status) values
 (1, 8, 'extinguished', 1, 0, 350000, 'Engine crews knocked down the fire on the 2nd floor and completed a full overhaul before clearing the scene.', 'Ground-floor unit''s fire door had been propped open, letting smoke spread faster than expected -- flag for the next inspection cycle.', 'Fire crews responded to a reported structure fire on the 2nd floor of a residential building along Tandang Sora Ave. Engine 1 arrived within 8 minutes and confirmed active fire on arrival. The fire was contained to a single unit and extinguished; one occupant sustained minor smoke inhalation and was treated on scene. No fatalities were reported. Estimated property damage is PHP 350,000.', 'finalized'),

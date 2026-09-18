@@ -17,12 +17,12 @@ interface Violation {
   establishments?: { business_name: string } | null;
 }
 
-// Generates the next sequential violation code, e.g. "VC-2026-0007".
+// Generates the next sequential violation code, e.g. "FV-2026-0007".
 // Looks at whatever violations are already loaded, finds the highest
 // existing number for the current year, and increments it.
 function nextViolationCode(rows: Violation[]): string {
   const year = new Date().getFullYear();
-  const prefix = `VC-${year}-`;
+  const prefix = `FV-${year}-`;
   let max = 0;
   rows.forEach((r) => {
     const code = r.violation_code ?? '';

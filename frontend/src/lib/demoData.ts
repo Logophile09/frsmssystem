@@ -264,11 +264,11 @@ export const certificates = [
 ].map((c) => ({ ...c, establishments: establishmentRef(c.establishment_id) }));
 
 export const violations = [
-  { id: 1, establishment_id: 2, inspection_id: 2, violation_code: 'FC-105', description: 'No automatic fire suppression system in hazardous fuel area', severity: 'Critical', date_issued: '2026-02-18', compliance_deadline: '2026-08-18', status: 'Open' },
-  { id: 2, establishment_id: 4, inspection_id: 4, violation_code: 'FC-212', description: 'Secondary fire exit obstructed by stored furniture', severity: 'Major', date_issued: '2026-03-15', compliance_deadline: '2026-09-15', status: 'Open' },
-  { id: 3, establishment_id: 3, inspection_id: 3, violation_code: 'FC-045', description: 'Minor: fire exit signage faded, needs replacement', severity: 'Minor', date_issued: '2026-03-02', compliance_deadline: '2026-04-02', status: 'Resolved' },
-  { id: 4, establishment_id: 9, inspection_id: 9, violation_code: 'FC-212', description: 'Emergency exits blocked by pallet storage in warehouse', severity: 'Critical', date_issued: '2026-05-22', compliance_deadline: '2026-07-22', status: 'Overdue' },
-  { id: 5, establishment_id: 7, inspection_id: 7, violation_code: 'FC-301', description: 'Missing fire drill records for current school year', severity: 'Major', date_issued: '2026-04-20', compliance_deadline: '2026-06-20', status: 'Open' },
+  { id: 1, establishment_id: 2, inspection_id: 2, violation_code: 'FV-105', description: 'No automatic fire suppression system in hazardous fuel area', severity: 'Critical', date_issued: '2026-02-18', compliance_deadline: '2026-08-18', status: 'Open' },
+  { id: 2, establishment_id: 4, inspection_id: 4, violation_code: 'FV-212', description: 'Secondary fire exit obstructed by stored furniture', severity: 'Major', date_issued: '2026-03-15', compliance_deadline: '2026-09-15', status: 'Open' },
+  { id: 3, establishment_id: 3, inspection_id: 3, violation_code: 'FV-045', description: 'Minor: fire exit signage faded, needs replacement', severity: 'Minor', date_issued: '2026-03-02', compliance_deadline: '2026-04-02', status: 'Resolved' },
+  { id: 4, establishment_id: 9, inspection_id: 9, violation_code: 'FV-212', description: 'Emergency exits blocked by pallet storage in warehouse', severity: 'Critical', date_issued: '2026-05-22', compliance_deadline: '2026-07-22', status: 'Overdue' },
+  { id: 5, establishment_id: 7, inspection_id: 7, violation_code: 'FV-301', description: 'Missing fire drill records for current school year', severity: 'Major', date_issued: '2026-04-20', compliance_deadline: '2026-06-20', status: 'Open' },
 ].map((v) => ({ ...v, establishments: establishmentRef(v.establishment_id) }));
 
 // ---------------------------------------------------------------------

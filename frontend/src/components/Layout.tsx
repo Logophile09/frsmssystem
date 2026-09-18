@@ -217,12 +217,12 @@ export default function Layout() {
   );
 
   return (
-    <div className="relative flex min-h-screen bg-background transition-colors duration-300 dark:bg-navy-950">
+    <div className="app-shell relative flex h-screen overflow-hidden bg-background transition-colors duration-300 supports-[height:100dvh]:h-dvh dark:bg-navy-950">
       {/* System-wide ambient background glow covering entire viewport behind all surfaces */}
       <AmbientGlow position="fixed" variant="system" showEmbers interactive />
 
       {/* Desktop sidebar — frosted glass backdrop with subtle border */}
-      <aside className="relative hidden w-64 shrink-0 flex-col overflow-hidden border-r border-border bg-card/80 text-foreground backdrop-blur-md md:flex">
+      <aside className="relative hidden h-full w-64 shrink-0 flex-col overflow-hidden border-r border-border bg-card/80 text-foreground backdrop-blur-md md:flex">
         {sidebarContent}
       </aside>
 
@@ -240,7 +240,7 @@ export default function Layout() {
         </div>
       )}
 
-      <div className="app-canvas-texture flex min-h-screen flex-1 flex-col">
+      <div className="app-canvas-texture flex h-full min-h-0 min-w-0 flex-1 flex-col">
         <div className="px-4 pt-4 sm:px-6 sm:pt-6">
           <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card/95 px-4 py-3 shadow-sm backdrop-blur-md transition-all duration-300 dark:shadow-none sm:px-5">
             <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -299,7 +299,7 @@ export default function Layout() {
             </div>
           </header>
         </div>
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
           <div key={location.pathname} className="relative animate-page-in">
             <Outlet />
           </div>

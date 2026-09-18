@@ -391,6 +391,14 @@ html.theme-transition *::after {
   .print-only {
     display: block !important;
   }
+  /* The app shell is locked to the viewport height on screen; let it grow
+     to the full document height when printing so nothing gets clipped. */
+  .app-shell,
+  .app-shell > div,
+  .app-shell main {
+    height: auto !important;
+    overflow: visible !important;
+  }
   .printable-document {
     box-shadow: none !important;
     border: none !important;
