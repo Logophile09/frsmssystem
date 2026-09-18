@@ -26,7 +26,7 @@ interface Certificate {
 const CERT_PREFIXES: Record<string, string> = {
   'FSIC-Business Permit': 'FSIC-BP',
   'FSIC-Occupancy': 'FSIC-OC',
-  'FSEC-Building Permit': 'FSEC',
+  'FSEC-Building Permit': 'FSEC-BP',
 };
 
 // Builds the next sequential certificate number for a given type, e.g.
@@ -97,6 +97,20 @@ export default function CertificatesPage() {
           </button>
         )}
         onBeforeSave={(values) => ({ ...values, establishment_id: Number(values.establishment_id) })}
+        onFieldChange={({ name, value, form, rows, isNew }) => {
+          if (name === 'certificate_number') {
+            // User is typing their own number — stop auto-overwriting it.
+            autoFilledNumber.current = false;
+            return;
+          }
+          if (name === 'certificate_type' && isNew) {
+            const current = (form.certificate_number as string) ?? '';
+            if (!current || autoFilledNumber.current) {
+              autoFilledNumber.current = true;
+              return { certificate_number: generateCertificateNumber(value as string, rows) };
+            }
+          }
+        }}
       />
 
       {printingCert && (
