@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import CrudPage from '../components/CrudPage';
 import { Building2 } from 'lucide-react';
 import Badge from '../components/Badge';
 import { NEIGHBORS_OF_CULIAT } from '../lib/barangayRisk';
+import EstablishmentDetailsModal from '../components/details/EstablishmentDetailsModal';
 
 // FRSMS is Brgy. Culiat's fire sub-station -- Culiat is its actual
 // jurisdiction, and the bordering barangays cover mutual-aid responses.
@@ -25,32 +27,39 @@ interface Establishment {
 }
 
 export default function EstablishmentsPage() {
+  // Row clicked in the registry table -- opens EstablishmentDetailsModal below
+  const [viewing, setViewing] = useState<Establishment | null>(null);
+
   return (
-    <CrudPage<Establishment>
-      title="Establishments"
-      icon={Building2}
-      description="Buildings and businesses subject to fire safety rules."
-      endpoint="/establishments"
-      columns={[
-        { key: 'business_name', label: 'Business Name' },
-        { key: 'business_type', label: 'Type' },
-        { key: 'barangay', label: 'Barangay' },
-        { key: 'occupancy_type', label: 'Occupancy' },
-        { key: 'status', label: 'Status', render: (r) => <Badge value={r.status} /> },
-      ]}
-      fields={[
-        { name: 'business_name', label: 'Business Name', type: 'text', required: true },
-        { name: 'business_type', label: 'Business Type', type: 'text', required: true },
-        { name: 'owner_name', label: 'Owner Name', type: 'text', required: true },
-        { name: 'barangay', label: 'Barangay', type: 'select', options: BARANGAY_OPTIONS, required: true },
-        { name: 'address', label: 'Address', type: 'text', required: true },
-        { name: 'occupancy_type', label: 'Occupancy Type', type: 'text', required: true },
-        { name: 'storeys', label: 'Storeys', type: 'number' },
-        { name: 'floor_area_sqm', label: 'Floor Area (sqm)', type: 'number', step: '0.01' },
-        { name: 'contact_number', label: 'Contact Number', type: 'text' },
-        { name: 'date_registered', label: 'Date Registered', type: 'date', required: true },
-        { name: 'status', label: 'Status', type: 'select', options: ['Active', 'Inactive'], required: true },
-      ]}
-    />
+    <>
+      <CrudPage<Establishment>
+        title="Establishments"
+        icon={Building2}
+        description="Buildings and businesses subject to fire safety rules."
+        onRowClick={(row) => setViewing(row)}
+        endpoint="/establishments"
+        columns={[
+          { key: 'business_name', label: 'Business Name' },
+          { key: 'business_type', label: 'Type' },
+          { key: 'barangay', label: 'Barangay' },
+          { key: 'occupancy_type', label: 'Occupancy' },
+          { key: 'status', label: 'Status', render: (r) => <Badge value={r.status} /> },
+        ]}
+        fields={[
+          { name: 'business_name', label: 'Business Name', type: 'text', required: true },
+          { name: 'business_type', label: 'Business Type', type: 'text', required: true },
+          { name: 'owner_name', label: 'Owner Name', type: 'text', required: true },
+          { name: 'barangay', label: 'Barangay', type: 'select', options: BARANGAY_OPTIONS, required: true },
+          { name: 'address', label: 'Address', type: 'text', required: true },
+          { name: 'occupancy_type', label: 'Occupancy Type', type: 'text', required: true },
+          { name: 'storeys', label: 'Storeys', type: 'number' },
+          { name: 'floor_area_sqm', label: 'Floor Area (sqm)', type: 'number', step: '0.01' },
+          { name: 'contact_number', label: 'Contact Number', type: 'text' },
+          { name: 'date_registered', label: 'Date Registered', type: 'date', required: true },
+          { name: 'status', label: 'Status', type: 'select', options: ['Active', 'Inactive'], required: true },
+        ]}
+      />
+      {viewing && <EstablishmentDetailsModal establishment={viewing} onClose={() => setViewing(null)} />}
+    </>
   );
 }

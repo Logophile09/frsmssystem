@@ -425,8 +425,25 @@ export default function CrudPage<T extends { id: number | string }>({
                 paginatedRows.map((row) => (
                   <tr
                     key={row.id}
-                    className={`table-row ${onRowClick ? 'cursor-pointer hover:bg-muted/40' : ''}`}
+                    className={`table-row ${
+                      onRowClick
+                        ? 'cursor-pointer hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50'
+                        : ''
+                    }`}
                     onClick={onRowClick ? () => onRowClick(row) : undefined}
+                    // Keyboard access for clickable rows: Tab to focus, Enter/Space to open.
+                    // Ignore keys from inner controls (e.g. the edit/delete buttons).
+                    tabIndex={onRowClick ? 0 : undefined}
+                    onKeyDown={
+                      onRowClick
+                        ? (e) => {
+                            if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                              e.preventDefault();
+                              onRowClick(row);
+                            }
+                          }
+                        : undefined
+                    }
                   >
                     {columns.map((c) => (
                       <td key={c.key} className="table-cell">

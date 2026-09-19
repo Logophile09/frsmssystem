@@ -4,6 +4,7 @@ import { FileCheck, Printer } from 'lucide-react';
 import Badge from '../components/Badge';
 import { api } from '../lib/api';
 import PrintCertificateModal from '../components/PrintCertificateModal';
+import CertificateDetailsModal from '../components/details/CertificateDetailsModal';
 
 interface Certificate {
   id: number;
@@ -53,6 +54,8 @@ function generateCertificateNumber(certType: string, existing: Certificate[]): s
 export default function CertificatesPage() {
   const [establishmentOptions, setEstablishmentOptions] = useState<{ value: string | number; label: string }[]>([]);
   const [printingCert, setPrintingCert] = useState<Certificate | null>(null);
+  // Row clicked in the certificates table -- opens CertificateDetailsModal below
+  const [viewing, setViewing] = useState<Certificate | null>(null);
   // Tracks whether the current certificate_number in the form was set by
   // the auto-generator (vs. typed by hand), so switching Certificate Type
   // keeps refreshing the suggestion but a manual edit isn't overwritten.
@@ -71,6 +74,7 @@ export default function CertificatesPage() {
         title="Certificates"
         icon={FileCheck}
         description="FSIC / FSEC issuances and official compliance records."
+        onRowClick={(row) => setViewing(row)}
         endpoint="/certificates"
         columns={[
           { key: 'establishment', label: 'Establishment', render: (r) => r.establishments?.business_name ?? `#${r.establishment_id}` },
@@ -112,6 +116,18 @@ export default function CertificatesPage() {
           }
         }}
       />
+
+      {viewing && (
+        <CertificateDetailsModal
+          certificate={viewing}
+          onClose={() => setViewing(null)}
+          // Swap the details view for the print preview rather than stacking two dialogs.
+          onPrint={(cert) => {
+            setViewing(null);
+            setPrintingCert(cert);
+          }}
+        />
+      )}
 
       {printingCert && (
         <PrintCertificateModal
