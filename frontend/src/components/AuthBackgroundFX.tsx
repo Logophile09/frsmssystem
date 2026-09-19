@@ -27,7 +27,7 @@ export function AuthBackgroundFX({ variant = 'dark' }: { variant?: 'dark' | 'lig
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden select-none">
       {/* Drifting chromatic glow orbs */}
       <div
-        className={`absolute -left-20 -top-20 h-80 w-80 rounded-full blur-3xl animate-glow-drift-a animate-glow-pulse ${
+        className={`absolute -left-20 -top-20 h-80 w-80 rounded-full blur-3xl animate-glow-drift-a ${
           isLight
             ? 'bg-gradient-to-br from-emerald-500/15 to-teal-500/10'
             : 'bg-gradient-to-br from-emerald-500/25 to-rose-600/15'
