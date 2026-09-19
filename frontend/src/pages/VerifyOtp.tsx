@@ -64,15 +64,19 @@ export default function VerifyOtp() {
     });
     setSending(false);
     if (sendError) {
-      // Sending the OTP email itself failed (e.g. the mail provider
-      // rejected it, hit a sending limit, or the sender domain isn't
-      // verified for that recipient) -- that's an infrastructure problem,
-      // not something the person did wrong. Rather than stranding them on
-      // an error screen they can't fix, treat it the same as if this
-      // extra inbox check had passed: let them straight into the app. The
-      // Google sign-in itself already proved who they are; this step was
-      // only ever a nice-to-have on top of that.
-      markOtpVerified();
+      // Sending the OTP email itself failed (e.g. a sender-domain
+      // restriction, a mail-provider rejection, or a sending limit).
+      // This used to silently mark OTP as verified and let the person
+      // straight into the app -- but that meant a broken mail provider
+      // (a misconfigured "from" domain, an expired API key, etc.) would
+      // let *every* new sign-in skip verification entirely, with no
+      // visible sign anything was wrong. Show the real error instead so
+      // it gets noticed and fixed, and let the person retry once it is.
+      setError(
+        isResend
+          ? `Could not resend the code: ${sendError.message}`
+          : `Could not send a verification code: ${sendError.message}`
+      );
       return;
     }
     setInfo(isResend ? `New code sent to ${email}.` : `We emailed an 8-digit code to ${email}.`);
