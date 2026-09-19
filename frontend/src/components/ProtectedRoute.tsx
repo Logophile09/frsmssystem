@@ -1,9 +1,10 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function ProtectedRoute({ children, adminOnly }: { children: React.ReactNode; adminOnly?: boolean }) {
-  const { session, profile, loading, demoMode, requiresOtp } = useAuth();
+  const { session, profile, loading, demoMode, requiresOtp, signOut } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return <div className="flex h-screen items-center justify-center text-slate-500">Loading…</div>;
@@ -19,8 +20,22 @@ export default function ProtectedRoute({ children, adminOnly }: { children: Reac
   if (!demoMode && profile?.status === 'pending') return <Navigate to="/register" replace />;
   if (!demoMode && profile?.status === 'disabled') {
     return (
-      <div className="flex h-screen items-center justify-center px-6 text-center text-slate-600">
-        This account has been disabled. Contact an administrator if you believe this is a mistake.
+      <div className="flex h-screen flex-col items-center justify-center gap-4 px-6 text-center text-slate-600">
+        <p>This account has been disabled. Contact an administrator if you believe this is a mistake.</p>
+        <button
+          type="button"
+          onClick={async () => {
+            // A disabled account still has a live Supabase session sitting in
+            // storage -- without this, a stale /dashboard bookmark (or just
+            // hitting back) drops the person right back on this same screen
+            // instead of ever reaching /login.
+            await signOut();
+            navigate('/login', { replace: true });
+          }}
+          className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+        >
+          Back to login
+        </button>
       </div>
     );
   }
