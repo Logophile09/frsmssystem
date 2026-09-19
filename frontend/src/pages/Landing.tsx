@@ -132,21 +132,29 @@ const MODULES = [
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { session, demoMode } = useAuth();
+  const { session, demoMode, loading, profile, requiresOtp } = useAuth();
   const { dark, toggle } = useTheme();
   const [leaving, setLeaving] = useState(false);
   const [activeSection, setActiveSection] = useState(NAV_LINKS[0].href.slice(1));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Supabase OAuth (Google/Facebook) redirects back to the site's root URL
-  // after login, not to /login. If a session is already present when this
-  // page loads -- e.g. right after that OAuth round-trip -- skip the
-  // marketing page and go straight to the dashboard instead of stranding
-  // the user here.
-  
+  // after login, not to /verify-otp like Login.tsx's redirectTo asks for --
+  // so a brand-new, still-pending sign-in can land here instead. Sending
+  // every session straight to /dashboard regardless of status used to skip
+  // the OTP step entirely (ProtectedRoute would eventually catch it once
+  // the profile finished loading, but not before the person briefly saw
+  // the dashboard -- longer than "briefly" if the backend was slow). Wait
+  // for the profile to actually finish loading, then route to wherever
+  // ProtectedRoute would send this session anyway: /verify-otp if it's
+  // still pending, /register if OTP is cleared but the profile is still
+  // missing position/station/phone (a Google sign-in), otherwise /dashboard.
   useEffect(() => {
-    if (session || demoMode) navigate('/dashboard', { replace: true });
-  }, [session, demoMode, navigate]);
+    if (loading || (!session && !demoMode)) return;
+    if (requiresOtp) navigate('/verify-otp', { replace: true });
+    else if (!demoMode && profile?.status !== 'active' && profile?.status !== 'disabled') navigate('/register', { replace: true });
+    else navigate('/dashboard', { replace: true });
+  }, [session, demoMode, loading, profile, requiresOtp, navigate]);
 
   // Highlight the nav item for whichever section is currently scrolled
   // into view, so the pill nav tracks the page the way a multi-page
