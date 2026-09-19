@@ -13,14 +13,14 @@ const RESEND_COOLDOWN_S = 30;
 /**
  * Extra verification step inserted between "Continue with Google" and the
  * rest of the app. Google already proves the person controls that Google
- * account, but a 6-digit code emailed via Supabase's own auth.signInWithOtp
+ * account, but an 8-digit code emailed via Supabase's own auth.signInWithOtp
  * proves they *also* control the inbox behind it before we hand out a
  * dashboard session -- see Login.tsx's handleOAuth, which now redirects
  * here instead of straight to /register.
  *
  * Note: Supabase sends the code using the "Magic Link" email template in
  * the project's Auth settings, which must include {{ .Token }} (the
- * default template does) for a 6-digit code to actually show up in the
+ * default template does) for an 8-digit code to actually show up in the
  * email -- otherwise the person only receives a clickable link.
  */
 export default function VerifyOtp() {
@@ -52,7 +52,7 @@ export default function VerifyOtp() {
       setError(sendError.message);
       return;
     }
-    setInfo(isResend ? `New code sent to ${email}.` : `We emailed a 6-digit code to ${email}.`);
+    setInfo(isResend ? `New code sent to ${email}.` : `We emailed an 8-digit code to ${email}.`);
     setCooldown(RESEND_COOLDOWN_S);
   }
 
@@ -114,10 +114,10 @@ export default function VerifyOtp() {
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground dark:text-navy-200">
           {email ? (
             <>
-              Enter the 6-digit code we emailed to <span className="font-semibold text-foreground dark:text-white">{email}</span>.
+              Enter the 8-digit code we emailed to <span className="font-semibold text-foreground dark:text-white">{email}</span>.
             </>
           ) : (
-            'Enter the 6-digit code we emailed to you.'
+            'Enter the 8-digit code we emailed to you.'
           )}
         </p>
 
@@ -131,10 +131,10 @@ export default function VerifyOtp() {
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 required
-                maxLength={6}
+                maxLength={8}
                 value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="123456"
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                placeholder="12345678"
                 className="w-full rounded-xl border border-border bg-muted/60 py-2.5 pl-9 pr-3 text-center text-lg font-bold tracking-[0.4em] text-foreground placeholder:text-muted-foreground placeholder:tracking-[0.4em] focus:border-primary focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-navy-400 dark:focus:border-leaf-400 dark:focus:bg-white/10"
               />
             </div>
@@ -145,7 +145,7 @@ export default function VerifyOtp() {
 
           <button
             type="submit"
-            disabled={verifying || code.length !== 6}
+            disabled={verifying || code.length !== 8}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 hover:bg-primary/90 hover:shadow-xl disabled:opacity-60"
           >
             {verifying ? 'Verifying…' : 'Verify & Continue'}
