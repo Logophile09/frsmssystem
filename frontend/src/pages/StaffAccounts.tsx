@@ -156,7 +156,7 @@ export default function StaffAccountsPage() {
         {[
           { label: 'Total Staff', value: stats.total, icon: UserCog, accent: 'text-navy-700 dark:text-slate-200' },
           { label: 'Admins', value: stats.admins, icon: ShieldCheck, accent: 'text-leaf-600 dark:text-leaf-300' },
-          { label: 'Pending Approval', value: stats.pending, icon: Clock, accent: 'text-amber-600 dark:text-amber-300' },
+          { label: 'Awaiting Verification', value: stats.pending, icon: Clock, accent: 'text-amber-600 dark:text-amber-300' },
           { label: 'Active', value: stats.active, icon: UserCheck, accent: 'text-emerald-600 dark:text-emerald-300' },
         ].map((s) => (
           <div key={s.label} className="mini-stat">
@@ -182,7 +182,7 @@ export default function StaffAccountsPage() {
           <div className="flex items-center gap-3">
             <Clock size={18} className="shrink-0 text-amber-600 dark:text-amber-300" />
             <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
-              {pendingRows.length} account{pendingRows.length === 1 ? '' : 's'} awaiting approval before they can sign in.
+              {pendingRows.length} account{pendingRows.length === 1 ? '' : 's'} haven't verified their email yet -- they'll activate automatically once they do.
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -190,9 +190,10 @@ export default function StaffAccountsPage() {
               <button
                 key={r.id}
                 onClick={() => toggleStatus(r)}
+                title="Manually activate this account without waiting for their OTP verification"
                 className="rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-bold text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-400/30 dark:bg-navy-900 dark:text-amber-200 dark:hover:bg-amber-500/10"
               >
-                Approve {r.full_name.split(' ')[0]}
+                Activate {r.full_name.split(' ')[0]}
               </button>
             ))}
           </div>

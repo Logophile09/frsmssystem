@@ -5,7 +5,6 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import VerifyOtp from './pages/VerifyOtp';
-import PendingApproval from './pages/PendingApproval';
 import Dashboard from './pages/Dashboard';
 import Incidents from './pages/Incidents';
 import PostIncidentReport from './pages/PostIncidentReport';
@@ -30,7 +29,6 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/verify-otp" element={<VerifyOtp />} />
-      <Route path="/pending-approval" element={<PendingApproval />} />
 
       <Route
         element={

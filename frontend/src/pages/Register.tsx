@@ -135,13 +135,14 @@ export default function Register() {
           station,
           notes: form.notes,
         });
-        // Already signed in via Google. The account stays 'pending' until
-        // an administrator approves it -- refresh the profile (it's still
-        // the bare-bones one AuthContext loaded at sign-in) and send them
-        // to the waiting screen; ProtectedRoute would bounce them there
-        // anyway, but navigating explicitly avoids a flash of /dashboard.
+        // Already signed in via Google, and already cleared the emailed
+        // OTP step to get to this form (requiresOtp above bounces anyone
+        // who hasn't) -- completeOAuthRegistration just activated the
+        // account server-side. Refresh the profile (it's still the
+        // bare-bones 'pending' one AuthContext loaded at sign-in) and go
+        // straight to the dashboard.
         await refreshProfile();
-        navigate('/pending-approval', { replace: true });
+        navigate('/dashboard', { replace: true });
         return;
       }
 
@@ -156,9 +157,10 @@ export default function Register() {
         notes: form.notes,
       });
 
-      // Auto-sign-in so the app has a session and can show the waiting
-      // screen right away -- the account itself stays 'pending' until an
-      // administrator approves it from Staff Accounts.
+      // Auto-sign-in so the app has a session and can go straight to the
+      // OTP screen -- the account stays 'pending' until that emailed code
+      // is verified, which activates it immediately (no admin approval
+      // step to wait on).
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: form.email,
         password: form.password,
@@ -169,7 +171,7 @@ export default function Register() {
           state: { registered: true },
         });
       } else {
-        navigate('/pending-approval', { replace: true });
+        navigate('/verify-otp', { replace: true });
       }
     } catch (err: any) {
       setError(err.message ?? 'Registration failed. Please try again.');
@@ -276,7 +278,7 @@ export default function Register() {
               <p className="mt-2 max-w-md text-sm text-muted-foreground dark:text-navy-200">
                 {oauthCompletion
                   ? "You're signed in with Google -- just a few more details and you're in."
-                  : 'Register for access as a responder or staff member. Your account is ready to use as soon as you sign up.'}
+                  : "Register for access as a responder or staff member. Verify the code we email you and you're in -- no approval wait."}
               </p>
               <div className="mt-5 w-full max-w-xs">
                 {oauthCompletion ? (
@@ -454,7 +456,11 @@ export default function Register() {
 
             <div className="flex items-start gap-2.5 rounded-xl border border-border bg-muted/60 p-3 text-xs text-muted-foreground dark:border-white/10 dark:bg-white/5 dark:text-navy-200">
               <ShieldCheck size={16} className="mt-0.5 shrink-0 text-primary" />
-              <span>You'll be signed in and taken straight to the FRSMS dashboard.</span>
+              <span>
+                {oauthCompletion
+                  ? "You'll be taken straight to the FRSMS dashboard."
+                  : "We'll email you a verification code next -- enter it and you're taken straight to the FRSMS dashboard."}
+              </span>
             </div>
           </div>
             </form>

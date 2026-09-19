@@ -10,6 +10,9 @@ export interface AuthedRequest extends Request {
     full_name: string;
     status: 'active' | 'pending' | 'disabled';
     avatar_url: string | null;
+    position: string | null;
+    station: string | null;
+    phone: string | null;
   };
 }
 
@@ -38,7 +41,7 @@ export async function requireAuth(req: AuthedRequest, res: Response, next: NextF
 
   const { data: profile, error: profileError } = await supabaseAdmin
     .from('profiles')
-    .select('id, username, full_name, role, status, avatar_url')
+    .select('id, username, full_name, role, status, avatar_url, position, station, phone')
     .eq('id', userData.user.id)
     .single();
 
@@ -48,20 +51,27 @@ export async function requireAuth(req: AuthedRequest, res: Response, next: NextF
 
   // /api/me is the one route a pending/disabled account is still allowed
   // to hit -- the frontend needs to read its own status to show the
-  // "Awaiting Approval" or "account disabled" screen instead of a dead end.
-  // /api/register/complete-oauth is the other exception: a brand-new
-  // Google OAuth sign-in lands with a bare-bones 'pending' profile (see
-  // supabase/add_google_oauth_profile_trigger.sql) that's missing the
-  // position/station/phone fields the email/password path collects on
-  // /register -- this route lets a still-pending account fill those in.
-  // It still can't reach anything else until an admin approves it.
+  // "Verify your email" or "account disabled" screen instead of a dead end.
+  // /api/register/complete-oauth and /api/register/verify-otp are the other
+  // exceptions, both reachable only by a still-pending account fixing up
+  // its own row:
+  //  - complete-oauth: a brand-new Google OAuth sign-in lands with a
+  //    bare-bones 'pending' profile (see
+  //    supabase/add_google_oauth_profile_trigger.sql) that's missing the
+  //    position/station/phone fields the email/password path collects on
+  //    /register -- this route lets a still-pending account fill those in.
+  //  - verify-otp: the account's one and only path from 'pending' to
+  //    'active' now that there's no admin approval step -- the frontend
+  //    calls it right after the person proves control of their inbox via
+  //    Supabase's own auth.verifyOtp (see VerifyOtp.tsx).
   const isMeRoute = req.baseUrl === '/api/me';
   const isOAuthCompleteRoute = req.baseUrl === '/api/register' && req.path === '/complete-oauth';
-  if (!isMeRoute && !isOAuthCompleteRoute && profile.status !== 'active') {
+  const isVerifyOtpRoute = req.baseUrl === '/api/register' && req.path === '/verify-otp';
+  if (!isMeRoute && !isOAuthCompleteRoute && !isVerifyOtpRoute && profile.status !== 'active') {
     const code = profile.status === 'pending' ? 'ACCOUNT_PENDING' : 'ACCOUNT_DISABLED';
     const message =
       profile.status === 'pending'
-        ? 'Your account is awaiting administrator approval.'
+        ? 'Please verify your email to activate your account.'
         : 'This account has been disabled.';
     return res.status(403).json({ error: code, message });
   }
@@ -74,6 +84,9 @@ export async function requireAuth(req: AuthedRequest, res: Response, next: NextF
     full_name: profile.full_name,
     status: profile.status,
     avatar_url: profile.avatar_url ?? null,
+    position: profile.position ?? null,
+    station: profile.station ?? null,
+    phone: profile.phone ?? null,
   };
 
   next();

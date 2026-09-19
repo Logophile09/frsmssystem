@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { KeyRound, LogOut, MailCheck, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { verifyRegistrationOtp } from '../lib/api';
 import AmbientGlow from '../components/AmbientGlow';
 
 // How long the person has to wait before they're allowed to request
@@ -11,12 +12,21 @@ import AmbientGlow from '../components/AmbientGlow';
 const RESEND_COOLDOWN_S = 30;
 
 /**
- * Extra verification step inserted between "Continue with Google" and the
- * rest of the app. Google already proves the person controls that Google
- * account, but a 6-digit code emailed via Supabase's own auth.signInWithOtp
- * proves they *also* control the inbox behind it before we hand out a
- * dashboard session -- see Login.tsx's handleOAuth, which now redirects
- * here instead of straight to /register.
+ * The account-verification step every 'pending' account goes through --
+ * this replaced the old admin-approval step (Staff Accounts used to have
+ * to flip status: pending -> active by hand). A 6-digit code emailed via
+ * Supabase's own auth.signInWithOtp proves the person controls the inbox
+ * behind the account before we activate it and hand out a dashboard
+ * session. Reached two ways:
+ *  - Email/password self-registration (Register.tsx) already collected
+ *    every FRSMS-specific field up front, so verifying here activates the
+ *    account immediately (see handleVerify below).
+ *  - "Continue with Google" (Login.tsx's handleOAuth) redirects here
+ *    before /register, since Google proves an identity but not control of
+ *    that account's inbox; that sign-in's profile is still missing the
+ *    position/station/phone fields, so verifying here sends it on to
+ *    /register to collect those, and /complete-oauth activates it once
+ *    they're filled in.
  *
  * Note: Supabase sends the code using the "Magic Link" email template in
  * the project's Auth settings, which must include {{ .Token }} (the
@@ -24,7 +34,7 @@ const RESEND_COOLDOWN_S = 30;
  * email -- otherwise the person only receives a clickable link.
  */
 export default function VerifyOtp() {
-  const { session, profile, loading, demoMode, requiresOtp, markOtpVerified, signOut } = useAuth();
+  const { session, profile, loading, demoMode, requiresOtp, markOtpVerified, refreshProfile, signOut } = useAuth();
 
   const email = session?.user.email ?? null;
 
@@ -74,11 +84,16 @@ export default function VerifyOtp() {
     return <div className="flex h-screen items-center justify-center text-slate-500">Loading…</div>;
   }
   if (!session && !demoMode) return <Navigate to="/login" replace />;
-  // Not a Google sign-in, or already verified this session -- nothing to
-  // do here. Route onward exactly the way Login/Register normally would.
+  // Already verified (or never needed to be, e.g. an admin-created
+  // account) -- nothing to do here. Route onward exactly the way
+  // Login/Register normally would.
   if (!requiresOtp) {
     if (demoMode || profile?.status === 'active') return <Navigate to="/dashboard" replace />;
-    if (profile?.status === 'pending') return <Navigate to="/pending-approval" replace />;
+    if (profile?.status === 'disabled') return <Navigate to="/dashboard" replace />;
+    // The only remaining case once OTP is cleared: a Google sign-in still
+    // missing the position/station/phone fields the registration form
+    // collects. (A fully-filled-in profile never lingers here 'pending' --
+    // handleVerify below activates it in the same step that clears OTP.)
     return <Navigate to="/register" replace />;
   }
 
@@ -92,14 +107,38 @@ export default function VerifyOtp() {
       token: code.trim(),
       type: 'email',
     });
-    setVerifying(false);
     if (verifyError) {
+      setVerifying(false);
       setError(verifyError.message);
       return;
     }
+
+    // A self-registered (email/password) account already has its
+    // position/station/phone filled in from the registration form -- this
+    // code is the last gate before the dashboard, so activate the account
+    // right away. A fresh Google sign-in's profile is still missing those
+    // fields (profile.position is unset); leave it 'pending' for now and
+    // let the redirect below send it to /register to finish them --
+    // /complete-oauth activates it once they're filled in, since this OTP
+    // already proved control of the inbox.
+    if (profile?.position) {
+      try {
+        await verifyRegistrationOtp();
+      } catch (err: any) {
+        setVerifying(false);
+        setError(err.message ?? 'Could not activate your account. Please try again.');
+        return;
+      }
+    }
+
+    // Only mark OTP as cleared once activation (when needed) has actually
+    // succeeded -- otherwise a failed activation call above would still
+    // bounce the person onward past a screen that could retry it.
     markOtpVerified();
-    // Downstream redirect (register vs. pending-approval vs. dashboard) is
-    // handled by the requiresOtp === false branch above on the re-render.
+    await refreshProfile();
+    setVerifying(false);
+    // Downstream redirect (register vs. dashboard) is handled by the
+    // requiresOtp === false branch above on the re-render.
   }
 
   return (
@@ -163,7 +202,7 @@ export default function VerifyOtp() {
 
         <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-border bg-muted/60 p-3 text-left text-xs text-muted-foreground dark:border-white/10 dark:bg-white/5 dark:text-navy-200">
           <ShieldCheck size={16} className="mt-0.5 shrink-0 text-primary" />
-          <span>This extra check confirms you also control the inbox behind your Google account before granting access.</span>
+          <span>This confirms you control the inbox behind your account and activates it -- no separate approval step needed.</span>
         </div>
 
         <button

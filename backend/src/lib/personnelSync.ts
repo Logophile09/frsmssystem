@@ -12,8 +12,11 @@ interface ProfileForPersonnel {
  * Gives a staff/admin login account a matching row in the `personnel`
  * roster, linked via `personnel.profile_id`. This is the "transition"
  * from a login account to a full personnel record:
- *  - for self-registered accounts, it runs the moment an admin approves
- *    them (status: pending -> active) in Staff Accounts
+ *  - for self-registered accounts, it runs the moment the account is
+ *    activated -- via the person verifying their emailed OTP (status:
+ *    pending -> active) in POST /api/register/verify-otp or
+ *    /api/register/complete-oauth, or an administrator manually
+ *    activating a still-pending account from Staff Accounts
  *  - for accounts an admin creates directly (already active), it runs
  *    right after creation
  * Safe to call more than once -- it's a no-op if a personnel row is

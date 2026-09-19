@@ -1,15 +1,16 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { AuthedRequest, requireAuth } from '../middleware/auth';
+import { ensurePersonnelRecord } from '../lib/personnelSync';
 
 const router = Router();
 
 // Public self-registration for FRSMS staff/responders. Unlike
 // /api/staff-accounts (admin-only, creates active accounts directly),
 // this route is reachable by anyone. Accounts land as status = 'pending'
-// -- an administrator must approve them (Staff Accounts -> PUT /:id with
-// status: 'active') before the account can reach the dashboard.
-// ProtectedRoute sends 'pending' accounts to /pending-approval in the
+// -- the person must verify a 6-digit code emailed to them (POST
+// /verify-otp below) before the account can reach the dashboard.
+// ProtectedRoute sends 'pending' accounts to /verify-otp in the
 // meantime. role is still always forced to 'staff' below; only an
 // administrator can promote an account to 'admin' from Staff Accounts.
 router.post('/', async (req, res) => {
@@ -99,9 +100,43 @@ router.post('/', async (req, res) => {
   }
 
   res.status(201).json({
-    message: 'Registration submitted. An administrator must approve your account before you can sign in.',
+    message: 'Registration submitted. Check your email for a verification code to activate your account.',
     profile,
   });
+});
+
+// Activates a pending account once the person has proven they control the
+// email address behind it -- the frontend calls this right after a
+// successful supabase.auth.verifyOtp() (see VerifyOtp.tsx), which is the
+// only proof-of-inbox check for that emailed 6-digit code; Supabase Auth
+// itself never tells our backend a code was verified. This route is the
+// bearer-token-authenticated equivalent of what an administrator used to
+// do by hand in Staff Accounts (PUT /:id with status: 'active') -- there's
+// no separate admin-approval step anymore.
+//
+// The .eq('status', 'pending') guard means this can only ever activate an
+// account once: replaying it against an already-active account, or one an
+// administrator has since disabled, does nothing.
+router.post('/verify-otp', requireAuth, async (req: AuthedRequest, res) => {
+  const { data: profile, error } = await supabaseAdmin
+    .from('profiles')
+    .update({ status: 'active' })
+    .eq('id', req.user!.id)
+    .eq('status', 'pending')
+    .select()
+    .single();
+
+  if (error || !profile) {
+    return res.status(403).json({ error: 'Only a pending account can be activated this way.' });
+  }
+
+  // Same roster hookup an admin approval used to trigger.
+  if (profile.role === 'staff') {
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile.id);
+    await ensurePersonnelRecord(profile, authUser?.user?.email ?? null);
+  }
+
+  res.status(200).json({ message: 'Account verified and activated.', profile });
 });
 
 // Completes registration for a "Continue with Google" sign-in. Google
@@ -110,9 +145,14 @@ router.post('/', async (req, res) => {
 // and supabase/add_google_oauth_profile_trigger.sql already dropped a
 // bare-bones `status = 'pending'` profile row in place the moment the
 // Google sign-in created their auth.users row. This route lets that
-// still-pending account fill in the rest, same as a manual registrant,
-// but leaves it 'pending' -- same as manual registration, an
-// administrator still has to approve it from Staff Accounts.
+// still-pending account fill in the rest, same as a manual registrant.
+//
+// By the time a Google sign-in reaches this route it has already cleared
+// the emailed-OTP step (Login.tsx sends "Continue with Google" straight to
+// /verify-otp; see VerifyOtp.tsx) -- proving control of the inbox is the
+// whole verification bar now, so filling in these last fields activates
+// the account immediately, same as POST /verify-otp does for a manual
+// registrant. No separate admin-approval step.
 //
 // requireAuth (via the isOAuthCompleteRoute exception) lets a 'pending'
 // account reach this one route despite not being 'active' yet -- and
@@ -150,10 +190,12 @@ router.post('/complete-oauth', requireAuth, async (req: AuthedRequest, res) => {
       notes: notes && String(notes).trim() ? String(notes).trim() : null,
       // role is forced regardless of anything in the request body --
       // completing this form can never itself grant admin access.
-      // status is deliberately left untouched (stays 'pending') -- filling
-      // in these fields is not the same as being approved; an
-      // administrator still has to flip it to 'active' from Staff Accounts.
+      // status flips straight to 'active' here -- the emailed OTP this
+      // account already cleared before reaching /verify-otp -> /register
+      // is the only verification gate now, and these were the last
+      // required fields it was missing.
       role: 'staff',
+      status: 'active',
     })
     .eq('id', req.user!.id)
     .eq('status', 'pending')
@@ -164,8 +206,11 @@ router.post('/complete-oauth', requireAuth, async (req: AuthedRequest, res) => {
     return res.status(403).json({ error: 'Only a pending account can complete registration this way.' });
   }
 
+  // Same roster hookup POST /verify-otp triggers for a manual registrant.
+  await ensurePersonnelRecord(profile, authUser?.user?.email ?? null);
+
   res.status(200).json({
-    message: 'Registration submitted. An administrator must approve your account before you can sign in.',
+    message: 'Registration complete. Your account is now active.',
     profile,
   });
 });

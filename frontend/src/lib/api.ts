@@ -186,6 +186,33 @@ export async function registerAccount(payload: {
   }
 }
 
+// Activates the caller's own still-'pending' account -- called right after
+// a successful supabase.auth.verifyOtp() (see VerifyOtp.tsx). This is the
+// account's one and only path from 'pending' to 'active' now that there's
+// no separate admin-approval step; the emailed 6-digit code is the whole
+// verification bar. Same reasoning as registerAccount()/
+// completeOAuthRegistration() below: bypasses withFallback()/demoRequest()
+// so a genuine failure surfaces instead of silently no-op'ing against demo
+// data. Uses the caller's existing Supabase session, same as
+// completeOAuthRegistration.
+export async function verifyRegistrationOtp() {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${API_URL}/register/verify-otp`, {
+      method: 'POST',
+      headers: await authHeaders(),
+      signal: controller.signal,
+    });
+    return await handle(res);
+  } catch (err) {
+    if (err instanceof HttpError) throw err;
+    throw new Error('Could not reach the verification server. Please try again in a moment.');
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // Completes registration for a "Continue with Google" sign-in -- fills in
 // the position/station/phone fields Google OAuth never provided, on the
 // bare-bones 'pending' profile the on_auth_user_created trigger already

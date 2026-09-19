@@ -12,6 +12,9 @@ export interface Profile {
   full_name: string;
   status?: 'active' | 'pending' | 'disabled';
   avatar_url?: string | null;
+  position?: string | null;
+  station?: string | null;
+  phone?: string | null;
 }
 
 interface AuthContextValue {
@@ -23,20 +26,13 @@ interface AuthContextValue {
   signInDemo: () => void;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
-  /** True while a Google sign-in exists but the post-Google email OTP step hasn't been completed yet. */
+  /** True while the signed-in account is still 'pending' and hasn't cleared the emailed OTP step yet. */
   requiresOtp: boolean;
   /** Marks the current session's OTP step as complete (called by VerifyOtp.tsx after a successful verifyOtp). */
   markOtpVerified: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-
-// Only Google sign-ins go through the email OTP step -- password accounts
-// (self-registered or admin-created in Staff Accounts) already proved
-// control of their inbox differently and aren't gated here.
-function isGoogleUser(user: User): boolean {
-  return user.app_metadata?.provider === 'google';
-}
 
 // The OTP check is meant to happen once per browser session, not on every
 // reload of an already-verified tab -- so we remember it in sessionStorage
@@ -73,9 +69,9 @@ function writeOtpVerified(userId: string) {
 // during a brief backend hiccup (e.g. a Render free-tier cold start) --
 // it must never be the thing that hands out elevated access. `status` is
 // intentionally left unset (not forced to 'pending') so a returning,
-// already-*approved* user reloading mid-hiccup isn't wrongly bounced to
-// the pending-approval screen; the actual gate against brand-new,
-// never-approved sign-ins reaching the dashboard is the OAuth ->
+// already-*activated* user reloading mid-hiccup isn't wrongly bounced to
+// the OTP-verification screen; the actual gate against brand-new,
+// never-verified sign-ins reaching the dashboard is the OAuth ->
 // /register -> complete-oauth routing in Login.tsx/Register.tsx, which
 // doesn't depend on the backend responding at sign-in time at all.
 function profileFromSupabaseUser(user: User): Profile {
@@ -215,7 +211,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setOtpVerified(true);
   }
 
-  const requiresOtp = !demoMode && !!session && isGoogleUser(session.user) && !otpVerified;
+  // 'pending' now means "hasn't cleared the emailed OTP step yet" -- both
+  // self-registered (password) and Google sign-in accounts land 'pending'
+  // and both go through VerifyOtp.tsx; there's no longer a separate
+  // admin-approval step waiting on the other side of it. profile is left
+  // out of the undefined/backend-unreachable fallback profile's `status`
+  // deliberately (see profileFromSupabaseUser above), so this correctly
+  // stays false for an already-approved user reloading mid-hiccup.
+  const requiresOtp = !demoMode && !!session && profile?.status === 'pending' && !otpVerified;
 
   return (
     <AuthContext.Provider

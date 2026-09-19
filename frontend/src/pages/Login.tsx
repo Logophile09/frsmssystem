@@ -241,7 +241,7 @@ export default function Login() {
 
               {justRegistered && (
                 <p className="mt-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-2 text-center text-sm text-emerald-700 dark:text-leaf-300">
-                  Registration received! Sign in below once your account is approved.
+                  Registration received! Sign in below, then verify the code emailed to you to activate your account.
                 </p>
               )}
 
