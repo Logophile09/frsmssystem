@@ -68,12 +68,8 @@ function writeOtpVerified(userId: string) {
 // purely so an already-signed-in person isn't dumped on a blank screen
 // during a brief backend hiccup (e.g. a Render free-tier cold start) --
 // it must never be the thing that hands out elevated access. `status` is
-// intentionally left unset (not forced to 'pending') so a returning,
-// already-*activated* user reloading mid-hiccup isn't wrongly bounced to
-// the OTP-verification screen; the actual gate against brand-new,
-// never-verified sign-ins reaching the dashboard is the OAuth ->
-// /register -> complete-oauth routing in Login.tsx/Register.tsx, which
-// doesn't depend on the backend responding at sign-in time at all.
+// left unset here; offlineProfile() below decides whether to force it to
+// 'pending' depending on whether this session has cleared OTP before.
 function profileFromSupabaseUser(user: User): Profile {
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
   const metaName = [meta.full_name, meta.name, meta.display_name].find(
@@ -106,6 +102,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [demoMode, setDemoMode] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
 
+  // Builds the offline fallback profile for a signed-in user, but keeps
+  // the OTP gate honest while we do it. Leaving `status` unset lets an
+  // already-*active* user reloading mid-hiccup skip straight back in --
+  // but for a session that hasn't cleared OTP yet (sessionStorage has no
+  // record of it), we don't actually know that; a slow/cold-starting
+  // backend right after a brand-new Google sign-up would otherwise leave
+  // `status` undefined, `requiresOtp` would read false, and VerifyOtp
+  // would bounce the person straight past verification (the "OTP screen
+  // flashes then disappears" bug). Defaulting to 'pending' in that case
+  // costs an already-active user one redundant OTP screen on a very rare
+  // backend hiccup -- far safer than a never-verified account slipping
+  // past the gate.
+  function offlineProfile(currentUser: User): Profile {
+    const fallback = profileFromSupabaseUser(currentUser);
+    if (!readOtpVerified(currentUser.id)) fallback.status = 'pending';
+    return fallback;
+  }
+
   async function loadProfile(currentUser: User | null | undefined) {
     try {
       const me = await api.get('/me');
@@ -114,12 +128,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // correct for genuine Demo Mode, but a *real* signed-in user should
       // see their own Supabase account name, not "Demo Administrator".
       if (isBackendUnreachable() && currentUser) {
-        setProfile(profileFromSupabaseUser(currentUser));
+        setProfile(offlineProfile(currentUser));
       } else {
         setProfile(me);
       }
     } catch {
-      setProfile(currentUser ? profileFromSupabaseUser(currentUser) : null);
+      setProfile(currentUser ? offlineProfile(currentUser) : null);
     }
   }
 
@@ -211,39 +225,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setOtpVerified(true);
   }
 
-  // Was the current session established through "Continue with Google"?
-  // Supabase records every identity provider that's ever been linked to
-  // this auth.users row in app_metadata.providers (and the one used for
-  // the *current* sign-in in app_metadata.provider) -- check both so a
-  // staff account that has both a password and a linked Google identity
-  // is still recognised as a Google sign-in when that's how they signed
-  // in this time.
-  const isGoogleSession = Boolean(
-    session &&
-      (session.user.app_metadata?.provider === 'google' ||
-        (session.user.app_metadata?.providers as string[] | undefined)?.includes('google'))
-  );
-
-  // 'pending' means "hasn't cleared the emailed OTP step yet" for a
-  // brand-new self-registered (password) or Google account -- both land
-  // 'pending' and go through VerifyOtp.tsx to activate. But most real
-  // accounts are pre-created by an admin in Staff Accounts and start out
-  // 'active' (see staffAccounts.ts) -- and Supabase links a Google
-  // sign-in to that *same* existing auth.users row whenever the emails
-  // match, rather than creating a new one, so the account is already
-  // 'active' before the on_auth_user_created trigger ever gets a chance
-  // to run. Gating solely on status === 'pending' would let every one of
-  // those Google sign-ins straight through with no OTP step at all --
-  // Google having proven the identity is only one factor; this code is
-  // what proves the person also controls that inbox, so it's required
-  // for every Google sign-in this browser session regardless of the
-  // account's activation status. profile is left out of the
-  // undefined/backend-unreachable fallback profile's `status`
-  // deliberately (see profileFromSupabaseUser above), so the 'pending'
-  // check below correctly stays false for an already-approved user
-  // reloading mid-hiccup.
-  const requiresOtp =
-    !demoMode && !!session && !otpVerified && (profile?.status === 'pending' || isGoogleSession);
+  // 'pending' now means "hasn't cleared the emailed OTP step yet" -- both
+  // self-registered (password) and Google sign-in accounts land 'pending'
+  // and both go through VerifyOtp.tsx; there's no longer a separate
+  // admin-approval step waiting on the other side of it. profile is left
+  // out of the undefined/backend-unreachable fallback profile's `status`
+  // deliberately (see profileFromSupabaseUser above), so this correctly
+  // stays false for an already-approved user reloading mid-hiccup.
+  const requiresOtp = !demoMode && !!session && profile?.status === 'pending' && !otpVerified;
 
   return (
     <AuthContext.Provider
