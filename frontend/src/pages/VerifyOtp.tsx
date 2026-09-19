@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { KeyRound, LogOut, MailCheck, ShieldCheck } from 'lucide-react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { ArrowLeft, KeyRound, LogOut, MailCheck, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { verifyRegistrationOtp } from '../lib/api';
@@ -39,6 +39,7 @@ const RESEND_COOLDOWN_S = 120;
  */
 export default function VerifyOtp() {
   const { session, profile, loading, demoMode, requiresOtp, markOtpVerified, refreshProfile, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const email = session?.user.email ?? null;
 
@@ -153,10 +154,27 @@ export default function VerifyOtp() {
     // requiresOtp === false branch above on the re-render.
   }
 
+  // Signing out drops the session, so the `!session && !demoMode` check
+  // above would already bounce this page to /login on its own -- but we
+  // navigate explicitly too so the link works the instant it's clicked,
+  // without waiting on a re-render.
+  async function backToLogin() {
+    await signOut();
+    navigate('/login', { replace: true });
+  }
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background text-foreground px-6 transition-colors duration-300">
       <AmbientGlow position="fixed" variant="auth" showEmbers interactive />
       <div className="relative w-full max-w-sm rounded-2xl border border-border bg-card/95 p-8 text-center shadow-2xl backdrop-blur-xl transition-colors duration-300 dark:border-white/10 dark:bg-navy-950/85">
+        <button
+          type="button"
+          onClick={backToLogin}
+          className="mb-4 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-primary dark:text-navy-300 dark:hover:text-leaf-300 transition-colors"
+        >
+          <ArrowLeft size={14} /> Back to Login
+        </button>
+
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-primary bg-primary/10 text-primary shadow-[0_0_18px_rgba(22,163,74,0.35)]">
           <MailCheck size={26} />
         </div>
@@ -218,7 +236,7 @@ export default function VerifyOtp() {
         </div>
 
         <button
-          onClick={() => signOut()}
+          onClick={backToLogin}
           className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-muted/60 py-2.5 text-sm font-semibold text-foreground transition-all duration-300 hover:border-primary/40 hover:bg-accent dark:border-white/10 dark:bg-white/5 dark:text-navy-100 dark:hover:bg-white/10"
         >
           <LogOut size={15} /> Cancel & Sign Out

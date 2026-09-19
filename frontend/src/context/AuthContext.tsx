@@ -68,12 +68,8 @@ function writeOtpVerified(userId: string) {
 // purely so an already-signed-in person isn't dumped on a blank screen
 // during a brief backend hiccup (e.g. a Render free-tier cold start) --
 // it must never be the thing that hands out elevated access. `status` is
-// intentionally left unset (not forced to 'pending') so a returning,
-// already-*activated* user reloading mid-hiccup isn't wrongly bounced to
-// the OTP-verification screen; the actual gate against brand-new,
-// never-verified sign-ins reaching the dashboard is the OAuth ->
-// /register -> complete-oauth routing in Login.tsx/Register.tsx, which
-// doesn't depend on the backend responding at sign-in time at all.
+// left unset here; offlineProfile() below decides whether to force it to
+// 'pending' depending on whether this session has cleared OTP before.
 function profileFromSupabaseUser(user: User): Profile {
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
   const metaName = [meta.full_name, meta.name, meta.display_name].find(
@@ -106,6 +102,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [demoMode, setDemoMode] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
 
+  // Builds the offline fallback profile for a signed-in user, but keeps
+  // the OTP gate honest while we do it. Leaving `status` unset lets an
+  // already-*active* user reloading mid-hiccup skip straight back in --
+  // but for a session that hasn't cleared OTP yet (sessionStorage has no
+  // record of it), we don't actually know that; a slow/cold-starting
+  // backend right after a brand-new Google sign-up would otherwise leave
+  // `status` undefined, `requiresOtp` would read false, and VerifyOtp
+  // would bounce the person straight past verification (the "OTP screen
+  // flashes then disappears" bug). Defaulting to 'pending' in that case
+  // costs an already-active user one redundant OTP screen on a very rare
+  // backend hiccup -- far safer than a never-verified account slipping
+  // past the gate.
+  function offlineProfile(currentUser: User): Profile {
+    const fallback = profileFromSupabaseUser(currentUser);
+    if (!readOtpVerified(currentUser.id)) fallback.status = 'pending';
+    return fallback;
+  }
+
   async function loadProfile(currentUser: User | null | undefined) {
     try {
       const me = await api.get('/me');
@@ -114,12 +128,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // correct for genuine Demo Mode, but a *real* signed-in user should
       // see their own Supabase account name, not "Demo Administrator".
       if (isBackendUnreachable() && currentUser) {
-        setProfile(profileFromSupabaseUser(currentUser));
+        setProfile(offlineProfile(currentUser));
       } else {
         setProfile(me);
       }
     } catch {
-      setProfile(currentUser ? profileFromSupabaseUser(currentUser) : null);
+      setProfile(currentUser ? offlineProfile(currentUser) : null);
     }
   }
 
