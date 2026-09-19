@@ -473,6 +473,12 @@ export function demoRequest(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: str
     };
     record.incident_personnel = (body?.personnel_ids ?? []).map((pid: number) => ({ personnel_id: pid, personnel: personnel.find((p) => p.id === pid) }));
     record.incident_vehicles = (body?.vehicle_ids ?? []).map((vid: number) => ({ vehicle_id: vid, vehicles: vehicles.find((v) => v.id === vid) }));
+    // Mirror the real backend: a vehicle just handed to an incident is no
+    // longer sitting available in the yard.
+    (body?.vehicle_ids ?? []).forEach((vid: number) => {
+      const veh = vehicles.find((v) => v.id === vid);
+      if (veh) veh.status = 'dispatched';
+    });
     incidents.unshift(record);
     return record;
   }
@@ -510,7 +516,29 @@ export function demoRequest(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: str
         updated.incident_personnel = body.personnel_ids.map((pid: number) => ({ personnel_id: pid, personnel: personnel.find((p) => p.id === pid) }));
       }
       if (body?.vehicle_ids) {
-        updated.incident_vehicles = body.vehicle_ids.map((vid: number) => ({ vehicle_id: vid, vehicles: vehicles.find((v) => v.id === vid) }));
+        // Same added/removed diffing as the real backend, so the offline
+        // demo's "available" counts stay honest after an Apply-to-Incident.
+        const prevIds: number[] = (existing.incident_vehicles ?? []).map((x: any) => x.vehicle_id);
+        const newIds: number[] = body.vehicle_ids;
+        updated.incident_vehicles = newIds.map((vid: number) => ({ vehicle_id: vid, vehicles: vehicles.find((v) => v.id === vid) }));
+        newIds
+          .filter((id) => !prevIds.includes(id))
+          .forEach((id) => {
+            const veh = vehicles.find((v) => v.id === id);
+            if (veh) veh.status = 'dispatched';
+          });
+        prevIds
+          .filter((id) => !newIds.includes(id))
+          .forEach((id) => {
+            const veh = vehicles.find((v) => v.id === id);
+            if (veh && veh.status === 'dispatched') veh.status = 'available';
+          });
+      }
+      if ((updated.status === 'resolved' || updated.status === 'closed') && updated.status !== existing.status) {
+        (updated.incident_vehicles ?? []).forEach((iv: any) => {
+          const veh = vehicles.find((v) => v.id === iv.vehicle_id);
+          if (veh && veh.status === 'dispatched') veh.status = 'available';
+        });
       }
       incidents[idx] = updated;
       return updated;

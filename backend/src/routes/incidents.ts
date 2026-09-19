@@ -178,11 +178,48 @@ router.put('/:id', async (req: AuthedRequest, res) => {
     }
   }
   if (Array.isArray(vehicle_ids)) {
+    // Diff against what was assigned before this update so we can flip
+    // vehicle.status in step with the assignment -- mirrors POST /incidents,
+    // which marks newly-assigned vehicles 'dispatched'. Without this, a
+    // vehicle applied here from the Dispatch Recommendation page (or any
+    // other edit) would keep showing as 'available' and could get handed
+    // out to a second incident at the same time.
+    const { data: prevAssigned } = await supabaseAdmin
+      .from('incident_vehicles')
+      .select('vehicle_id')
+      .eq('incident_id', req.params.id);
+    const prevIds = (prevAssigned ?? []).map((r) => r.vehicle_id as number);
+    const newIds = vehicle_ids as number[];
+    const added = newIds.filter((id) => !prevIds.includes(id));
+    const removed = prevIds.filter((id) => !newIds.includes(id));
+
     await supabaseAdmin.from('incident_vehicles').delete().eq('incident_id', req.params.id);
-    if (vehicle_ids.length) {
+    if (newIds.length) {
       await supabaseAdmin
         .from('incident_vehicles')
-        .insert(vehicle_ids.map((vehicle_id: number) => ({ incident_id: Number(req.params.id), vehicle_id })));
+        .insert(newIds.map((vehicle_id: number) => ({ incident_id: Number(req.params.id), vehicle_id })));
+    }
+    if (added.length) {
+      await supabaseAdmin.from('vehicles').update({ status: 'dispatched' }).in('id', added);
+    }
+    if (removed.length) {
+      // Only release units that were actually 'dispatched' -- don't
+      // clobber a vehicle someone's since put into maintenance /
+      // out_of_service independently of this incident.
+      await supabaseAdmin.from('vehicles').update({ status: 'available' }).in('id', removed).eq('status', 'dispatched');
+    }
+  }
+
+  // Closing out an incident frees up whatever's still assigned to it,
+  // regardless of whether this same request also touched vehicle_ids.
+  if (status === 'resolved' || status === 'closed') {
+    const { data: assignedNow } = await supabaseAdmin
+      .from('incident_vehicles')
+      .select('vehicle_id')
+      .eq('incident_id', req.params.id);
+    const ids = (assignedNow ?? []).map((r) => r.vehicle_id as number);
+    if (ids.length) {
+      await supabaseAdmin.from('vehicles').update({ status: 'available' }).in('id', ids).eq('status', 'dispatched');
     }
   }
 

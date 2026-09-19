@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { GitBranch, Truck, Users, ShieldAlert, CheckCircle2, Sparkles } from 'lucide-react';
+import { GitBranch, Truck, Users, ShieldAlert, CheckCircle2, Sparkles, Send, AlertTriangle } from 'lucide-react';
 import { api } from '../lib/api';
 import {
   INCIDENT_TYPES,
@@ -18,6 +18,8 @@ interface IncidentRow {
   severity: Severity;
   status: string;
   created_at: string;
+  incident_personnel: { personnel_id: number }[];
+  incident_vehicles: { vehicle_id: number }[];
 }
 interface VehicleRow {
   id: number;
@@ -27,7 +29,54 @@ interface VehicleRow {
 }
 interface PersonnelRow {
   id: number;
+  full_name: string;
+  rank_title: string;
   status: string;
+}
+
+/**
+ * Starting point for the "Apply to Incident" picker: pre-checks whatever
+ * is already assigned to the incident, then tops each recommended vehicle
+ * type up to its recommended quantity (and personnel up to minPersonnel)
+ * using only currently-available units, so the dispatcher lands on a
+ * sensible default and can still add/remove before applying.
+ */
+function computeAssignmentDefaults(
+  rec: DispatchRecommendation,
+  vehiclesList: VehicleRow[],
+  personnelList: PersonnelRow[],
+  existingVehicleIds: number[],
+  existingPersonnelIds: number[]
+) {
+  const vehicleIds = new Set<number>(existingVehicleIds);
+  for (const unit of rec.units) {
+    const haveOfType = vehiclesList.filter(
+      (v) => vehicleIds.has(v.id) && v.vehicle_type.toLowerCase() === unit.vehicleType.toLowerCase()
+    ).length;
+    let need = unit.quantity - haveOfType;
+    if (need <= 0) continue;
+    const candidates = vehiclesList.filter(
+      (v) => v.vehicle_type.toLowerCase() === unit.vehicleType.toLowerCase() && v.status === 'available' && !vehicleIds.has(v.id)
+    );
+    for (const c of candidates) {
+      if (need <= 0) break;
+      vehicleIds.add(c.id);
+      need--;
+    }
+  }
+
+  const personnelIds = new Set<number>(existingPersonnelIds);
+  let needPersonnel = rec.minPersonnel - personnelIds.size;
+  if (needPersonnel > 0) {
+    const candidates = personnelList.filter((p) => p.status === 'on_duty' && !personnelIds.has(p.id));
+    for (const c of candidates) {
+      if (needPersonnel <= 0) break;
+      personnelIds.add(c.id);
+      needPersonnel--;
+    }
+  }
+
+  return { vehicleIds: Array.from(vehicleIds), personnelIds: Array.from(personnelIds) };
 }
 
 const SEVERITIES: Severity[] = ['1', '2', '3', '4', '5'];
@@ -58,22 +107,42 @@ export default function DispatchRecommendationPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
+  // Apply-to-incident state: only meaningful once an active incident has
+  // been loaded above (see `selectedIncident`) and a recommendation exists.
+  const [assignVehicleIds, setAssignVehicleIds] = useState<number[]>([]);
+  const [assignPersonnelIds, setAssignPersonnelIds] = useState<number[]>([]);
+  const [markDispatched, setMarkDispatched] = useState(true);
+  const [applying, setApplying] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
+  const [applySuccess, setApplySuccess] = useState<string | null>(null);
+
+  async function reloadAll() {
+    const [i, v, p] = await Promise.all([api.get('/incidents'), api.get('/vehicles'), api.get('/personnel')]);
+    setIncidents((i ?? []).filter((r: IncidentRow) => r.status === 'reported' || r.status === 'dispatched'));
+    setVehicles(v ?? []);
+    setPersonnel(p ?? []);
+    return { i: (i ?? []) as IncidentRow[], v: (v ?? []) as VehicleRow[], p: (p ?? []) as PersonnelRow[] };
+  }
+
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [i, v, p] = await Promise.all([api.get('/incidents'), api.get('/vehicles'), api.get('/personnel')]);
-      setIncidents((i ?? []).filter((r: IncidentRow) => r.status === 'reported' || r.status === 'dispatched'));
-      setVehicles(v ?? []);
-      setPersonnel(p ?? []);
+      await reloadAll();
       setLoading(false);
     })();
   }, []);
 
   const activeVehicleTypes = useMemo(() => Array.from(new Set(vehicles.map((v) => v.vehicle_type))).sort(), [vehicles]);
+  const selectedIncident = useMemo(
+    () => incidents.find((r) => String(r.id) === selectedIncidentId) ?? null,
+    [incidents, selectedIncidentId]
+  );
 
   function loadFromIncident(id: string) {
     setSelectedIncidentId(id);
     setResult(null);
+    setApplyError(null);
+    setApplySuccess(null);
     if (!id) return;
     const inc = incidents.find((r) => String(r.id) === id);
     if (!inc) return;
@@ -89,6 +158,72 @@ export default function DispatchRecommendationPage() {
     setResult(rec);
     setAiAnalysis(null);
     setAiError(null);
+    setApplyError(null);
+    setApplySuccess(null);
+
+    if (selectedIncident) {
+      const existingVehicleIds = selectedIncident.incident_vehicles.map((x) => x.vehicle_id);
+      const existingPersonnelIds = selectedIncident.incident_personnel.map((x) => x.personnel_id);
+      const defaults = computeAssignmentDefaults(rec, vehicles, personnel, existingVehicleIds, existingPersonnelIds);
+      setAssignVehicleIds(defaults.vehicleIds);
+      setAssignPersonnelIds(defaults.personnelIds);
+      setMarkDispatched(selectedIncident.status === 'reported');
+    } else {
+      setAssignVehicleIds([]);
+      setAssignPersonnelIds([]);
+    }
+  }
+
+  function toggleAssignVehicle(id: number) {
+    setAssignVehicleIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+  }
+  function toggleAssignPersonnel(id: number) {
+    setAssignPersonnelIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+  }
+
+  // A vehicle/personnel row is selectable if it's currently free, OR it's
+  // already picked (so something already assigned to this incident, or a
+  // unit whose status hasn't refreshed yet, doesn't just disappear from
+  // the list).
+  const selectableVehiclesByType = useMemo(() => {
+    const map = new Map<string, VehicleRow[]>();
+    for (const v of vehicles) {
+      if (v.status !== 'available' && !assignVehicleIds.includes(v.id)) continue;
+      const list = map.get(v.vehicle_type) ?? [];
+      list.push(v);
+      map.set(v.vehicle_type, list);
+    }
+    return map;
+  }, [vehicles, assignVehicleIds]);
+
+  const selectablePersonnel = useMemo(
+    () => personnel.filter((p) => p.status === 'on_duty' || assignPersonnelIds.includes(p.id)),
+    [personnel, assignPersonnelIds]
+  );
+
+  async function applyToIncident() {
+    if (!selectedIncident || !result) return;
+    setApplying(true);
+    setApplyError(null);
+    setApplySuccess(null);
+    try {
+      const payload: Record<string, unknown> = {
+        vehicle_ids: assignVehicleIds,
+        personnel_ids: assignPersonnelIds,
+      };
+      if (markDispatched && selectedIncident.status !== 'dispatched') payload.status = 'dispatched';
+
+      const updated = await api.put(`/incidents/${selectedIncident.id}`, payload);
+      await reloadAll();
+      setApplySuccess(
+        `Applied to ${updated?.incident_number ?? selectedIncident.incident_number}: ${assignVehicleIds.length} vehicle(s) and ${assignPersonnelIds.length} personnel assigned` +
+          (payload.status ? `, status set to dispatched.` : '.')
+      );
+    } catch (err) {
+      setApplyError(err instanceof Error ? err.message : 'Failed to apply to incident');
+    } finally {
+      setApplying(false);
+    }
   }
 
   // Groq API-driven decision-tree analysis: the tree above is always
@@ -289,6 +424,113 @@ export default function DispatchRecommendationPage() {
                   <p className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
                     {aiAnalysis}
                   </p>
+                )}
+              </div>
+
+              <div className="mt-5 border-t border-slate-200 pt-4 dark:border-white/10">
+                <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <Send size={14} className="text-leaf-500" /> Apply to incident
+                </p>
+
+                {!selectedIncident && (
+                  <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50/60 p-3 text-sm text-slate-500 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400">
+                    Load an active incident from the dropdown above (instead of entering details manually) to assign
+                    these recommended units directly to it.
+                  </p>
+                )}
+
+                {selectedIncident && (
+                  <div>
+                    <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
+                      Assigning to <span className="font-semibold text-slate-800 dark:text-slate-100">{selectedIncident.incident_number}</span>{' '}
+                      · {selectedIncident.location}. Pick from what's actually available below, then apply — this
+                      writes to the incident and marks the chosen vehicles dispatched.
+                    </p>
+
+                    <div className="mb-4 space-y-3">
+                      {result.units.map((u) => {
+                        const options = selectableVehiclesByType.get(u.vehicleType) ?? [];
+                        const selectedOfType = options.filter((v) => assignVehicleIds.includes(v.id)).length;
+                        return (
+                          <div key={u.vehicleType} className="rounded-lg border border-slate-200 p-2.5 dark:border-white/10">
+                            <div className="mb-1.5 flex items-center justify-between text-sm">
+                              <span className="flex items-center gap-1.5 font-medium text-slate-800 dark:text-slate-200">
+                                <Truck size={14} className="text-leaf-500" /> {u.vehicleType}
+                              </span>
+                              <span className={selectedOfType < u.quantity ? 'text-amber-600' : 'text-emerald-600'}>
+                                {selectedOfType} / {u.quantity} selected
+                              </span>
+                            </div>
+                            {options.length === 0 && (
+                              <p className="text-xs text-slate-400">No {u.vehicleType.toLowerCase()} currently available.</p>
+                            )}
+                            <div className="flex flex-wrap gap-x-4 gap-y-1">
+                              {options.map((v) => (
+                                <label key={v.id} className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
+                                  <input
+                                    type="checkbox"
+                                    checked={assignVehicleIds.includes(v.id)}
+                                    onChange={() => toggleAssignVehicle(v.id)}
+                                  />
+                                  {v.unit_code}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mb-4 rounded-lg border border-slate-200 p-2.5 dark:border-white/10">
+                      <div className="mb-1.5 flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-1.5 font-medium text-slate-800 dark:text-slate-200">
+                          <Users size={14} className="text-leaf-500" /> Personnel
+                        </span>
+                        <span className={assignPersonnelIds.length < result.minPersonnel ? 'text-amber-600' : 'text-emerald-600'}>
+                          {assignPersonnelIds.length} / ~{result.minPersonnel} selected
+                        </span>
+                      </div>
+                      {selectablePersonnel.length === 0 && <p className="text-xs text-slate-400">No on-duty personnel available.</p>}
+                      <div className="max-h-32 space-y-1 overflow-y-auto">
+                        {selectablePersonnel.map((p) => (
+                          <label key={p.id} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                            <input
+                              type="checkbox"
+                              checked={assignPersonnelIds.includes(p.id)}
+                              onChange={() => toggleAssignPersonnel(p.id)}
+                            />
+                            {p.full_name} <span className="text-xs text-slate-400 dark:text-slate-500">({p.rank_title})</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {selectedIncident.status !== 'dispatched' && (
+                      <label className="mb-3 flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                        <input type="checkbox" checked={markDispatched} onChange={(e) => setMarkDispatched(e.target.checked)} />
+                        Also set incident status to "dispatched"
+                      </label>
+                    )}
+
+                    {applyError && (
+                      <p className="mb-3 flex items-center gap-1.5 text-sm text-rose-600">
+                        <AlertTriangle size={14} /> {applyError}
+                      </p>
+                    )}
+                    {applySuccess && (
+                      <p className="mb-3 flex items-center gap-1.5 text-sm text-emerald-600">
+                        <CheckCircle2 size={14} /> {applySuccess}
+                      </p>
+                    )}
+
+                    <button
+                      onClick={applyToIncident}
+                      disabled={applying || (assignVehicleIds.length === 0 && assignPersonnelIds.length === 0)}
+                      className="btn-primary w-full !py-2.5 disabled:opacity-50"
+                    >
+                      {applying ? 'Applying…' : `Apply to ${selectedIncident.incident_number}`}
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
