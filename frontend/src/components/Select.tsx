@@ -108,7 +108,7 @@ export default function Select({
 
       {open && (
         <div
-          className={`absolute left-0 right-0 z-30 max-h-64 overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-navy-900 ${
+          className={`absolute left-0 right-0 z-[60] max-h-64 overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-navy-900 ${
             openUp ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
           }`}
         >

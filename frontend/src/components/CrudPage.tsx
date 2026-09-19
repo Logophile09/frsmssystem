@@ -66,6 +66,12 @@ interface CrudPageProps<T extends { id: number | string }> {
   }) => Record<string, unknown> | void;
   extraActions?: (row: T) => React.ReactNode;
   headerActions?: React.ReactNode;
+  // Opt-in: when set, clicking anywhere on a row (other than the Actions
+  // cell) calls this instead of/in addition to nothing -- used e.g. by
+  // Personnel to open a read-only details view. Rows get a pointer cursor
+  // and hover highlight only when this is passed, so pages that don't use
+  // it (most CrudPage callers) are visually unchanged.
+  onRowClick?: (row: T) => void;
 }
 
 export default function CrudPage<T extends { id: number | string }>({
@@ -80,6 +86,7 @@ export default function CrudPage<T extends { id: number | string }>({
   onFieldChange,
   extraActions,
   headerActions,
+  onRowClick,
 }: CrudPageProps<T>) {
   const toast = useToast();
   const [rows, setRows] = useState<T[]>([]);
@@ -416,13 +423,17 @@ export default function CrudPage<T extends { id: number | string }>({
 
               {!loading &&
                 paginatedRows.map((row) => (
-                  <tr key={row.id} className="table-row">
+                  <tr
+                    key={row.id}
+                    className={`table-row ${onRowClick ? 'cursor-pointer hover:bg-muted/40' : ''}`}
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  >
                     {columns.map((c) => (
                       <td key={c.key} className="table-cell">
                         {c.render ? c.render(row) : String((row as any)[c.key] ?? '—')}
                       </td>
                     ))}
-                    <td className="whitespace-nowrap px-5 py-2.5 text-right">
+                    <td className="whitespace-nowrap px-5 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1.5">
                         {extraActions && extraActions(row)}
                         <button
