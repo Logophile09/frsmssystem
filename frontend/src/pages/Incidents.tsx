@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { AlertTriangle, Pencil, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 import Modal from '../components/Modal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import Badge from '../components/Badge';
 import IncidentDetailsModal from '../components/IncidentDetailsModal';
 import { SEVERITY_LABELS, INCIDENT_TYPES } from '../lib/dispatchRecommendation';
+import { useToast } from '../context/ToastContext';
 
 interface Incident {
   id: number;
@@ -58,6 +60,7 @@ const KNOWN_LOCATIONS = [
 ] as const;
 
 export default function IncidentsPage() {
+  const toast = useToast();
   const [rows, setRows] = useState<Incident[]>([]);
   const [personnel, setPersonnel] = useState<SimplePersonnel[]>([]);
   const [vehicles, setVehicles] = useState<SimpleVehicle[]>([]);
@@ -70,6 +73,8 @@ export default function IncidentsPage() {
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
   const [aiSummaryError, setAiSummaryError] = useState<string | null>(null);
   const [otherLocation, setOtherLocation] = useState(false);
+  const [deletingRow, setDeletingRow] = useState<Incident | null>(null);
+  const [deletingLoading, setDeletingLoading] = useState(false);
 
   async function loadAll() {
     setLoading(true);
@@ -148,10 +153,23 @@ export default function IncidentsPage() {
 
   const viewing = viewingId != null ? rows.find((r) => r.id === viewingId) ?? null : null;
 
-  async function remove(row: Incident) {
-    if (!confirm('Delete this incident?')) return;
-    await api.del(`/incidents/${row.id}`);
-    await loadAll();
+  function remove(row: Incident) {
+    setDeletingRow(row);
+  }
+
+  async function confirmDelete() {
+    if (!deletingRow) return;
+    setDeletingLoading(true);
+    try {
+      await api.del(`/incidents/${deletingRow.id}`);
+      toast.success('Incident removed.');
+      setDeletingRow(null);
+      await loadAll();
+    } catch (e: any) {
+      toast.error(e.message, 'Delete failed');
+    } finally {
+      setDeletingLoading(false);
+    }
   }
 
   return (
@@ -484,6 +502,17 @@ export default function IncidentsPage() {
           </div>
         </Modal>
       )}
+
+      <ConfirmDialog
+        isOpen={Boolean(deletingRow)}
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this incident? This action cannot be undone."
+        confirmText="Delete Record"
+        isDestructive={true}
+        loading={deletingLoading}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeletingRow(null)}
+      />
     </div>
   );
 }
