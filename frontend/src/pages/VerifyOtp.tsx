@@ -8,7 +8,7 @@ import AmbientGlow from '../components/AmbientGlow';
 // How long the person has to wait before they're allowed to request
 // another code -- keeps someone from hammering "Resend" and burning
 // through Supabase's email-send rate limit.
-const RESEND_COOLDOWN_S = 30;
+const RESEND_COOLDOWN_S = 120;
 
 /**
  * Extra verification step inserted between "Continue with Google" and the
