@@ -1,0 +1,74 @@
+diff --git a/frontend/src/pages/Register.tsx b/frontend/src/pages/Register.tsx
+index a4fd9e0..d974a9a 100644
+--- a/frontend/src/pages/Register.tsx
++++ b/frontend/src/pages/Register.tsx
+@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
+ import { registerAccount, completeOAuthRegistration } from '../lib/api';
+ import { AuthModeSwitch, AuthFlipTransition } from '../components/AuthModeSwitch';
+ import { AuthBackgroundFX } from '../components/AuthBackgroundFX';
++import Select from '../components/Select';
+ 
+ // Same navbar links as Login — Register isn't the home route, so these
+ // point back to the landing page's sections via the `/#id` pattern.
+@@ -49,7 +50,6 @@ const STATION_OPTIONS = [
+ // exactly, so the two auth screens read as one continuous experience.
+ const inputClass =
+   'w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder:text-navy-400 focus:border-leaf-400 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-leaf-400/20';
+-const selectClass = `${inputClass} disabled:opacity-60`;
+ const labelClass = 'mb-1.5 block text-xs font-semibold text-navy-200';
+ 
+ export default function Register() {
+@@ -298,21 +298,13 @@ export default function Register() {
+             <div className="grid gap-4 sm:grid-cols-2">
+               <div>
+                 <label className={labelClass}>Position / Rank</label>
+-                <select
++                <Select
+                   required
+                   value={form.position}
+-                  onChange={(e) => set('position', e.target.value)}
+-                  className={selectClass}
+-                >
+-                  <option value="" disabled>
+-                    Select position / rank…
+-                  </option>
+-                  {POSITION_OPTIONS.map((p) => (
+-                    <option key={p} value={p}>
+-                      {p}
+-                    </option>
+-                  ))}
+-                </select>
++                  onChange={(v) => set('position', v)}
++                  options={POSITION_OPTIONS}
++                  placeholder="Select position / rank…"
++                />
+                 {form.position === OTHER && (
+                   <input
+                     required
+@@ -325,21 +317,13 @@ export default function Register() {
+               </div>
+               <div>
+                 <label className={labelClass}>Station / Unit</label>
+-                <select
++                <Select
+                   required
+                   value={form.station}
+-                  onChange={(e) => set('station', e.target.value)}
+-                  className={selectClass}
+-                >
+-                  <option value="" disabled>
+-                    Select station / unit…
+-                  </option>
+-                  {STATION_OPTIONS.map((s) => (
+-                    <option key={s} value={s}>
+-                      {s}
+-                    </option>
+-                  ))}
+-                </select>
++                  onChange={(v) => set('station', v)}
++                  options={STATION_OPTIONS}
++                  placeholder="Select station / unit…"
++                />
+                 {form.station === OTHER && (
+                   <input
+                     required

@@ -1,0 +1,410 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------ */
+/* Culiat Public Safety design tokens — copied from the parent site's  */
+/* design system so this subdomain (FRSMS) shares the same colors,     */
+/* radii and light/dark theme. Never hardcode a hex color in a         */
+/* component — use the token utilities (bg-card, text-muted-foreground,*/
+/* border-border, bg-primary/10, text-primary, ...) or the leaf/navy/  */
+/* ink/slate classes already used throughout this app, which are       */
+/* recolored to these same values in tailwind.config.js.               */
+/* ------------------------------------------------------------------ */
+:root {
+  color-scheme: light;
+  --radius: 1rem;
+  --background: 0.99 0.002 145;
+  --foreground: 0.16 0.006 150;
+  --card: 1 0 0;
+  --card-foreground: 0.16 0.006 150;
+  --popover: 1 0 0;
+  --popover-foreground: 0.16 0.006 150;
+  --primary: 0.47 0.145 150; /* deep civic green — the brand color, the one hue carrier */
+  --primary-foreground: 0.99 0.003 145;
+  --secondary: 0.95 0.004 150;
+  --secondary-foreground: 0.27 0.07 150;
+  --muted: 0.96 0.003 150;
+  --muted-foreground: 0.46 0.006 150;
+  --accent: 0.94 0.045 148;
+  --accent-foreground: 0.3 0.095 150;
+  --destructive: 0.58 0.22 27;
+  --destructive-foreground: 0.99 0.003 145;
+  --border: 0.89 0.006 150;
+  --input: 0.89 0.006 150;
+  --ring: 0.54 0.15 150;
+  --brand-surface: 0.47 0.145 150;
+  --brand-surface-foreground: 0.99 0.003 145;
+  --brand-surface-muted: 0.86 0.045 145;
+  --footer: 0.16 0.006 150;
+  --footer-foreground: 0.97 0.003 145;
+  --footer-muted: 0.66 0.008 150;
+  --footer-accent: 0.72 0.17 147;
+
+  --ease-theme: cubic-bezier(0.65, 0, 0.35, 1);
+  --theme-fill-duration: 1150ms;
+  --theme-fade-duration: 900ms;
+}
+
+.dark {
+  color-scheme: dark;
+  /* True-dark, near-neutral surfaces (hue kept, chroma kept intentionally
+     tiny) so the canvas reads as black, not tinted moss-green. Green is
+     spent entirely on primary/accent/ring/brand-surface below, so it pops
+     as a distinct highlight instead of blending into the background. */
+  --background: 0.115 0.004 150;
+  --foreground: 0.97 0.004 150;
+  --card: 0.165 0.006 150;
+  --card-foreground: 0.97 0.004 150;
+  --popover: 0.18 0.006 150;
+  --popover-foreground: 0.97 0.004 150;
+  --primary: 0.74 0.19 148; /* vivid, saturated green — the only hue carrier in dark mode */
+  --primary-foreground: 0.13 0.03 152;
+  --secondary: 0.225 0.008 150;
+  --secondary-foreground: 0.95 0.006 150;
+  --muted: 0.195 0.007 150;
+  --muted-foreground: 0.68 0.01 150;
+  --accent: 0.25 0.07 148;
+  --accent-foreground: 0.92 0.04 148;
+  --destructive: 0.68 0.19 25;
+  --destructive-foreground: 0.97 0.005 145;
+  --border: 0.29 0.012 150;
+  --input: 0.29 0.012 150;
+  --ring: 0.74 0.19 148;
+  /* Full-bleed brand bands: deep saturated green, distinct from the neutral
+     background rather than a slightly-lighter shade of the same near-black. */
+  --brand-surface: 0.22 0.09 150;
+  --brand-surface-foreground: 0.97 0.01 145;
+  --brand-surface-muted: 0.8 0.06 148;
+  --footer: 0.08 0.003 150;
+  --footer-foreground: 0.95 0.006 150;
+  --footer-muted: 0.64 0.01 150;
+  --footer-accent: 0.76 0.19 148;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+/* Two soft brand glows keep the dark canvas from flattening into plain black. */
+.dark body {
+  background-image:
+    radial-gradient(110rem 55rem at 78% -12%, color-mix(in oklab, oklch(var(--primary)) 10%, transparent), transparent 62%),
+    radial-gradient(80rem 50rem at 4% 8%, color-mix(in oklab, oklch(var(--primary)) 6%, transparent), transparent 58%);
+  background-attachment: fixed;
+}
+
+/* Selective smooth transitions for interactive surfaces instead of universal selector */
+button,
+a,
+input,
+select,
+textarea,
+.surface-card,
+.stat-chip,
+.badge,
+.table-row {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow, opacity, transform;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  transition-duration: 250ms;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, oklch(var(--primary)) 40%, transparent);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in oklab, oklch(var(--primary)) 60%, transparent);
+}
+
+/* Faint dot-grid canvas texture behind every authenticated page — the same
+   quiet "graph paper" backdrop a modern ops console uses so translucent/frosted
+   cards feel grounded. Masked with a soft radial falloff. */
+.app-canvas-texture {
+  background-image: radial-gradient(color-mix(in oklab, oklch(var(--foreground)) 6%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.dark .app-canvas-texture {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+/* Small uppercase green eyebrow above a section heading. */
+.section-label {
+  color: oklch(var(--primary));
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+/* THE signature card hover — put this alongside surface-card on anything clickable. */
+.system-card {
+  transition:
+    transform 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 450ms ease,
+    box-shadow 450ms ease;
+}
+.system-card:hover {
+  transform: translateY(-6px);
+  border-color: color-mix(in oklab, oklch(var(--primary)) 50%, transparent);
+  box-shadow: 0 28px 65px -34px color-mix(in oklab, oklch(var(--primary)) 55%, transparent);
+}
+
+/* Inner top highlight + deep drop shadow so dark-mode cards read as raised glass. */
+.dark [class*='bg-white'],
+.dark .surface-card {
+  box-shadow:
+    0 1px 0 0 color-mix(in oklab, white 6%, transparent) inset,
+    0 24px 60px -32px oklch(0 0 0 / 0.85);
+}
+
+/* Scroll reveal, driven by the useRevealOnScroll hook (src/hooks/use-reveal.ts). */
+.reveal-ready [data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+}
+.reveal-ready [data-reveal][data-visible='true'] {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-rise {
+  animation: rise-in 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Theme-toggle circular reveal (see ThemeContext.tsx) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color var(--theme-fade-duration) var(--ease-theme),
+    border-color var(--theme-fade-duration) var(--ease-theme),
+    color var(--theme-fade-duration) var(--ease-theme),
+    fill var(--theme-fade-duration) var(--ease-theme),
+    stroke var(--theme-fade-duration) var(--ease-theme),
+    box-shadow var(--theme-fade-duration) var(--ease-theme) !important;
+  transition-delay: 0s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal-ready [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Shared admin design system — one place for the recurring surface,   */
+/* control and typography patterns used across every module page      */
+/* (Dashboard → Staff Accounts). Restyled to the Culiat Public Safety  */
+/* card/button/input recipe: rounded-3xl cards on bg-card/95 with a    */
+/* blurred backdrop and deep shadow, fully-rounded font-bold buttons,  */
+/* and Sora display headings.                                         */
+/* ------------------------------------------------------------------ */
+@layer components {
+  /* Page header: icon chip + title + description, used at the top of every
+     module. A soft bordered "hero strip" wash of primary tint plus a
+     hairline glow in the corner, so each module opens with the same quiet
+     sense of arrival as the dashboard. */
+  .module-header {
+    @apply relative mb-6 flex flex-wrap items-start justify-between gap-4 overflow-hidden rounded-3xl border border-border bg-card/95 px-5 py-5 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-primary/30 sm:px-6 sm:py-6;
+  }
+  .module-header::before {
+    content: '';
+    @apply pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-gradient-to-br from-primary/15 to-accent/20 blur-2xl;
+  }
+  .module-header > * {
+    @apply relative;
+  }
+  .module-icon {
+    @apply grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary transition-all duration-500;
+  }
+  .module-title {
+    @apply font-display text-xl font-extrabold tracking-tight text-foreground sm:text-2xl;
+  }
+  .module-description {
+    @apply mt-0.5 text-sm text-muted-foreground;
+  }
+  /* Small uppercase eyebrow label with a lead dot — section kickers, used
+     above card headers and grouped content. */
+  .eyebrow-label {
+    @apply section-label inline-flex items-center gap-1.5 text-[11px] tracking-[0.16em] text-primary/80;
+  }
+  .eyebrow-label::before {
+    content: '';
+    @apply h-1.5 w-1.5 shrink-0 rounded-full bg-primary;
+  }
+
+  /* Generic elevated surface used for tables, form panels, chart cards, etc.
+     The design system's standard content card, everywhere in this app. */
+  .surface-card {
+    @apply system-card rounded-3xl border border-border bg-card/95 shadow-2xl backdrop-blur-xl;
+  }
+  .surface-card-header {
+    @apply flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3.5;
+  }
+  .surface-card-title {
+    @apply font-display text-sm font-bold text-foreground;
+  }
+  .surface-card-subtitle {
+    @apply text-xs text-muted-foreground;
+  }
+  /* "View all →" link pattern used in card headers to point at the full module */
+  .card-link {
+    @apply inline-flex items-center gap-1 text-xs font-bold text-primary transition-colors duration-200 hover:underline;
+  }
+
+  /* Small rounded stat readouts used in header strips (record counts, quick totals) */
+  .stat-chip {
+    @apply flex items-center gap-2 rounded-full border border-border bg-card/80 px-3.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm backdrop-blur-xl;
+  }
+  .stat-chip-dot {
+    @apply h-1.5 w-1.5 shrink-0 rounded-full;
+  }
+  /* Compact icon + value + label tile — used for "at a glance" stat strips */
+  .mini-stat {
+    @apply surface-card flex items-center gap-3 px-4 py-3.5;
+  }
+  .mini-stat-icon {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted;
+  }
+  .mini-stat-value {
+    @apply font-display text-xl font-black leading-tight text-primary;
+  }
+  .mini-stat-label {
+    @apply truncate text-[0.7rem] font-bold uppercase tracking-[0.1em] text-muted-foreground;
+  }
+
+  /* Avatar chip — initials circle with a soft ring, used for staff/profile identity */
+  .avatar-chip {
+    @apply flex shrink-0 items-center justify-center rounded-full font-bold text-primary-foreground ring-2 ring-card;
+  }
+
+  /* Buttons — fully rounded, min-height 44px, font-bold, per the design system's Button recipe */
+  .btn-primary {
+    @apply inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl active:translate-y-0 disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-outline {
+    @apply inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-card/80 px-5 text-sm font-bold text-foreground shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-danger {
+    @apply inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-destructive px-5 text-sm font-bold text-destructive-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-destructive/90 disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-icon {
+    @apply inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-card/80 text-foreground shadow-sm backdrop-blur-xl transition-all duration-300 hover:rotate-6 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40;
+  }
+  .btn-icon-danger {
+    @apply inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-card/80 text-foreground shadow-sm backdrop-blur-xl transition-all duration-300 hover:rotate-6 hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40;
+  }
+
+  /* Form fields — rounded-2xl surface wrapping a transparent, outline-free control */
+  .field-label {
+    @apply mb-1 block text-xs font-semibold text-muted-foreground;
+  }
+  .field-input {
+    @apply w-full rounded-2xl border border-border bg-muted px-3.5 py-2.5 text-sm text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring/30;
+  }
+  .field-search {
+    @apply w-full rounded-full border border-border bg-muted py-2.5 pl-9 pr-3 text-sm text-foreground transition-colors duration-200 placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring/30;
+  }
+
+  /* Tables */
+  .table-head-cell {
+    @apply px-5 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground;
+  }
+  .table-row {
+    @apply transition-colors duration-150 hover:bg-primary/5;
+  }
+  .table-cell {
+    @apply px-5 py-3 text-foreground;
+  }
+}
+
+/* GPS Tracker map -- Voyager tiles are quite bright by default, so this
+   nudges brightness/saturation down a touch for a slightly moodier look
+   without losing the street colors the way the full dark_all style does. */
+.gps-map-darken .leaflet-tile-pane {
+  filter: brightness(0.88) saturate(0.85) contrast(1.05);
+}
+
+/* Print-specific layout rules */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print,
+  nav,
+  aside,
+  header {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  /* The app shell is locked to the viewport height on screen; let it grow
+     to the full document height when printing so nothing gets clipped. */
+  .app-shell,
+  .app-shell > div,
+  .app-shell main {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .printable-document {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}

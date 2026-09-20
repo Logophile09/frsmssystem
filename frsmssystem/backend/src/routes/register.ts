@@ -1,0 +1,218 @@
+import { Router } from 'express';
+import { supabaseAdmin } from '../config/supabase';
+import { AuthedRequest, requireAuth } from '../middleware/auth';
+import { ensurePersonnelRecord } from '../lib/personnelSync';
+
+const router = Router();
+
+// Public self-registration for FRSMS staff/responders. Unlike
+// /api/staff-accounts (admin-only, creates active accounts directly),
+// this route is reachable by anyone. Accounts land as status = 'pending'
+// -- the person must verify a 6-digit code emailed to them (POST
+// /verify-otp below) before the account can reach the dashboard.
+// ProtectedRoute sends 'pending' accounts to /verify-otp in the
+// meantime. role is still always forced to 'staff' below; only an
+// administrator can promote an account to 'admin' from Staff Accounts.
+router.post('/', async (req, res) => {
+  const { email, password, first_name, last_name, phone, position, station, notes } = req.body ?? {};
+
+  const missing = ['email', 'password', 'first_name', 'last_name', 'phone', 'position', 'station'].filter(
+    (field) => !String(req.body?.[field] ?? '').trim()
+  );
+  if (missing.length) {
+    return res.status(400).json({ error: `Missing required field(s): ${missing.join(', ')}` });
+  }
+  if (String(password).length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+  }
+
+  const full_name = `${first_name} ${last_name}`.trim();
+  const baseUsername = String(email).split('@')[0].toLowerCase().replace(/[^a-z0-9._-]/g, '') || 'staff';
+
+  const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+  });
+  if (createError || !created?.user) {
+    return res.status(400).json({ error: createError?.message ?? 'Could not create the account' });
+  }
+
+  // Username must be unique -- if the natural one is taken, suffix it
+  // with a short slice of the new user's id rather than failing outright.
+  // Use upsert (not insert) keyed on id: creating the auth user above
+  // fires the on_auth_user_created trigger (added for Google OAuth
+  // sign-ins), which already inserts a bare-bones pending profile row
+  // for this id a moment before we get here. A plain insert would
+  // collide with that row and fail with "duplicate key value violates
+  // unique constraint profiles_pkey" -- upsert overwrites it with the
+  // fuller registration-form details instead. If the trigger doesn't
+  // exist/didn't fire, this still behaves like a normal insert.
+  let username = baseUsername;
+  let { data: profile, error: profileError } = await supabaseAdmin
+    .from('profiles')
+    .upsert(
+      {
+        id: created.user.id,
+        username,
+        full_name,
+        role: 'staff',
+        status: 'pending',
+        phone,
+        position,
+        station,
+        notes: notes && String(notes).trim() ? String(notes).trim() : null,
+      },
+      { onConflict: 'id' }
+    )
+    .select()
+    .single();
+
+  // This 23505 now only ever means the *username* (not id) collided
+  // with a different, unrelated account -- retry once with a suffixed
+  // username.
+  if (profileError && profileError.code === '23505') {
+    username = `${baseUsername}-${created.user.id.slice(0, 4)}`;
+    ({ data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .upsert(
+        {
+          id: created.user.id,
+          username,
+          full_name,
+          role: 'staff',
+          status: 'pending',
+          phone,
+          position,
+          station,
+          notes: notes && String(notes).trim() ? String(notes).trim() : null,
+        },
+        { onConflict: 'id' }
+      )
+      .select()
+      .single());
+  }
+
+  if (profileError) {
+    // Roll back the auth user so we don't leave an orphaned login with no profile.
+    await supabaseAdmin.auth.admin.deleteUser(created.user.id);
+    return res.status(400).json({ error: profileError.message });
+  }
+
+  res.status(201).json({
+    message: 'Registration submitted. Check your email for a verification code to activate your account.',
+    profile,
+  });
+});
+
+// Activates a pending account once the person has proven they control the
+// email address behind it -- the frontend calls this right after a
+// successful supabase.auth.verifyOtp() (see VerifyOtp.tsx), which is the
+// only proof-of-inbox check for that emailed 6-digit code; Supabase Auth
+// itself never tells our backend a code was verified. This route is the
+// bearer-token-authenticated equivalent of what an administrator used to
+// do by hand in Staff Accounts (PUT /:id with status: 'active') -- there's
+// no separate admin-approval step anymore.
+//
+// The .eq('status', 'pending') guard means this can only ever activate an
+// account once: replaying it against an already-active account, or one an
+// administrator has since disabled, does nothing.
+router.post('/verify-otp', requireAuth, async (req: AuthedRequest, res) => {
+  const { data: profile, error } = await supabaseAdmin
+    .from('profiles')
+    .update({ status: 'active' })
+    .eq('id', req.user!.id)
+    .eq('status', 'pending')
+    .select()
+    .single();
+
+  if (error || !profile) {
+    return res.status(403).json({ error: 'Only a pending account can be activated this way.' });
+  }
+
+  // Same roster hookup an admin approval used to trigger.
+  if (profile.role === 'staff') {
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile.id);
+    await ensurePersonnelRecord(profile, authUser?.user?.email ?? null);
+  }
+
+  res.status(200).json({ message: 'Account verified and activated.', profile });
+});
+
+// Completes registration for a "Continue with Google" sign-in. Google
+// OAuth gives us an authenticated identity but none of the FRSMS-specific
+// fields (position, station, phone) that /api/register above collects --
+// and supabase/add_google_oauth_profile_trigger.sql already dropped a
+// bare-bones `status = 'pending'` profile row in place the moment the
+// Google sign-in created their auth.users row. This route lets that
+// still-pending account fill in the rest, same as a manual registrant.
+//
+// By the time a Google sign-in reaches this route it has already cleared
+// the emailed-OTP step (Login.tsx sends "Continue with Google" straight to
+// /verify-otp; see VerifyOtp.tsx) -- proving control of the inbox is the
+// whole verification bar now, so filling in these last fields activates
+// the account immediately, same as POST /verify-otp does for a manual
+// registrant. No separate admin-approval step.
+//
+// requireAuth (via the isOAuthCompleteRoute exception) lets a 'pending'
+// account reach this one route despite not being 'active' yet -- and
+// role is always forced server-side below, never taken from the request
+// body, so there's no way for someone to grant themselves admin access
+// through this endpoint. The .eq('status', 'pending') guard below means
+// this can only ever fire once per account (a *disabled* account can't
+// use it to quietly reinstate itself, and an already-active one can't
+// replay it to overwrite its fields).
+router.post('/complete-oauth', requireAuth, async (req: AuthedRequest, res) => {
+  const { full_name, position, station, phone, notes } = req.body ?? {};
+
+  const missing = ['position', 'station', 'phone'].filter((field) => !String(req.body?.[field] ?? '').trim());
+  if (missing.length) {
+    return res.status(400).json({ error: `Missing required field(s): ${missing.join(', ')}` });
+  }
+
+  // Re-read the Google profile photo here too, not just in the
+  // on_auth_user_created trigger -- covers accounts created before the
+  // trigger picked up avatar_url, and is a cheap no-op otherwise.
+  const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(req.user!.id);
+  const meta = (authUser?.user?.user_metadata ?? {}) as Record<string, unknown>;
+  const avatarUrl = [meta.avatar_url, meta.picture].find(
+    (v): v is string => typeof v === 'string' && v.trim().length > 0
+  );
+
+  const { data: profile, error } = await supabaseAdmin
+    .from('profiles')
+    .update({
+      ...(full_name && String(full_name).trim() ? { full_name: String(full_name).trim() } : {}),
+      ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
+      position,
+      station,
+      phone,
+      notes: notes && String(notes).trim() ? String(notes).trim() : null,
+      // role is forced regardless of anything in the request body --
+      // completing this form can never itself grant admin access.
+      // status flips straight to 'active' here -- the emailed OTP this
+      // account already cleared before reaching /verify-otp -> /register
+      // is the only verification gate now, and these were the last
+      // required fields it was missing.
+      role: 'staff',
+      status: 'active',
+    })
+    .eq('id', req.user!.id)
+    .eq('status', 'pending')
+    .select()
+    .single();
+
+  if (error || !profile) {
+    return res.status(403).json({ error: 'Only a pending account can complete registration this way.' });
+  }
+
+  // Same roster hookup POST /verify-otp triggers for a manual registrant.
+  await ensurePersonnelRecord(profile, authUser?.user?.email ?? null);
+
+  res.status(200).json({
+    message: 'Registration complete. Your account is now active.',
+    profile,
+  });
+});
+
+export default router;
