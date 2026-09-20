@@ -158,7 +158,7 @@ export default function Layout() {
             </p>
             <div className="space-y-0.5">
               {group.items
-                .filter((item) => !item.adminOnly || profile?.role === 'admin')
+                .filter((item) => !item.adminOnly || profile?.role === 'admin' || profile?.role === 'super_admin' || (profile?.role as string) === 'super admin')
                 .map((item) => {
                   const Icon = item.icon;
                   return (
@@ -286,7 +286,7 @@ export default function Layout() {
               </button>
               <div className="hidden text-right sm:block">
                 <p className="text-sm font-bold leading-tight text-foreground">{profile?.full_name ?? 'Demo Administrator'}</p>
-                <p className="text-xs capitalize leading-tight text-muted-foreground">{profile?.role ?? 'Admin'}</p>
+                <p className="text-xs capitalize leading-tight text-muted-foreground">{profile?.role ? profile.role.replace(/_/g, ' ') : 'Admin'}</p>
               </div>
               <Avatar
                 name={profile?.full_name ?? 'Demo Administrator'}

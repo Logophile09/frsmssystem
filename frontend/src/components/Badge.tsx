@@ -56,10 +56,21 @@ const COLORS: Record<string, string> = {
   likely_false: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
   confirmed_false: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
   confirmed_real: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
+  // roles
+  super_admin: 'bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300',
+  'super admin': 'bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300',
+  admin: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-300',
+  user: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
+  staff: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
 };
 
 // Values that need custom display text instead of the raw stored value.
 const LABELS: Record<string, string> = {
+  super_admin: 'Super Admin',
+  'super admin': 'Super Admin',
+  admin: 'Admin',
+  user: 'User',
+  staff: 'Staff',
   '1': 'Alert Level 1',
   '2': 'Alert Level 2',
   '3': 'Alert Level 3',

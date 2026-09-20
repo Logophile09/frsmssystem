@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { UserCog, Search, Shield, ShieldCheck, Clock, UserCheck, Ban, Trash2 } from 'lucide-react';
+import { UserCog, Search, Shield, ShieldCheck, Clock, UserCheck, Ban, Trash2, Users } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -13,7 +13,7 @@ interface StaffAccount {
   id: string;
   username: string;
   full_name: string;
-  role: 'admin' | 'staff';
+  role: 'super_admin' | 'admin' | 'user' | 'staff' | 'super admin';
   status: 'active' | 'disabled' | 'pending';
   position?: string | null;
   station?: string | null;
@@ -25,13 +25,14 @@ interface StaffAccount {
 export default function StaffAccountsPage() {
   const { profile } = useAuth();
   const toast = useToast();
+  const isCurrentUserSuperAdmin = profile?.role === 'super_admin' || (profile?.role as string) === 'super admin';
   const [rows, setRows] = useState<StaffAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [adding, setAdding] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '', username: '', full_name: '', role: 'staff' });
+  const [form, setForm] = useState({ email: '', password: '', username: '', full_name: '', role: 'user' });
   const [deletingAccount, setDeletingAccount] = useState<StaffAccount | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -57,7 +58,7 @@ export default function StaffAccountsPage() {
     try {
       await api.post('/staff-accounts', form);
       setAdding(false);
-      setForm({ email: '', password: '', username: '', full_name: '', role: 'staff' });
+      setForm({ email: '', password: '', username: '', full_name: '', role: 'user' });
       toast.success(`Account created for ${form.full_name}.`);
       await load();
     } catch (e: any) {
@@ -79,11 +80,11 @@ export default function StaffAccountsPage() {
     }
   }
 
-  async function toggleRole(row: StaffAccount) {
-    const nextRole = row.role === 'admin' ? 'staff' : 'admin';
+  async function updateAccountRole(row: StaffAccount, nextRole: string) {
+    if (row.role === nextRole) return;
     try {
       await api.put(`/staff-accounts/${row.id}`, { role: nextRole });
-      toast.success(`Role updated to ${nextRole} for ${row.full_name}.`);
+      toast.success(`Role updated to ${nextRole.replace(/_/g, ' ')} for ${row.full_name}.`);
       await load();
     } catch (e: any) {
       toast.error(e.message, 'Role update failed');
@@ -108,7 +109,9 @@ export default function StaffAccountsPage() {
   const stats = useMemo(
     () => ({
       total: rows.length,
+      superAdmins: rows.filter((r) => r.role === 'super_admin' || (r.role as string) === 'super admin').length,
       admins: rows.filter((r) => r.role === 'admin').length,
+      users: rows.filter((r) => r.role === 'user' || r.role === 'staff').length,
       pending: rows.filter((r) => r.status === 'pending').length,
       active: rows.filter((r) => r.status === 'active').length,
     }),
@@ -152,12 +155,13 @@ export default function StaffAccountsPage() {
       </div>
 
       {/* Stat strip */}
-      <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
         {[
-          { label: 'Total Staff', value: stats.total, icon: UserCog, accent: 'text-navy-700 dark:text-slate-200' },
-          { label: 'Admins', value: stats.admins, icon: ShieldCheck, accent: 'text-leaf-600 dark:text-leaf-300' },
-          { label: 'Awaiting Verification', value: stats.pending, icon: Clock, accent: 'text-amber-600 dark:text-amber-300' },
-          { label: 'Active', value: stats.active, icon: UserCheck, accent: 'text-emerald-600 dark:text-emerald-300' },
+          { label: 'Total Accounts', value: stats.total, icon: UserCog, accent: 'text-navy-700 dark:text-slate-200' },
+          { label: 'Super Admins', value: stats.superAdmins, icon: Shield, accent: 'text-purple-600 dark:text-purple-400' },
+          { label: 'Admins', value: stats.admins, icon: ShieldCheck, accent: 'text-indigo-600 dark:text-indigo-400' },
+          { label: 'Users & Staff', value: stats.users, icon: Users, accent: 'text-sky-600 dark:text-sky-400' },
+          { label: 'Awaiting OTP', value: stats.pending, icon: Clock, accent: 'text-amber-600 dark:text-amber-300' },
         ].map((s) => (
           <div key={s.label} className="mini-stat">
             <div className={`mini-stat-icon ${s.accent}`}>
@@ -234,6 +238,9 @@ export default function StaffAccountsPage() {
               {!loading &&
                 filtered.map((r) => {
                   const isSelf = r.id === profile?.id;
+                  const isTargetSuperAdmin = r.role === 'super_admin' || (r.role as string) === 'super admin';
+                  const canModifyRole = !isSelf && (isCurrentUserSuperAdmin || !isTargetSuperAdmin);
+                  const canDeleteOrDisable = !isSelf && (isCurrentUserSuperAdmin || !isTargetSuperAdmin);
                   return (
                     <tr key={r.id} className="table-row">
                       <td className="table-cell">
@@ -248,7 +255,24 @@ export default function StaffAccountsPage() {
                         </div>
                       </td>
                       <td className="table-cell">
-                        <Badge value={r.role} />
+                        {canModifyRole ? (
+                          <div className="flex items-center gap-2">
+                            <Badge value={r.role} />
+                            <select
+                              value={r.role === 'super admin' ? 'super_admin' : r.role}
+                              onChange={(e) => updateAccountRole(r, e.target.value)}
+                              className="rounded-lg border border-border bg-card px-2 py-0.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary dark:bg-navy-900"
+                              title="Change role"
+                            >
+                              <option value="user">User</option>
+                              <option value="staff">Staff</option>
+                              <option value="admin">Admin</option>
+                              {isCurrentUserSuperAdmin && <option value="super_admin">Super Admin</option>}
+                            </select>
+                          </div>
+                        ) : (
+                          <Badge value={r.role} />
+                        )}
                       </td>
                       <td className="table-cell">{r.position ? `${r.position}${r.station ? ` · ${r.station}` : ''}` : '—'}</td>
                       <td className="table-cell">
@@ -260,25 +284,29 @@ export default function StaffAccountsPage() {
                       <td className="whitespace-nowrap px-5 py-2.5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
-                            onClick={() => toggleRole(r)}
-                            disabled={isSelf}
-                            title={r.role === 'admin' ? 'Make Staff' : 'Make Admin'}
-                            className="btn-icon disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            {r.role === 'admin' ? <Shield size={13} /> : <ShieldCheck size={13} />}
-                          </button>
-                          <button
                             onClick={() => toggleStatus(r)}
-                            disabled={isSelf}
-                            title={r.status === 'active' ? 'Disable' : r.status === 'pending' ? 'Approve' : 'Re-enable'}
+                            disabled={!canDeleteOrDisable}
+                            title={
+                              !canDeleteOrDisable
+                                ? (isSelf ? 'Cannot modify your own status' : 'Only Super Admins can modify a Super Admin')
+                                : r.status === 'active'
+                                ? 'Disable'
+                                : r.status === 'pending'
+                                ? 'Approve'
+                                : 'Re-enable'
+                            }
                             className="btn-icon disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             {r.status === 'active' ? <Ban size={13} /> : <UserCheck size={13} />}
                           </button>
                           <button
                             onClick={() => setDeletingAccount(r)}
-                            disabled={isSelf}
-                            title="Delete"
+                            disabled={!canDeleteOrDisable}
+                            title={
+                              !canDeleteOrDisable
+                                ? (isSelf ? 'Cannot delete your own account' : 'Only Super Admins can delete a Super Admin')
+                                : 'Delete'
+                            }
                             className="btn-icon-danger disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             <Trash2 size={13} />
@@ -334,8 +362,10 @@ export default function StaffAccountsPage() {
             <div>
               <label className="field-label">Role</label>
               <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="field-input">
+                <option value="user">User</option>
                 <option value="staff">Staff</option>
                 <option value="admin">Admin</option>
+                {isCurrentUserSuperAdmin && <option value="super_admin">Super Admin</option>}
               </select>
             </div>
           </div>

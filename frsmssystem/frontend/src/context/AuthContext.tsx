@@ -4,10 +4,12 @@ import { supabase } from '../lib/supabase';
 import { api, isBackendUnreachable } from '../lib/api';
 import { demoProfile } from '../lib/demoData';
 
+export type UserRole = 'super_admin' | 'admin' | 'user' | 'staff' | 'super admin';
+
 export interface Profile {
   id: string;
   email: string | null;
-  role: 'admin' | 'staff';
+  role: UserRole;
   username: string;
   full_name: string;
   status?: 'active' | 'pending' | 'disabled';
@@ -83,7 +85,7 @@ function profileFromSupabaseUser(user: User): Profile {
   return {
     id: user.id,
     email: user.email ?? null,
-    role: 'staff',
+    role: 'user',
     username: fallbackName,
     full_name: metaName ?? fallbackName,
     avatar_url: metaAvatar ?? null,

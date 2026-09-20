@@ -77,7 +77,7 @@ reload on two different ports); the deployed artifact is one monolith.
    - `service_role` key → used as `SUPABASE_SERVICE_ROLE_KEY` (backend only —
      **never** put this in the frontend `.env`)
 
-## 2. Create your first admin login
+## 2. Create your first Super Admin login
 
 The schema seeds personnel/vehicles/incidents demo data, but it can't create
 a Supabase Auth login for you (Auth users aren't plain SQL rows). Do this once:
@@ -88,10 +88,11 @@ a Supabase Auth login for you (Auth users aren't plain SQL rows). Do this once:
 3. Back in **SQL Editor**, run:
    ```sql
    insert into profiles (id, username, full_name, role, status)
-   values ('PASTE-THE-UID-HERE', 'admin', 'System Administrator', 'admin', 'active');
+   values ('PASTE-THE-UID-HERE', 'superadmin', 'Super Administrator', 'super_admin', 'active');
    ```
+   *(Note: The system supports `'super_admin'`, `'admin'`, and `'user'` roles).*
 4. That's your first login. Once you're in, use **Staff Accounts** in the app
-   to create everyone else — it calls the Supabase Auth admin API for you.
+   to create everyone else (Admins, Users, or Staff) — it calls the Supabase Auth admin API for you.
 
 ## 3. Run the backend
 

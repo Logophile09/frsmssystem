@@ -51,7 +51,8 @@ export default function ProtectedRoute({ children, adminOnly }: { children: Reac
       </div>
     );
   }
-  if (adminOnly && profile?.role !== 'admin') {
+  const isAdmin = profile?.role === 'super_admin' || profile?.role === 'admin' || (profile?.role as string) === 'super admin';
+  if (adminOnly && !isAdmin) {
     return <div className="p-6 text-slate-600">You need an administrator account to view this page.</div>;
   }
   return <>{children}</>;

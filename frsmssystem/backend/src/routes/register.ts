@@ -56,7 +56,7 @@ router.post('/', async (req, res) => {
         id: created.user.id,
         username,
         full_name,
-        role: 'staff',
+        role: 'user',
         status: 'pending',
         phone,
         position,
@@ -80,7 +80,7 @@ router.post('/', async (req, res) => {
           id: created.user.id,
           username,
           full_name,
-          role: 'staff',
+          role: 'user',
           status: 'pending',
           phone,
           position,
@@ -131,7 +131,7 @@ router.post('/verify-otp', requireAuth, async (req: AuthedRequest, res) => {
   }
 
   // Same roster hookup an admin approval used to trigger.
-  if (profile.role === 'staff') {
+  if (profile.role === 'staff' || profile.role === 'user') {
     const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile.id);
     await ensurePersonnelRecord(profile, authUser?.user?.email ?? null);
   }
@@ -194,7 +194,7 @@ router.post('/complete-oauth', requireAuth, async (req: AuthedRequest, res) => {
       // account already cleared before reaching /verify-otp -> /register
       // is the only verification gate now, and these were the last
       // required fields it was missing.
-      role: 'staff',
+      role: 'user',
       status: 'active',
     })
     .eq('id', req.user!.id)

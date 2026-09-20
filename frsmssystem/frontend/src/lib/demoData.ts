@@ -294,17 +294,19 @@ export const gpsDevices = [
 // Staff accounts (demo)
 // ---------------------------------------------------------------------
 export const staffAccounts = [
+  { id: 'demo-super-admin', username: 'superadmin', full_name: 'Demo Super Admin', role: 'super_admin' as const, status: 'active' as const, last_login_at: minutesAgo(2), created_at: daysAgo(300) },
   { id: 'demo-admin', username: 'admin', full_name: 'Demo Administrator', role: 'admin' as const, status: 'active' as const, last_login_at: minutesAgo(5), created_at: daysAgo(200) },
+  { id: 'demo-user', username: 'user', full_name: 'Demo Operational User', role: 'user' as const, status: 'active' as const, last_login_at: hoursAgo(1), created_at: daysAgo(100) },
   { id: 'demo-staff-1', username: 'r.santos', full_name: 'Ramon Santos', role: 'staff' as const, status: 'active' as const, last_login_at: hoursAgo(6), created_at: daysAgo(180) },
   { id: 'demo-staff-2', username: 'g.manalo', full_name: 'Grace Manalo', role: 'staff' as const, status: 'active' as const, last_login_at: daysAgo(3), created_at: daysAgo(150) },
 ];
 
 export const demoProfile = {
-  id: 'demo-admin',
-  email: 'demo@frsms.local',
-  role: 'admin' as const,
-  username: 'admin',
-  full_name: 'Demo Administrator',
+  id: 'demo-super-admin',
+  email: 'superadmin@frsms.local',
+  role: 'super_admin' as const,
+  username: 'superadmin',
+  full_name: 'Demo Super Admin',
 };
 
 // ---------------------------------------------------------------------

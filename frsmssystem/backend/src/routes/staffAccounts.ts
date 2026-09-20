@@ -1,12 +1,22 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase';
-import { AuthedRequest, requireAdmin, requireAuth } from '../middleware/auth';
+import { AuthedRequest, isSuperAdmin, requireAdmin, requireAuth } from '../middleware/auth';
 import { ensurePersonnelRecord } from '../lib/personnelSync';
 
 const router = Router();
 router.use(requireAuth);
 
-// Any authenticated user can see the roster; only admins can manage it.
+function normalizeRole(role?: string): string {
+  if (!role) return 'user';
+  const r = String(role).trim().toLowerCase();
+  if (r === 'super_admin' || r === 'super admin') return 'super_admin';
+  if (r === 'admin') return 'admin';
+  if (r === 'user') return 'user';
+  if (r === 'staff') return 'staff';
+  return 'user';
+}
+
+// Any authenticated user can see the roster; only admins/super admins can manage it.
 router.get('/', async (_req, res) => {
   const { data, error } = await supabaseAdmin
     .from('profiles')
@@ -16,13 +26,17 @@ router.get('/', async (_req, res) => {
   res.json(data);
 });
 
-// Create a new staff/admin account: makes the Supabase Auth user, then
-// the matching profile row (role/status/username live in `profiles`,
-// Supabase Auth owns the login credential).
+// Create a new user/staff/admin/super_admin account: makes the Supabase Auth user,
+// then the matching profile row.
 router.post('/', requireAdmin, async (req: AuthedRequest, res) => {
   const { email, password, username, full_name, role } = req.body ?? {};
   if (!email || !password || !username || !full_name) {
     return res.status(400).json({ error: 'email, password, username, and full_name are required' });
+  }
+
+  const targetRole = normalizeRole(role);
+  if (targetRole === 'super_admin' && !isSuperAdmin(req.user?.role)) {
+    return res.status(403).json({ error: 'Only Super Admins can create Super Admin accounts.' });
   }
 
   const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -40,7 +54,7 @@ router.post('/', requireAdmin, async (req: AuthedRequest, res) => {
       id: created.user.id,
       username,
       full_name,
-      role: role === 'admin' ? 'admin' : 'staff',
+      role: targetRole,
       status: 'active',
     })
     .select()
@@ -52,22 +66,45 @@ router.post('/', requireAdmin, async (req: AuthedRequest, res) => {
     return res.status(400).json({ error: profileError.message });
   }
 
-  // Staff accounts are responders/roster staff -- give them a matching
-  // Personnel row right away, same as approving a self-registration does.
-  if (profile.role === 'staff') {
+  // Users / Staff are operational responders -- link them to personnel roster
+  if (profile.role === 'staff' || profile.role === 'user') {
     await ensurePersonnelRecord(profile, email);
   }
 
   res.status(201).json(profile);
 });
 
-// Toggle active/disabled, or change role. Approving a pending
-// self-registration (status -> active) also gives the account a
-// linked Personnel roster row, if it doesn't have one yet.
+// Toggle active/disabled, or change role.
 router.put('/:id', requireAdmin, async (req: AuthedRequest, res) => {
   const { role, status, full_name } = req.body ?? {};
+
+  // Check target user's current profile to enforce role hierarchy
+  const { data: targetProfile, error: fetchErr } = await supabaseAdmin
+    .from('profiles')
+    .select('id, role')
+    .eq('id', req.params.id)
+    .single();
+
+  if (fetchErr || !targetProfile) {
+    return res.status(404).json({ error: 'Account not found' });
+  }
+
+  const requesterIsSuperAdmin = isSuperAdmin(req.user?.role);
+  const targetIsSuperAdmin = isSuperAdmin(targetProfile.role);
+
+  // An admin cannot modify or demote a Super Admin
+  if (targetIsSuperAdmin && !requesterIsSuperAdmin) {
+    return res.status(403).json({ error: 'Only Super Admins can modify a Super Admin account.' });
+  }
+
   const patch: Record<string, unknown> = {};
-  if (role) patch.role = role;
+  if (role) {
+    const newRole = normalizeRole(role);
+    if (newRole === 'super_admin' && !requesterIsSuperAdmin) {
+      return res.status(403).json({ error: 'Only Super Admins can assign the Super Admin role.' });
+    }
+    patch.role = newRole;
+  }
   if (status) patch.status = status;
   if (full_name) patch.full_name = full_name;
 
@@ -79,7 +116,7 @@ router.put('/:id', requireAdmin, async (req: AuthedRequest, res) => {
     .single();
   if (error) return res.status(400).json({ error: error.message });
 
-  if (data.status === 'active' && data.role === 'staff') {
+  if (data.status === 'active' && (data.role === 'staff' || data.role === 'user')) {
     const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(data.id);
     await ensurePersonnelRecord(data, authUser?.user?.email ?? null);
   }
@@ -88,6 +125,20 @@ router.put('/:id', requireAdmin, async (req: AuthedRequest, res) => {
 });
 
 router.delete('/:id', requireAdmin, async (req: AuthedRequest, res) => {
+  if (req.user?.id === req.params.id) {
+    return res.status(400).json({ error: 'You cannot delete your own account.' });
+  }
+
+  const { data: targetProfile } = await supabaseAdmin
+    .from('profiles')
+    .select('id, role')
+    .eq('id', req.params.id)
+    .single();
+
+  if (targetProfile && isSuperAdmin(targetProfile.role) && !isSuperAdmin(req.user?.role)) {
+    return res.status(403).json({ error: 'Only Super Admins can delete a Super Admin account.' });
+  }
+
   const { error } = await supabaseAdmin.auth.admin.deleteUser(req.params.id);
   if (error) return res.status(400).json({ error: error.message });
   res.status(204).end();

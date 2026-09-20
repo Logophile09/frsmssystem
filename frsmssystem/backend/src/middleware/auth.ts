@@ -1,11 +1,21 @@
 import { NextFunction, Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 
+export type UserRole = 'super_admin' | 'admin' | 'user' | 'staff' | 'super admin';
+
+export function isSuperAdmin(role?: string | null): boolean {
+  return role === 'super_admin' || role === 'super admin';
+}
+
+export function isAdmin(role?: string | null): boolean {
+  return isSuperAdmin(role) || role === 'admin';
+}
+
 export interface AuthedRequest extends Request {
   user?: {
     id: string;
     email: string | null;
-    role: 'admin' | 'staff';
+    role: UserRole;
     username: string;
     full_name: string;
     status: 'active' | 'pending' | 'disabled';
@@ -92,10 +102,18 @@ export async function requireAuth(req: AuthedRequest, res: Response, next: NextF
   next();
 }
 
-/** Restrict a route to admins (e.g. Staff Accounts management). */
+/** Restrict a route to admins or super admins (e.g. Staff Accounts management). */
 export function requireAdmin(req: AuthedRequest, res: Response, next: NextFunction) {
-  if (req.user?.role !== 'admin') {
+  if (!isAdmin(req.user?.role)) {
     return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+}
+
+/** Restrict a route exclusively to super admins. */
+export function requireSuperAdmin(req: AuthedRequest, res: Response, next: NextFunction) {
+  if (!isSuperAdmin(req.user?.role)) {
+    return res.status(403).json({ error: 'Super Admin access required' });
   }
   next();
 }
