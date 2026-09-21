@@ -1,22 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  ShieldCheck,
-  Building2,
-  HardHat,
-  Award,
-  Home,
-  Globe,
-  ChevronDown,
-  Check,
-  type LucideIcon,
-} from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 import { useAuth, UserRole } from '../context/AuthContext';
+import {
+  SuperAdminRoleIcon,
+  AdminRoleIcon,
+  StaffRoleIcon,
+  OfficialRoleIcon,
+  CitizenRoleIcon,
+  NonCitizenRoleIcon,
+} from './RoleIcons';
 
 interface RoleOption {
   role: UserRole;
   title: string;
   shortLabel: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   desc: string;
   badgeClass: string;
 }
@@ -26,7 +24,7 @@ const ROLES: RoleOption[] = [
     role: 'super_admin',
     title: 'Super Admin',
     shortLabel: 'Super Admin',
-    icon: ShieldCheck,
+    icon: SuperAdminRoleIcon,
     desc: 'Full system-wide access, all modules & user accounts',
     badgeClass: 'bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800',
   },
@@ -34,7 +32,7 @@ const ROLES: RoleOption[] = [
     role: 'admin',
     title: 'Admin',
     shortLabel: 'Admin',
-    icon: Building2,
+    icon: AdminRoleIcon,
     desc: 'Station Commander · approvals, reports & operations',
     badgeClass: 'bg-indigo-100 text-indigo-900 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
   },
@@ -42,7 +40,7 @@ const ROLES: RoleOption[] = [
     role: 'staff',
     title: 'Staff',
     shortLabel: 'Staff',
-    icon: HardHat,
+    icon: StaffRoleIcon,
     desc: 'Duty Firefighter / Dispatcher · operational queues & logs',
     badgeClass: 'bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800',
   },
@@ -50,7 +48,7 @@ const ROLES: RoleOption[] = [
     role: 'brgy_official',
     title: 'Brgy Official',
     shortLabel: 'Official',
-    icon: Award,
+    icon: OfficialRoleIcon,
     desc: 'Barangay Council · executive analytics & escalations',
     badgeClass: 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
   },
@@ -58,7 +56,7 @@ const ROLES: RoleOption[] = [
     role: 'citizen',
     title: 'Citizen',
     shortLabel: 'Citizen',
-    icon: Home,
+    icon: CitizenRoleIcon,
     desc: 'Verified Resident · request tracking, hazard reports',
     badgeClass: 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
   },
@@ -66,7 +64,7 @@ const ROLES: RoleOption[] = [
     role: 'non_citizen',
     title: 'Non-Citizen',
     shortLabel: 'Guest',
-    icon: Globe,
+    icon: NonCitizenRoleIcon,
     desc: 'Public Visitor · directory, hotlines & safety guides',
     badgeClass: 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800/80 dark:text-slate-200 dark:border-slate-700',
   },

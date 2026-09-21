@@ -24,6 +24,14 @@ import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { AuthModeSwitch, AuthFlipTransition } from '../components/AuthModeSwitch';
 import { AuthBackgroundFX } from '../components/AuthBackgroundFX';
+import {
+  SuperAdminRoleIcon,
+  AdminRoleIcon,
+  StaffRoleIcon,
+  OfficialRoleIcon,
+  CitizenRoleIcon,
+  NonCitizenRoleIcon,
+} from '../components/RoleIcons';
 
 const NAV_LINKS = [
   { href: '/#features', label: 'Features' },
@@ -339,59 +347,82 @@ export default function Login() {
                       switchDemoRole('super_admin');
                       navigate('/dashboard');
                     }}
-                    className="flex items-center justify-center gap-1.5 rounded-xl border border-purple-300 bg-purple-50/80 py-2 font-bold text-purple-900 shadow-sm transition-all hover:bg-purple-100 dark:border-purple-800/80 dark:bg-purple-950/40 dark:text-purple-300"
+                    className="flex items-center gap-2 rounded-xl border border-purple-300 bg-purple-50/80 px-2.5 py-2 font-bold text-purple-900 shadow-sm transition-all hover:bg-purple-100 hover:scale-[1.02] dark:border-purple-800/80 dark:bg-purple-950/40 dark:text-purple-300 text-left"
                   >
-                    <span>🔐</span> Super Admin
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-purple-200/70 text-purple-800 dark:bg-purple-900/60 dark:text-purple-200">
+                      <SuperAdminRoleIcon size={14} />
+                    </span>
+                    <span className="truncate">Super Admin</span>
                   </button>
+
                   <button
                     type="button"
                     onClick={() => {
                       switchDemoRole('admin');
                       navigate('/dashboard');
                     }}
-                    className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-300 bg-indigo-50/80 py-2 font-bold text-indigo-900 shadow-sm transition-all hover:bg-indigo-100 dark:border-indigo-800/80 dark:bg-indigo-950/40 dark:text-indigo-300"
+                    className="flex items-center gap-2 rounded-xl border border-indigo-300 bg-indigo-50/80 px-2.5 py-2 font-bold text-indigo-900 shadow-sm transition-all hover:bg-indigo-100 hover:scale-[1.02] dark:border-indigo-800/80 dark:bg-indigo-950/40 dark:text-indigo-300 text-left"
                   >
-                    <span>🏢</span> Admin
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-indigo-200/70 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200">
+                      <AdminRoleIcon size={14} />
+                    </span>
+                    <span className="truncate">Admin</span>
                   </button>
+
                   <button
                     type="button"
                     onClick={() => {
                       switchDemoRole('staff');
                       navigate('/dashboard');
                     }}
-                    className="flex items-center justify-center gap-1.5 rounded-xl border border-sky-300 bg-sky-50/80 py-2 font-bold text-sky-900 shadow-sm transition-all hover:bg-sky-100 dark:border-sky-800/80 dark:bg-sky-950/40 dark:text-sky-300"
+                    className="flex items-center gap-2 rounded-xl border border-sky-300 bg-sky-50/80 px-2.5 py-2 font-bold text-sky-900 shadow-sm transition-all hover:bg-sky-100 hover:scale-[1.02] dark:border-sky-800/80 dark:bg-sky-950/40 dark:text-sky-300 text-left"
                   >
-                    <span>🚒</span> Staff
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-sky-200/70 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200">
+                      <StaffRoleIcon size={14} />
+                    </span>
+                    <span className="truncate">Staff</span>
                   </button>
+
                   <button
                     type="button"
                     onClick={() => {
                       switchDemoRole('brgy_official');
                       navigate('/dashboard');
                     }}
-                    className="flex items-center justify-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50/80 py-2 font-bold text-amber-900 shadow-sm transition-all hover:bg-amber-100 dark:border-amber-800/80 dark:bg-amber-950/40 dark:text-amber-300"
+                    className="flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50/80 px-2.5 py-2 font-bold text-amber-900 shadow-sm transition-all hover:bg-amber-100 hover:scale-[1.02] dark:border-amber-800/80 dark:bg-amber-950/40 dark:text-amber-300 text-left"
                   >
-                    <span>⭐</span> Brgy Official
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-amber-200/70 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
+                      <OfficialRoleIcon size={14} />
+                    </span>
+                    <span className="truncate">Brgy Official</span>
                   </button>
+
                   <button
                     type="button"
                     onClick={() => {
                       switchDemoRole('citizen');
                       navigate('/dashboard');
                     }}
-                    className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50/80 py-2 font-bold text-emerald-900 shadow-sm transition-all hover:bg-emerald-100 dark:border-emerald-800/80 dark:bg-emerald-950/40 dark:text-emerald-300"
+                    className="flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50/80 px-2.5 py-2 font-bold text-emerald-900 shadow-sm transition-all hover:bg-emerald-100 hover:scale-[1.02] dark:border-emerald-800/80 dark:bg-emerald-950/40 dark:text-emerald-300 text-left"
                   >
-                    <span>🏠</span> Citizen
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-emerald-200/70 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200">
+                      <CitizenRoleIcon size={14} />
+                    </span>
+                    <span className="truncate">Citizen</span>
                   </button>
+
                   <button
                     type="button"
                     onClick={() => {
                       switchDemoRole('non_citizen');
                       navigate('/dashboard');
                     }}
-                    className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-slate-100 py-2 font-bold text-slate-800 shadow-sm transition-all hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200"
+                    className="flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-100 px-2.5 py-2 font-bold text-slate-800 shadow-sm transition-all hover:bg-slate-200 hover:scale-[1.02] dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 text-left"
                   >
-                    <span>🌐</span> Non-Citizen
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200">
+                      <NonCitizenRoleIcon size={14} />
+                    </span>
+                    <span className="truncate">Non-Citizen</span>
                   </button>
                 </div>
               </div>
