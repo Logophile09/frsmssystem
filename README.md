@@ -20,6 +20,20 @@ Equipment, Attendance, Staff Accounts (RBAC), GPS Tracker with geofenced ETA
 the Fire Safety Compliance suite (Establishments, Inspections, Certificates,
 Violations).
 
+## 6-Role UI Design System & Access Hierarchy
+
+FRSMS implements a 6-tier Role-Based Access Control (RBAC) architecture with WCAG AA-compliant visual identities:
+
+1. **Super Admin (`super_admin`)**: Full unrestricted system control, audit logs, AI parameter tuning, and user role management.
+2. **Admin (`admin`)**: Station Commander / Department Head — operational oversight, approval workflows, reports, and staff management.
+3. **Staff (`staff`)**: Duty Firefighter / Dispatcher / Inspector — daily operational queues (Incidents & Dispatch intake, Post-Incident Reports, Vehicles, Equipment, Attendance, GPS tracking).
+4. **Barangay Official (`brgy_official`)**: Barangay Captain / Public Safety Councilors — executive dashboard, localized Barangay Culiat risk analytics, Level 3+ incident escalations, and fire clearance approvals.
+5. **Citizen (`citizen`)**: Verified Barangay Culiat Resident — Citizen portal, emergency hazard reporting, active multi-step application tracking (`Submitted` → `Verified` → `Inspection Scheduled` → `Approved` → `Issued`), and evacuation guides.
+6. **Non-Citizen / Guest (`non_citizen`)**: Public Visitor — public safety hub, fire station directory, 24/7 hotlines, and fire prevention guidelines.
+
+### Interactive Multi-Role Switcher (Preview)
+In the top header bar next to the live clock, click the **Role pill** to instantly switch between any of the 6 roles in Demo Mode and preview their role-tailored sidebars, permissions, and dashboards in real time. Full design system specifications, design tokens, and interactive wireframes are located in `docs/design-system/`.
+
 ## Architecture
 
 The system is a **monolith**: one Git repository, one Vercel project, one
