@@ -40,7 +40,7 @@ const HERO_FEATURES = [
 ];
 
 export default function Login() {
-  const { session, demoMode, signIn } = useAuth();
+  const { session, demoMode, signIn, signInDemo, switchDemoRole } = useAuth();
   const { dark, toggle } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -325,6 +325,75 @@ export default function Login() {
                   <GoogleIcon />
                   {oauthLoading === 'google' ? 'Redirecting…' : 'Continue with Google'}
                 </button>
+              </div>
+
+              {/* 1-Click Access for All 6 Roles */}
+              <div className="mt-5 border-t border-border/70 pt-4 dark:border-white/10">
+                <p className="mb-2 text-center text-[10.5px] font-extrabold uppercase tracking-wider text-muted-foreground dark:text-navy-400">
+                  Quick Access (Preview 6 Roles)
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      switchDemoRole('super_admin');
+                      navigate('/dashboard');
+                    }}
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-purple-300 bg-purple-50/80 py-2 font-bold text-purple-900 shadow-sm transition-all hover:bg-purple-100 dark:border-purple-800/80 dark:bg-purple-950/40 dark:text-purple-300"
+                  >
+                    <span>🔐</span> Super Admin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      switchDemoRole('admin');
+                      navigate('/dashboard');
+                    }}
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-300 bg-indigo-50/80 py-2 font-bold text-indigo-900 shadow-sm transition-all hover:bg-indigo-100 dark:border-indigo-800/80 dark:bg-indigo-950/40 dark:text-indigo-300"
+                  >
+                    <span>🏢</span> Admin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      switchDemoRole('staff');
+                      navigate('/dashboard');
+                    }}
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-sky-300 bg-sky-50/80 py-2 font-bold text-sky-900 shadow-sm transition-all hover:bg-sky-100 dark:border-sky-800/80 dark:bg-sky-950/40 dark:text-sky-300"
+                  >
+                    <span>🚒</span> Staff
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      switchDemoRole('brgy_official');
+                      navigate('/dashboard');
+                    }}
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50/80 py-2 font-bold text-amber-900 shadow-sm transition-all hover:bg-amber-100 dark:border-amber-800/80 dark:bg-amber-950/40 dark:text-amber-300"
+                  >
+                    <span>⭐</span> Brgy Official
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      switchDemoRole('citizen');
+                      navigate('/dashboard');
+                    }}
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50/80 py-2 font-bold text-emerald-900 shadow-sm transition-all hover:bg-emerald-100 dark:border-emerald-800/80 dark:bg-emerald-950/40 dark:text-emerald-300"
+                  >
+                    <span>🏠</span> Citizen
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      switchDemoRole('non_citizen');
+                      navigate('/dashboard');
+                    }}
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-slate-100 py-2 font-bold text-slate-800 shadow-sm transition-all hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200"
+                  >
+                    <span>🌐</span> Non-Citizen
+                  </button>
+                </div>
               </div>
 
               <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground dark:text-navy-400">
