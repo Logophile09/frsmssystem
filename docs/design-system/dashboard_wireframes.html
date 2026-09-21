@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BMS Dashboard Wireframes</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+
+    /* Tabs */
+    .tab-bar { display: flex; gap: 4px; padding: 20px 24px 0; background: white; border-bottom: 1px solid #e2e8f0; }
+    .tab { padding: 12px 24px; border-radius: 8px 8px 0 0; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b; border-bottom: 2px solid transparent; transition: 0.15s; }
+    .tab.active { background: white; color: #0f172a; border-bottom: 2px solid #2563a8; }
+
+    .dash-view { display: none; }
+    .dash-view.visible { display: block; }
+
+    /* Layout */
+    .app-frame { display: flex; min-height: 700px; background: #f8fafc; }
+    .sidebar { width: 220px; flex-shrink: 0; }
+    .main { flex: 1; overflow: hidden; }
+    .topbar { height: 56px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+    .page { padding: 20px; }
+
+    /* Sidebar */
+    .sb { background: #1e4d7b; height: 100%; }
+    .sb-h { padding: 16px 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sb-logo { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+    .sb-name { font-size: 13px; font-weight: 800; color: white; }
+    .sb-role { display: inline-block; margin-top: 6px; background: rgba(255,255,255,0.18); color: white; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; }
+    .sb-sec { padding: 6px 0; }
+    .sb-sec-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.35); padding: 6px 14px 2px; }
+    .sb-i { display: flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 12px; color: rgba(255,255,255,0.65); cursor: pointer; border-left: 3px solid transparent; }
+    .sb-i:hover, .sb-i.active { background: rgba(255,255,255,0.12); color: white; }
+    .sb-i.active { border-left-color: white; font-weight: 600; }
+    .sb-badge { margin-left: auto; background: #ef4444; color: white; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 8px; }
+    .sb-badge.info { background: rgba(255,255,255,0.2); }
+    .sb-foot { margin-top: auto; padding: 12px 14px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px; }
+    .sb-av { width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; flex-shrink: 0; }
+    .sb-un { font-size: 12px; font-weight: 600; color: white; }
+    .sb-ue { font-size: 10px; color: rgba(255,255,255,0.45); }
+
+    /* Cards */
+    .card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; }
+    .card-title { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 12px; }
+
+    /* KPI */
+    .kpi { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; }
+    .kpi-val { font-size: 26px; font-weight: 800; color: #0f172a; }
+    .kpi-label { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .kpi-delta { font-size: 11px; font-weight: 600; margin-top: 6px; }
+
+    /* Status badges */
+    .st { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.03em; }
+    .st-pending { background: #fef3c7; color: #b45309; }
+    .st-processing { background: #dbeafe; color: #1e4d7b; }
+    .st-approved { background: #dcfce7; color: #15803d; }
+    .st-rejected { background: #fee2e2; color: #b91c1c; }
+    .st-escalated { background: #ffedd5; color: #c2410c; }
+
+    /* Table */
+    .tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .tbl th { background: #f8fafc; color: #64748b; font-weight: 600; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .tbl td { padding: 10px; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: middle; }
+    .tbl tr:hover td { background: #f8fafc; }
+    .tbl tr.selected td { background: #eff6ff; }
+
+    /* Btns */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+    .btn-primary { background: #2563a8; color: white; }
+    .btn-secondary { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+    .btn-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .btn-ghost { background: transparent; color: #2563a8; }
+    .btn-warn { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+
+    /* Notification */
+    .notif { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 8px; margin-bottom: 10px; font-size: 12px; }
+    .notif-warn { background: #fffbeb; border: 1px solid #fde68a; color: #b45309; }
+    .notif-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .notif-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+
+    /* Timeline */
+    .timeline { position: relative; }
+    .tl-step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; position: relative; }
+    .tl-dot { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white; position: relative; z-index: 2; }
+    .tl-dot.done { background: #15803d; }
+    .tl-dot.active { background: #2563a8; box-shadow: 0 0 0 4px #dbeafe; }
+    .tl-dot.pending { background: #cbd5e1; }
+    .tl-line { position: absolute; left: 13px; top: 28px; width: 2px; height: calc(100% - 28px); background: #e2e8f0; z-index: 1; }
+    .tl-line.done { background: #15803d; }
+    .tl-content { padding-top: 4px; flex: 1; }
+    .tl-title { font-size: 13px; font-weight: 600; color: #0f172a; }
+    .tl-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+    /* Annotation tooltip */
+    .annot { display: inline-block; background: #7c3aed; color: white; font-size: 9px; font-weight: 700; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 4px; vertical-align: middle; margin-left: 4px; }
+
+    /* Service card */
+    .svc-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: 0.15s; }
+    .svc-card:hover { border-color: #93c5fd; box-shadow: 0 2px 8px rgba(37,99,168,0.1); }
+    .svc-icon { font-size: 28px; margin-bottom: 8px; }
+    .svc-name { font-size: 12px; font-weight: 600; color: #0f172a; }
+    .svc-time { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+    /* Grid helpers */
+    .g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+    .g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+    .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .g21 { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+    .g12 { display: grid; grid-template-columns: 1fr 2fr; gap: 14px; }
+
+    /* Citizen sidebar */
+    .sb-c { background: #15803d; height: 100%; }
+
+    /* Progress bar */
+    .prog { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 4px; }
+
+    /* Avatar circle */
+    .av { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div style="background:linear-gradient(135deg,#0f2a4a,#1e4d7b);padding:16px 24px;display:flex;align-items:center;gap:12px;">
+  <span style="font-size:22px;">🎨</span>
+  <div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.1em;text-transform:uppercase;">Dashboard Wireframes</div>
+    <div style="font-size:17px;font-weight:800;color:white;">Internal (Staff/Admin) vs. Public (Citizen) Dashboards</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab active" onclick="showDash('internal', this)">🏢 Internal Dashboard — Staff / Admin</button>
+  <button class="tab" onclick="showDash('citizen', this)">🏠 Citizen Dashboard — Public Portal</button>
+</div>
+
+<!-- ========== INTERNAL DASHBOARD ========== -->
+<div class="dash-view visible" id="dash-internal">
+  <div class="app-frame" style="height:800px;">
+
+    <!-- Sidebar: Admin -->
+    <div class="sidebar">
+      <div class="sb" style="display:flex;flex-direction:column;height:100%;">
+        <div class="sb-h">
+          <div class="sb-logo">Brgy. San Isidro</div>
+          <div class="sb-name">BMS Portal</div>
+          <span class="sb-role">🏢 Admin</span>
+        </div>
+        <div class="sb-sec">
+          <div class="sb-sec-label">Overview</div>
+          <div class="sb-i active">📊 Dashboard</div>
+          <div class="sb-i">📈 Reports <span class="sb-badge info">5</span></div>
+        </div>
+        <div class="sb-sec">
+          <div class="sb-sec-label">Operations</div>
+          <div class="sb-i">📑 Request Queue <span class="sb-badge">23</span></div>
+          <div class="sb-i">✅ Approvals</div>
+          <div class="sb-i">👥 Staff</div>
+          <div class="sb-i">📅 Schedules</div>
+        </div>
+        <div class="sb-sec">
+          <div class="sb-sec-label">Content</div>
+          <div class="sb-i">📢 Announcements</div>
+          <div class="sb-i">📋 Templates</div>
+        </div>
+        <div class="sb-sec">
+          <div class="sb-sec-label">Config</div>
+          <div class="sb-i">⚙️ Dept. Settings</div>
+        </div>
+        <div style="margin-top:auto;padding:12px 14px;border-top:1px solid rgba(255,255,255,0.1);">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="sb-av">JD</div>
+            <div><div class="sb-un">Jose Dela Cruz</div><div class="sb-ue">admin@brgy.gov.ph</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Area -->
+    <div class="main">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div style="font-size:13px;color:#64748b;">Dashboard / <strong style="color:#0f172a;">Admin Overview</strong></div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="position:relative;"><input style="padding:7px 14px 7px 32px;border:1px solid #e2e8f0;border-radius:7px;font-size:12px;color:#334155;outline:none;width:180px;" placeholder="Search..." /><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:12px;">🔍</span></div>
+          <div style="position:relative;width:34px;height:34px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;">🔔<div style="position:absolute;top:6px;right:6px;width:7px;height:7px;background:#ef4444;border-radius:50%;border:1.5px solid white;"></div></div>
+          <div style="width:34px;height:34px;background:#1e4d7b;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">JD</div>
+        </div>
+      </div>
+
+      <!-- Page Content -->
+      <div class="page" style="height:calc(100% - 56px);overflow-y:auto;">
+
+        <!-- Page header + actions -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <h1 style="font-size:20px;font-weight:800;color:#0f172a;">Admin Dashboard <span class="annot">INTERNAL</span></h1>
+            <p style="font-size:12px;color:#64748b;">Permits & Licensing · September 21, 2026 · Last updated: 09:42 AM</p>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-secondary">⬇ Export Report</button>
+            <button class="btn btn-primary">+ New Request</button>
+          </div>
+        </div>
+
+        <!-- Alert banner -->
+        <div class="notif notif-warn" style="margin-bottom:14px;">
+          <span style="font-size:14px;">🚨</span>
+          <div><strong>4 escalated cases</strong> require admin attention within the next 24 hours. <span style="text-decoration:underline;cursor:pointer;color:#1e4d7b;">Review escalations →</span></div>
+        </div>
+
+        <!-- KPI Row -->
+        <div class="g4" style="margin-bottom:16px;">
+          <div class="kpi"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:18px;">⏳</span><span style="font-size:10px;background:#fef3c7;color:#b45309;padding:2px 6px;border-radius:4px;font-weight:600;">HIGH</span></div><div class="kpi-val">23</div><div class="kpi-label">Pending Approvals</div><div class="kpi-delta" style="color:#ef4444;">↑ +5 since yesterday</div></div>
+          <div class="kpi"><div style="font-size:18px;margin-bottom:6px;">✅</div><div class="kpi-val">104</div><div class="kpi-label">Approved This Month</div><div class="kpi-delta" style="color:#15803d;">↑ +14% vs last month</div></div>
+          <div class="kpi"><div style="font-size:18px;margin-bottom:6px;">🔄</div><div class="kpi-val">62</div><div class="kpi-label">In Processing</div><div class="kpi-delta" style="color:#2563a8;">Avg. 1.8 days</div></div>
+          <div class="kpi"><div style="font-size:18px;margin-bottom:6px;">⚡</div><div class="kpi-val">96.2%</div><div class="kpi-label">Approval Rate</div><div class="kpi-delta" style="color:#15803d;">↑ +0.4% this quarter</div></div>
+        </div>
+
+        <!-- 2-column: Table + Right panel -->
+        <div class="g21" style="margin-bottom:14px;">
+          <!-- Main table -->
+          <div class="card" style="padding:0;">
+            <!-- Filter row -->
+            <div style="padding:12px 14px;border-bottom:1px solid #f1f5f9;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <span style="font-size:12px;font-weight:700;color:#0f172a;">📋 Request Queue</span>
+              <span class="annot">FILTER / SORT</span>
+              <div style="margin-left:auto;display:flex;gap:6px;">
+                <select style="font-size:11px;padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;color:#334155;outline:none;">
+                  <option>All Statuses</option><option>Pending</option><option>Processing</option>
+                </select>
+                <select style="font-size:11px;padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;color:#334155;outline:none;">
+                  <option>All Types</option><option>Clearance</option><option>Indigency</option>
+                </select>
+                <input style="font-size:11px;padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;outline:none;width:110px;" placeholder="🔍 Search..." />
+              </div>
+            </div>
+
+            <!-- Bulk action toolbar (shows when rows checked) -->
+            <div style="padding:8px 14px;background:#eff6ff;border-bottom:1px solid #dbeafe;display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;font-weight:600;color:#1e4d7b;">2 selected</span>
+              <span class="annot">BULK ACTIONS</span>
+              <button class="btn btn-success" style="padding:4px 10px;font-size:11px;">✓ Bulk Approve</button>
+              <button class="btn btn-danger" style="padding:4px 10px;font-size:11px;">✕ Bulk Reject</button>
+              <button class="btn btn-warn" style="padding:4px 10px;font-size:11px;">↑ Escalate</button>
+              <button class="btn btn-secondary" style="padding:4px 10px;font-size:11px;margin-left:auto;">✕ Clear</button>
+            </div>
+
+            <table class="tbl" role="grid">
+              <thead>
+                <tr>
+                  <th style="width:32px;"><input type="checkbox" /></th>
+                  <th>Ref No. ↕</th>
+                  <th>Applicant</th>
+                  <th>Type</th>
+                  <th>Filed ↓</th>
+                  <th>Assigned</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="selected"><td><input type="checkbox" checked /></td><td><code style="font-size:10px;color:#1e4d7b;">BP-2026-000347</code></td><td><div style="font-weight:500;font-size:12px;">Rosa Aquino</div><div style="font-size:10px;color:#94a3b8;">Commercial Zone</div></td><td style="font-size:12px;">Business Permit</td><td style="font-size:11px;color:#64748b;">Sep 18</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="av" style="width:22px;height:22px;font-size:9px;background:#b45309;">MC</div><span style="font-size:11px;">M. Cruz</span></div></td><td><span class="st st-escalated">⬤ Escalated</span></td><td><button class="btn btn-ghost" style="padding:3px 8px;font-size:11px;">View</button></td></tr>
+                <tr class="selected"><td><input type="checkbox" checked /></td><td><code style="font-size:10px;color:#1e4d7b;">IND-2026-001892</code></td><td><div style="font-weight:500;font-size:12px;">Pedro Reyes</div><div style="font-size:10px;color:#94a3b8;">Purok 1, Zone B</div></td><td style="font-size:12px;">Indigency Cert.</td><td style="font-size:11px;color:#64748b;">Sep 19</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="av" style="width:22px;height:22px;font-size:9px;background:#15803d;">AR</div><span style="font-size:11px;">A. Ramos</span></div></td><td><span class="st st-pending">⬤ Pending</span></td><td><button class="btn btn-ghost" style="padding:3px 8px;font-size:11px;">View</button><button class="btn btn-success" style="padding:3px 8px;font-size:11px;">Approve</button></td></tr>
+                <tr><td><input type="checkbox" /></td><td><code style="font-size:10px;color:#1e4d7b;">BRG-2026-004523</code></td><td><div style="font-weight:500;font-size:12px;">Maria Santos</div><div style="font-size:10px;color:#94a3b8;">Purok 3, Zone A</div></td><td style="font-size:12px;">Brgy. Clearance</td><td style="font-size:11px;color:#64748b;">Sep 20</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="av" style="width:22px;height:22px;font-size:9px;background:#2563a8;">JS</div><span style="font-size:11px;">J. Santos</span></div></td><td><span class="st st-processing">⬤ Processing</span></td><td><button class="btn btn-ghost" style="padding:3px 8px;font-size:11px;">View</button></td></tr>
+                <tr><td><input type="checkbox" /></td><td><code style="font-size:10px;color:#1e4d7b;">BRG-2026-004510</code></td><td><div style="font-weight:500;font-size:12px;">Carlos Bautista</div><div style="font-size:10px;color:#94a3b8;">Purok 5, Zone C</div></td><td style="font-size:12px;">Brgy. Clearance</td><td style="font-size:11px;color:#64748b;">Sep 17</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="av" style="width:22px;height:22px;font-size:9px;background:#2563a8;">JS</div><span style="font-size:11px;">J. Santos</span></div></td><td><span class="st st-approved">⬤ Approved</span></td><td><button class="btn btn-ghost" style="padding:3px 8px;font-size:11px;">View</button><button class="btn btn-secondary" style="padding:3px 8px;font-size:11px;">Print</button></td></tr>
+                <tr><td><input type="checkbox" /></td><td><code style="font-size:10px;color:#1e4d7b;">COR-2026-000892</code></td><td><div style="font-weight:500;font-size:12px;">Ana Villanueva</div><div style="font-size:10px;color:#94a3b8;">Purok 2, Zone A</div></td><td style="font-size:12px;">Cert. of Residency</td><td style="font-size:11px;color:#64748b;">Sep 16</td><td><div style="display:flex;align-items:center;gap:5px;"><div class="av" style="width:22px;height:22px;font-size:9px;background:#64748b;">LR</div><span style="font-size:11px;">L. Reyes</span></div></td><td><span class="st st-pending">⬤ Pending</span></td><td><button class="btn btn-ghost" style="padding:3px 8px;font-size:11px;">View</button><button class="btn btn-success" style="padding:3px 8px;font-size:11px;">Approve</button></td></tr>
+              </tbody>
+            </table>
+            <!-- Pagination -->
+            <div style="padding:10px 14px;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#64748b;">
+              <span>Showing 5 of 287 requests</span>
+              <div style="display:flex;gap:4px;">
+                <button class="btn btn-secondary" style="padding:4px 8px;font-size:11px;">← Prev</button>
+                <button class="btn btn-primary" style="padding:4px 8px;font-size:11px;">1</button>
+                <button class="btn btn-secondary" style="padding:4px 8px;font-size:11px;">2</button>
+                <button class="btn btn-secondary" style="padding:4px 8px;font-size:11px;">Next →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right panel -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <!-- Approval workflow -->
+            <div class="card">
+              <div class="card-title">✅ Approval Workflow <span class="annot">ADMIN</span></div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:10px;">Current request: <strong>BP-2026-000347</strong></div>
+              <div class="timeline">
+                <div class="tl-step">
+                  <div><div class="tl-dot done">✓</div><div class="tl-line done"></div></div>
+                  <div class="tl-content"><div class="tl-title">Submission Received</div><div class="tl-sub">Sep 18 · Auto-verified</div></div>
+                </div>
+                <div class="tl-step">
+                  <div><div class="tl-dot done">✓</div><div class="tl-line done"></div></div>
+                  <div class="tl-content"><div class="tl-title">Document Verification</div><div class="tl-sub">Sep 19 · Staff: M. Cruz</div></div>
+                </div>
+                <div class="tl-step">
+                  <div><div class="tl-dot active">!</div><div class="tl-line"></div></div>
+                  <div class="tl-content"><div class="tl-title" style="color:#2563a8;">Admin Review ← You are here</div><div class="tl-sub">Awaiting admin approval</div></div>
+                </div>
+                <div class="tl-step">
+                  <div><div class="tl-dot pending">4</div></div>
+                  <div class="tl-content"><div class="tl-title" style="color:#94a3b8;">Official Signature</div><div class="tl-sub" style="color:#94a3b8;">Brgy Official required</div></div>
+                </div>
+              </div>
+              <div style="display:flex;gap:6px;margin-top:8px;">
+                <button class="btn btn-success" style="flex:1;justify-content:center;">✓ Approve</button>
+                <button class="btn btn-danger" style="flex:1;justify-content:center;">✕ Reject</button>
+              </div>
+            </div>
+
+            <!-- Staff load -->
+            <div class="card">
+              <div class="card-title">👥 Staff Workload</div>
+              <div style="font-size:11px;">
+                <div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-weight:500;">J. Santos</span><span style="color:#64748b;">8 tasks</span></div><div class="prog"><div class="prog-fill" style="width:75%;background:#2563a8;"></div></div></div>
+                <div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-weight:500;">A. Ramos</span><span style="color:#64748b;">5 tasks</span></div><div class="prog"><div class="prog-fill" style="width:48%;background:#15803d;"></div></div></div>
+                <div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-weight:500;">M. Cruz</span><span style="color:#64748b;">11 tasks</span></div><div class="prog"><div class="prog-fill" style="width:100%;background:#ef4444;"></div></div><div style="font-size:10px;color:#ef4444;margin-top:2px;">⚠ Overloaded</div></div>
+                <div><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-weight:500;">L. Reyes</span><span style="color:#64748b;">3 tasks</span></div><div class="prog"><div class="prog-fill" style="width:28%;background:#64748b;"></div></div></div>
+              </div>
+            </div>
+
+            <!-- Quick stats -->
+            <div class="card">
+              <div class="card-title">📊 Quick Analytics</div>
+              <div style="font-size:11px;color:#334155;line-height:2.2;">
+                <div style="display:flex;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:4px;"><span>Processing Time (avg)</span><span style="font-weight:700;">1.8 days</span></div>
+                <div style="display:flex;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:4px;"><span>Approval Rate</span><span style="font-weight:700;color:#15803d;">96.2%</span></div>
+                <div style="display:flex;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:4px;"><span>Top Request Type</span><span style="font-weight:700;">Brgy Clearance</span></div>
+                <div style="display:flex;justify-content:space-between;"><span>Citizen Satisfaction</span><span style="font-weight:700;color:#f59e0b;">⭐ 4.7/5.0</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Announcements drafts -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div class="card-title" style="margin-bottom:0;">📢 Announcements Manager <span class="annot">ADMIN ONLY</span></div>
+            <button class="btn btn-primary" style="font-size:11px;padding:6px 12px;">+ New Announcement</button>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px;">
+            <div style="flex:1;min-width:200px;padding:10px;border:1px solid #e2e8f0;border-radius:8px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-weight:600;">Free Medical Mission</span><span style="background:#dcfce7;color:#15803d;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">Published</span></div>
+              <div style="font-size:11px;color:#64748b;">Oct 2, 2026 · Brgy Health Center</div>
+            </div>
+            <div style="flex:1;min-width:200px;padding:10px;border:1px solid #fde68a;border-radius:8px;background:#fffbeb;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-weight:600;">Livelihood Training</span><span style="background:#fef3c7;color:#b45309;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">Draft</span></div>
+              <div style="font-size:11px;color:#64748b;">Pending review · Last edited today</div>
+            </div>
+            <div style="flex:1;min-width:200px;padding:10px;border:1px solid #e2e8f0;border-radius:8px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-weight:600;">Purok Leaders Meeting</span><span style="background:#dbeafe;color:#1e4d7b;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">Scheduled</span></div>
+              <div style="font-size:11px;color:#64748b;">Oct 5, 2026 · Posts automatically</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========== CITIZEN DASHBOARD ========== -->
+<div class="dash-view" id="dash-citizen">
+  <div class="app-frame" style="height:800px;">
+
+    <!-- Sidebar: Citizen -->
+    <div class="sidebar">
+      <div class="sb-c" style="display:flex;flex-direction:column;height:100%;">
+        <div style="padding:16px 14px 12px;border-bottom:1px solid rgba(255,255,255,0.1);">
+          <div style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.45);">Brgy. San Isidro</div>
+          <div style="font-size:13px;font-weight:800;color:white;">Citizen Portal</div>
+          <span style="display:inline-block;margin-top:6px;background:rgba(255,255,255,0.18);color:white;font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 8px;border-radius:20px;">🏠 Citizen</span>
+        </div>
+        <div style="padding:6px 0;">
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);padding:6px 14px 2px;">My Portal</div>
+          <div class="sb-i active">🏠 My Dashboard</div>
+          <div class="sb-i">📑 My Requests <span class="sb-badge info">3</span></div>
+          <div class="sb-i">📄 My Documents</div>
+        </div>
+        <div style="padding:6px 0;">
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);padding:6px 14px 2px;">Services</div>
+          <div class="sb-i">➕ Request Document</div>
+          <div class="sb-i">💬 File Complaint</div>
+          <div class="sb-i">📅 Book Appointment</div>
+        </div>
+        <div style="padding:6px 0;">
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);padding:6px 14px 2px;">Community</div>
+          <div class="sb-i">📢 Announcements <span class="sb-badge info">2</span></div>
+          <div class="sb-i">📞 Contact Barangay</div>
+        </div>
+        <div style="margin-top:auto;padding:12px 14px;border-top:1px solid rgba(255,255,255,0.1);">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="sb-av" style="background:rgba(255,255,255,0.25);">JC</div>
+            <div><div class="sb-un">Juan dela Cruz</div><div class="sb-ue">juan@email.com</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Area: Citizen -->
+    <div class="main">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div style="font-size:13px;color:#64748b;">Portal / <strong style="color:#0f172a;">My Dashboard</strong></div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="position:relative;width:34px;height:34px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;">🔔<div style="position:absolute;top:6px;right:6px;width:7px;height:7px;background:#ef4444;border-radius:50%;border:1.5px solid white;"></div></div>
+          <div style="width:34px;height:34px;background:#15803d;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">JC</div>
+        </div>
+      </div>
+
+      <!-- Citizen page content -->
+      <div class="page" style="height:calc(100% - 56px);overflow-y:auto;">
+
+        <!-- Welcome hero -->
+        <div style="background:linear-gradient(135deg,#15803d,#16a34a);border-radius:12px;padding:20px 24px;margin-bottom:16px;color:white;position:relative;overflow:hidden;">
+          <div style="position:absolute;right:20px;top:0;font-size:80px;opacity:0.1;line-height:1;">🏛️</div>
+          <div style="font-size:13px;opacity:0.75;margin-bottom:4px;">Welcome back 👋</div>
+          <h1 style="font-size:22px;font-weight:800;margin-bottom:4px;">Juan dela Cruz</h1>
+          <p style="font-size:12px;opacity:0.75;margin-bottom:16px;">Purok 3, Zone A · Verified Resident since 2018 · Resident ID: BRG-RES-00421</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button style="background:white;color:#15803d;border:none;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">📄 Request a Document</button>
+            <button style="background:rgba(255,255,255,0.2);color:white;border:none;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">💬 File a Complaint</button>
+            <button style="background:rgba(255,255,255,0.2);color:white;border:none;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">📅 Book Appointment</button>
+          </div>
+        </div>
+
+        <!-- Status summary row -->
+        <div class="g3" style="margin-bottom:16px;">
+          <div class="kpi"><div style="font-size:18px;margin-bottom:4px;">⏳</div><div class="kpi-val" style="color:#f59e0b;">3</div><div class="kpi-label">Active Requests</div></div>
+          <div class="kpi"><div style="font-size:18px;margin-bottom:4px;">✅</div><div class="kpi-val" style="color:#15803d;">12</div><div class="kpi-label">Completed Requests</div></div>
+          <div class="kpi"><div style="font-size:18px;margin-bottom:4px;">📋</div><div class="kpi-val" style="color:#2563a8;">5</div><div class="kpi-label">Saved Documents</div></div>
+        </div>
+
+        <!-- 2-column main content -->
+        <div class="g21" style="margin-bottom:14px;">
+          <!-- Left: Active request tracker -->
+          <div class="card">
+            <div class="card-title">📋 My Active Requests <span class="annot">CITIZEN</span></div>
+
+            <!-- Request 1 with timeline -->
+            <div style="border:1px solid #dbeafe;border-radius:10px;padding:14px;margin-bottom:12px;background:#f8fbff;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div><div style="font-weight:700;font-size:13px;color:#0f172a;">Barangay Clearance</div><div style="font-size:11px;color:#64748b;">Ref: <code style="background:#e2e8f0;padding:1px 4px;border-radius:3px;font-size:10px;">BRG-2026-004523</code> · Filed Sep 20</div></div>
+                <span class="st st-processing">⬤ Processing</span>
+              </div>
+              <!-- Progress steps -->
+              <div style="display:flex;align-items:center;gap:0;margin-bottom:8px;">
+                <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
+                  <div style="width:24px;height:24px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:700;">✓</div>
+                  <div style="font-size:9px;color:#15803d;margin-top:3px;text-align:center;font-weight:600;">Submitted</div>
+                </div>
+                <div style="flex:1;height:2px;background:#15803d;"></div>
+                <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
+                  <div style="width:24px;height:24px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:700;">✓</div>
+                  <div style="font-size:9px;color:#15803d;margin-top:3px;text-align:center;font-weight:600;">Verified</div>
+                </div>
+                <div style="flex:1;height:2px;background:#dbeafe;"></div>
+                <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
+                  <div style="width:24px;height:24px;background:#2563a8;border-radius:50%;box-shadow:0 0 0 4px #dbeafe;display:flex;align-items:center;justify-content:center;color:white;font-size:9px;font-weight:700;">...</div>
+                  <div style="font-size:9px;color:#2563a8;margin-top:3px;text-align:center;font-weight:600;">Review</div>
+                </div>
+                <div style="flex:1;height:2px;background:#e2e8f0;"></div>
+                <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
+                  <div style="width:24px;height:24px;background:#e2e8f0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:10px;font-weight:700;">4</div>
+                  <div style="font-size:9px;color:#94a3b8;margin-top:3px;text-align:center;">Approval</div>
+                </div>
+                <div style="flex:1;height:2px;background:#e2e8f0;"></div>
+                <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
+                  <div style="width:24px;height:24px;background:#e2e8f0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:10px;font-weight:700;">5</div>
+                  <div style="font-size:9px;color:#94a3b8;margin-top:3px;text-align:center;">Ready</div>
+                </div>
+              </div>
+              <div style="font-size:11px;color:#1e4d7b;background:#eff6ff;padding:6px 10px;border-radius:6px;">📍 Currently at step 3 of 5 — Admin Review. Est. completion: Sep 24, 2026</div>
+            </div>
+
+            <!-- Request 2 -->
+            <div style="border:1px solid #fef3c7;border-radius:10px;padding:12px;margin-bottom:10px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <div><div style="font-weight:600;font-size:13px;">Certificate of Residency</div><div style="font-size:11px;color:#64748b;"><code style="background:#e2e8f0;padding:1px 4px;border-radius:3px;font-size:10px;">COR-2026-000892</code> · Filed Sep 15</div></div>
+                <span class="st st-pending">⬤ Pending</span>
+              </div>
+              <div style="font-size:11px;color:#b45309;background:#fef3c7;padding:6px 10px;border-radius:6px;">⚠ Action needed: Upload valid government ID to proceed</div>
+              <button class="btn btn-warn" style="margin-top:8px;font-size:11px;padding:5px 10px;">📎 Upload Document</button>
+            </div>
+
+            <!-- Request 3 -->
+            <div style="border:1px solid #e2e8f0;border-radius:10px;padding:12px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <div><div style="font-weight:600;font-size:13px;">Indigency Certificate</div><div style="font-size:11px;color:#64748b;"><code style="background:#e2e8f0;padding:1px 4px;border-radius:3px;font-size:10px;">IND-2026-000034</code> · Filed Sep 10</div></div>
+                <span class="st st-approved">⬤ Approved</span>
+              </div>
+              <div style="font-size:11px;color:#15803d;background:#f0fdf4;padding:6px 10px;border-radius:6px;">✅ Ready for pickup at Window 3 · Valid until Oct 10, 2026</div>
+              <button class="btn btn-success" style="margin-top:8px;font-size:11px;padding:5px 10px;">📥 Download PDF Copy</button>
+            </div>
+          </div>
+
+          <!-- Right: Community + Services -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <!-- Announcements -->
+            <div class="card">
+              <div class="card-title">📢 Community Announcements</div>
+              <div style="font-size:12px;">
+                <div style="border-left:3px solid #ef4444;padding:10px 10px 10px 12px;background:#fff5f5;border-radius:0 8px 8px 0;margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-weight:700;color:#b91c1c;">🚨 URGENT — Flood Advisory</span><span style="font-size:10px;color:#94a3b8;">Today</span></div>
+                  <div style="color:#64748b;">Low-lying areas in Zone B are advised to prepare for possible flooding due to continuous rain.</div>
+                </div>
+                <div style="border-left:3px solid #15803d;padding:10px 10px 10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-weight:700;">🏥 Free Medical Mission</span><span style="font-size:10px;color:#94a3b8;">Oct 2</span></div>
+                  <div style="color:#64748b;">Free consultation, medicines, and dental services at Brgy Health Center, 8AM–5PM.</div>
+                </div>
+                <div style="border-left:3px solid #2563a8;padding:10px 10px 10px 12px;border-radius:0 8px 8px 0;">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-weight:700;">💼 Livelihood Training</span><span style="font-size:10px;color:#94a3b8;">Sep 30</span></div>
+                  <div style="color:#64748b;">Free skills training for residents. Register at the Barangay Hall before September 30.</div>
+                </div>
+              </div>
+              <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px;font-size:12px;">View All Announcements →</button>
+            </div>
+
+            <!-- Quick services -->
+            <div class="card">
+              <div class="card-title">⚡ Quick Services</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div class="svc-card"><div class="svc-icon">📋</div><div class="svc-name">Brgy Clearance</div><div class="svc-time">~2 days</div></div>
+                <div class="svc-card"><div class="svc-icon">🏠</div><div class="svc-name">Cert. of Residency</div><div class="svc-time">~1 day</div></div>
+                <div class="svc-card"><div class="svc-icon">💼</div><div class="svc-name">Indigency Cert.</div><div class="svc-time">~1 day</div></div>
+                <div class="svc-card"><div class="svc-icon">🏪</div><div class="svc-name">Business Permit</div><div class="svc-time">~5 days</div></div>
+              </div>
+            </div>
+
+            <!-- Appointment -->
+            <div class="card">
+              <div class="card-title">📅 Book Appointment</div>
+              <div style="font-size:12px;color:#64748b;margin-bottom:10px;">Walk-in slots available at the Barangay Hall</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+                <div style="padding:8px;border:2px solid #2563a8;border-radius:8px;text-align:center;cursor:pointer;background:#eff6ff;"><div style="font-size:11px;font-weight:700;color:#2563a8;">Sep 23</div><div style="font-size:10px;color:#64748b;">Mon</div></div>
+                <div style="padding:8px;border:1px solid #e2e8f0;border-radius:8px;text-align:center;cursor:pointer;"><div style="font-size:11px;font-weight:700;">Sep 24</div><div style="font-size:10px;color:#64748b;">Tue</div></div>
+                <div style="padding:8px;border:1px solid #e2e8f0;border-radius:8px;text-align:center;cursor:pointer;"><div style="font-size:11px;font-weight:700;">Sep 25</div><div style="font-size:10px;color:#64748b;">Wed</div></div>
+                <div style="padding:8px;border:1px dashed #e2e8f0;border-radius:8px;text-align:center;opacity:0.4;cursor:not-allowed;"><div style="font-size:11px;font-weight:700;">Sep 26</div><div style="font-size:10px;color:#64748b;">Full</div></div>
+              </div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:12px;">Confirm Appointment →</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showDash(id, btn) {
+  document.querySelectorAll('.dash-view').forEach(el => el.classList.remove('visible'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('dash-' + id).classList.add('visible');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

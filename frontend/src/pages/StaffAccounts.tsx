@@ -13,7 +13,7 @@ interface StaffAccount {
   id: string;
   username: string;
   full_name: string;
-  role: 'super_admin' | 'admin' | 'user' | 'staff' | 'super admin';
+  role: 'super_admin' | 'admin' | 'user' | 'staff' | 'super admin' | 'brgy_official' | 'citizen' | 'non_citizen';
   status: 'active' | 'disabled' | 'pending';
   position?: string | null;
   station?: string | null;
@@ -264,9 +264,11 @@ export default function StaffAccountsPage() {
                               className="rounded-lg border border-border bg-card px-2 py-0.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary dark:bg-navy-900"
                               title="Change role"
                             >
-                              <option value="user">User</option>
-                              <option value="staff">Staff</option>
-                              <option value="admin">Admin</option>
+                              <option value="staff">Staff (Firefighter/Dispatcher)</option>
+                              <option value="admin">Admin (Station Commander)</option>
+                              <option value="brgy_official">Brgy Official (Council)</option>
+                              <option value="citizen">Citizen (Resident)</option>
+                              <option value="non_citizen">Non-Citizen (Guest)</option>
                               {isCurrentUserSuperAdmin && <option value="super_admin">Super Admin</option>}
                             </select>
                           </div>
@@ -362,9 +364,11 @@ export default function StaffAccountsPage() {
             <div>
               <label className="field-label">Role</label>
               <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="field-input">
-                <option value="user">User</option>
-                <option value="staff">Staff</option>
-                <option value="admin">Admin</option>
+                <option value="staff">Staff (Firefighter / Dispatcher)</option>
+                <option value="admin">Admin (Station Commander)</option>
+                <option value="brgy_official">Brgy Official (Council)</option>
+                <option value="citizen">Citizen (Resident)</option>
+                <option value="non_citizen">Non-Citizen (Guest)</option>
                 {isCurrentUserSuperAdmin && <option value="super_admin">Super Admin</option>}
               </select>
             </div>

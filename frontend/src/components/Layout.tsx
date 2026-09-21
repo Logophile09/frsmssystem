@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -21,6 +21,9 @@ import {
   X,
   Moon,
   Sun,
+  Home,
+  Award,
+  Globe,
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -32,51 +35,171 @@ import AmbientGlow from './AmbientGlow';
 import LiveClock from './LiveClock';
 import Modal from './Modal';
 import Avatar from './Avatar';
+import RoleSwitcher from './RoleSwitcher';
+import Badge from './Badge';
 
-const NAV_GROUPS: {
+function getNavGroups(role?: string): {
   label: string;
   items: { to: string; label: string; icon: LucideIcon; adminOnly?: boolean }[];
-}[] = [
-  {
-    label: 'Overview',
-    items: [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }],
-  },
-  {
-    label: 'Operations',
-    items: [
-      { to: '/incidents', label: 'Incidents & Dispatch', icon: AlertTriangle },
-      { to: '/post-incident-reports', label: 'Post-Incident Reports', icon: FileText },
-      { to: '/personnel', label: 'Personnel', icon: Users },
-      { to: '/vehicles', label: 'Vehicles', icon: Truck },
-      { to: '/equipment', label: 'Equipment', icon: Wrench },
-      { to: '/attendance', label: 'Attendance', icon: CalendarCheck },
-    ],
-  },
-  {
-    label: 'IoT & AI',
-    items: [
-      { to: '/gps-tracker', label: 'GPS Tracker', icon: MapPin },
-      { to: '/false-alarms', label: 'False Alarm Review', icon: ShieldAlert },
-      { to: '/dispatch-recommendation', label: 'Dispatch Recommendation', icon: GitBranch },
-    ],
-  },
-  {
-    label: 'Fire Safety Compliance',
-    items: [
-      { to: '/establishments', label: 'Establishments', icon: Building2 },
-      { to: '/inspections', label: 'Inspections', icon: ClipboardCheck },
-      { to: '/certificates', label: 'Certificates', icon: FileCheck },
-      { to: '/violations', label: 'Violations', icon: Ban },
-    ],
-  },
-  {
-    label: 'Admin',
-    items: [
-      { to: '/reports', label: 'Reports', icon: BarChart3 },
-      { to: '/staff-accounts', label: 'Staff Accounts', icon: UserCog, adminOnly: true },
-    ],
-  },
-];
+}[] {
+  const normRole =
+    role === 'super admin' ? 'super_admin' : role === 'user' ? 'staff' : (role || 'super_admin');
+
+  if (normRole === 'citizen') {
+    return [
+      {
+        label: 'Citizen Portal',
+        items: [
+          { to: '/dashboard', label: 'My Dashboard', icon: Home },
+          { to: '/establishments', label: 'Verified Establishments', icon: Building2 },
+          { to: '/certificates', label: 'Issued Certificates', icon: FileCheck },
+        ],
+      },
+      {
+        label: 'Community',
+        items: [
+          { to: '/public-portal', label: 'Public Information Hub', icon: Globe },
+        ],
+      },
+    ];
+  }
+
+  if (normRole === 'non_citizen') {
+    return [
+      {
+        label: 'Public Hub',
+        items: [
+          { to: '/dashboard', label: 'Public Portal', icon: Globe },
+          { to: '/establishments', label: 'Establishments Directory', icon: Building2 },
+          { to: '/certificates', label: 'Public Verification', icon: FileCheck },
+        ],
+      },
+    ];
+  }
+
+  if (normRole === 'brgy_official' || normRole === 'official') {
+    return [
+      {
+        label: 'Executive',
+        items: [
+          { to: '/dashboard', label: 'Executive Dashboard', icon: Award },
+          { to: '/incidents', label: 'Incident Oversight', icon: AlertTriangle },
+          { to: '/post-incident-reports', label: 'Post-Incident Reports', icon: FileText },
+        ],
+      },
+      {
+        label: 'Fire Safety Compliance',
+        items: [
+          { to: '/establishments', label: 'Establishments', icon: Building2 },
+          { to: '/inspections', label: 'Inspections', icon: ClipboardCheck },
+          { to: '/certificates', label: 'Clearance Endorsements', icon: FileCheck },
+          { to: '/violations', label: 'Violations Overview', icon: Ban },
+        ],
+      },
+      {
+        label: 'Civic Portals',
+        items: [
+          { to: '/citizen-portal', label: 'Resident Portal View', icon: Home },
+          { to: '/public-portal', label: 'Public Portal View', icon: Globe },
+        ],
+      },
+      {
+        label: 'Oversight',
+        items: [
+          { to: '/reports', label: 'Analytics & Reports', icon: BarChart3 },
+        ],
+      },
+    ];
+  }
+
+  if (normRole === 'staff') {
+    return [
+      {
+        label: 'Overview',
+        items: [{ to: '/dashboard', label: 'Duty Dashboard', icon: LayoutDashboard }],
+      },
+      {
+        label: 'Operations',
+        items: [
+          { to: '/incidents', label: 'Incidents & Dispatch', icon: AlertTriangle },
+          { to: '/post-incident-reports', label: 'Post-Incident Reports', icon: FileText },
+          { to: '/personnel', label: 'Personnel Roster', icon: Users },
+          { to: '/vehicles', label: 'Vehicle Readiness', icon: Truck },
+          { to: '/equipment', label: 'Equipment Checklist', icon: Wrench },
+          { to: '/attendance', label: 'My Attendance', icon: CalendarCheck },
+        ],
+      },
+      {
+        label: 'IoT & AI',
+        items: [
+          { to: '/gps-tracker', label: 'GPS Tracker', icon: MapPin },
+          { to: '/false-alarms', label: 'False Alarm Review', icon: ShieldAlert },
+          { to: '/dispatch-recommendation', label: 'Dispatch Recommendation', icon: GitBranch },
+        ],
+      },
+      {
+        label: 'Compliance',
+        items: [
+          { to: '/establishments', label: 'Establishments', icon: Building2 },
+          { to: '/inspections', label: 'Field Inspections', icon: ClipboardCheck },
+          { to: '/certificates', label: 'Certificates', icon: FileCheck },
+          { to: '/violations', label: 'Violations', icon: Ban },
+        ],
+      },
+    ];
+  }
+
+  // Admin and Super Admin
+  return [
+    {
+      label: 'Overview',
+      items: [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }],
+    },
+    {
+      label: 'Operations',
+      items: [
+        { to: '/incidents', label: 'Incidents & Dispatch', icon: AlertTriangle },
+        { to: '/post-incident-reports', label: 'Post-Incident Reports', icon: FileText },
+        { to: '/personnel', label: 'Personnel', icon: Users },
+        { to: '/vehicles', label: 'Vehicles', icon: Truck },
+        { to: '/equipment', label: 'Equipment', icon: Wrench },
+        { to: '/attendance', label: 'Attendance', icon: CalendarCheck },
+      ],
+    },
+    {
+      label: 'IoT & AI',
+      items: [
+        { to: '/gps-tracker', label: 'GPS Tracker', icon: MapPin },
+        { to: '/false-alarms', label: 'False Alarm Review', icon: ShieldAlert },
+        { to: '/dispatch-recommendation', label: 'Dispatch Recommendation', icon: GitBranch },
+      ],
+    },
+    {
+      label: 'Fire Safety Compliance',
+      items: [
+        { to: '/establishments', label: 'Establishments', icon: Building2 },
+        { to: '/inspections', label: 'Inspections', icon: ClipboardCheck },
+        { to: '/certificates', label: 'Certificates', icon: FileCheck },
+        { to: '/violations', label: 'Violations', icon: Ban },
+      ],
+    },
+    {
+      label: 'Civic Portals',
+      items: [
+        { to: '/official-portal', label: 'Official Dashboard', icon: Award },
+        { to: '/citizen-portal', label: 'Citizen Portal', icon: Home },
+        { to: '/public-portal', label: 'Public Portal', icon: Globe },
+      ],
+    },
+    {
+      label: 'Administration',
+      items: [
+        { to: '/reports', label: 'Reports', icon: BarChart3 },
+        { to: '/staff-accounts', label: 'Staff Accounts', icon: UserCog, adminOnly: true },
+      ],
+    },
+  ];
+}
 
 export default function Layout() {
   const { profile, signOut, demoMode } = useAuth();
@@ -89,6 +212,8 @@ export default function Layout() {
   const [confirmingLogout, setConfirmingLogout] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   useRevealOnScroll();
+
+  const navGroups = useMemo(() => getNavGroups(profile?.role), [profile?.role]);
 
   // Close the mobile drawer whenever the route changes (e.g. after tapping a nav link)
   useEffect(() => {
@@ -138,9 +263,12 @@ export default function Layout() {
             aria-hidden="true"
           />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="font-display text-sm font-extrabold leading-tight tracking-tight text-foreground">FRSMS</p>
           <p className="truncate text-[11px] leading-tight text-muted-foreground">Fire &amp; Rescue Mgmt.</p>
+          <div className="mt-1">
+            <Badge value={profile?.role ?? 'super_admin'} />
+          </div>
         </div>
         <button
           onClick={() => setMobileNavOpen(false)}
@@ -151,7 +279,7 @@ export default function Layout() {
         </button>
       </div>
       <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
-        {NAV_GROUPS.map((group) => (
+        {navGroups.map((group) => (
           <div key={group.label}>
             <p className="px-3 pb-1.5 text-[10.5px] font-extrabold uppercase tracking-widest text-primary/70">
               {group.label}
@@ -273,7 +401,8 @@ export default function Layout() {
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <RoleSwitcher />
               <LiveClock />
               <span className="hidden h-6 w-px bg-border sm:block" />
               <button

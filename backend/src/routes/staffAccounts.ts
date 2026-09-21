@@ -7,13 +7,15 @@ const router = Router();
 router.use(requireAuth);
 
 function normalizeRole(role?: string): string {
-  if (!role) return 'user';
+  if (!role) return 'staff';
   const r = String(role).trim().toLowerCase();
   if (r === 'super_admin' || r === 'super admin') return 'super_admin';
   if (r === 'admin') return 'admin';
-  if (r === 'user') return 'user';
-  if (r === 'staff') return 'staff';
-  return 'user';
+  if (r === 'staff' || r === 'user') return 'staff';
+  if (r === 'brgy_official' || r === 'official') return 'brgy_official';
+  if (r === 'citizen') return 'citizen';
+  if (r === 'non_citizen' || r === 'guest') return 'non_citizen';
+  return 'staff';
 }
 
 // Any authenticated user can see the roster; only admins/super admins can manage it.

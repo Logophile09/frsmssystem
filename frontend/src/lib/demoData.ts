@@ -310,20 +310,199 @@ export const gpsDevices = [
 // Staff accounts (demo)
 // ---------------------------------------------------------------------
 export const staffAccounts = [
-  { id: 'demo-super-admin', username: 'superadmin', full_name: 'Demo Super Admin', role: 'super_admin' as const, status: 'active' as const, last_login_at: minutesAgo(2), created_at: daysAgo(300) },
-  { id: 'demo-admin', username: 'admin', full_name: 'Demo Administrator', role: 'admin' as const, status: 'active' as const, last_login_at: minutesAgo(5), created_at: daysAgo(200) },
-  { id: 'demo-user', username: 'user', full_name: 'Demo Operational User', role: 'user' as const, status: 'active' as const, last_login_at: hoursAgo(1), created_at: daysAgo(100) },
-  { id: 'demo-staff-1', username: 'r.santos', full_name: 'Ramon Santos', role: 'staff' as const, status: 'active' as const, last_login_at: hoursAgo(6), created_at: daysAgo(180) },
-  { id: 'demo-staff-2', username: 'g.manalo', full_name: 'Grace Manalo', role: 'staff' as const, status: 'active' as const, last_login_at: daysAgo(3), created_at: daysAgo(150) },
+  { id: 'demo-super-admin', username: 'superadmin', full_name: 'Demo Super Admin', role: 'super_admin' as const, status: 'active' as const, last_login_at: minutesAgo(2), created_at: daysAgo(300), position: 'System Administrator', station: 'HQ - Culiat' },
+  { id: 'demo-admin', username: 'admin', full_name: 'Capt. Eduardo Morales', role: 'admin' as const, status: 'active' as const, last_login_at: minutesAgo(5), created_at: daysAgo(200), position: 'Station Commander', station: 'Station 1 - Culiat' },
+  { id: 'demo-staff-1', username: 'r.santos', full_name: 'FO2 Ramon Santos', role: 'staff' as const, status: 'active' as const, last_login_at: hoursAgo(6), created_at: daysAgo(180), position: 'Duty Firefighter / Dispatcher', station: 'Station 1 - Culiat' },
+  { id: 'demo-staff-2', username: 'g.manalo', full_name: 'FO1 Grace Manalo', role: 'staff' as const, status: 'active' as const, last_login_at: daysAgo(3), created_at: daysAgo(150), position: 'Field Fire Inspector', station: 'Station 1 - Culiat' },
+  { id: 'demo-official', username: 'kgd.lim', full_name: 'Kgd. Pedro Lim', role: 'brgy_official' as const, status: 'active' as const, last_login_at: hoursAgo(1), created_at: daysAgo(220), position: 'Committee Chair on Public Safety', station: 'Barangay Hall · Culiat' },
+  { id: 'demo-citizen', username: 'juan.delacruz', full_name: 'Juan dela Cruz', role: 'citizen' as const, status: 'active' as const, last_login_at: hoursAgo(2), created_at: daysAgo(90), position: 'Verified Resident (ID: CUL-2024-0482)', station: 'Purok 3, Barangay Culiat' },
+  { id: 'demo-guest', username: 'guest.visitor', full_name: 'Guest Visitor', role: 'non_citizen' as const, status: 'active' as const, last_login_at: minutesAgo(1), created_at: daysAgo(10), position: 'Public Guest', station: 'Public Portal' },
 ];
 
-export const demoProfile = {
-  id: 'demo-super-admin',
-  email: 'superadmin@frsms.local',
-  role: 'super_admin' as const,
-  username: 'superadmin',
-  full_name: 'Demo Super Admin',
+export const demoProfilesByRole: Record<string, {
+  id: string;
+  email: string;
+  role: 'super_admin' | 'admin' | 'staff' | 'brgy_official' | 'citizen' | 'non_citizen' | 'user' | 'super admin';
+  username: string;
+  full_name: string;
+  position: string;
+  station: string;
+  status: 'active';
+}> = {
+  super_admin: {
+    id: 'demo-super-admin',
+    email: 'superadmin@frsms.local',
+    role: 'super_admin',
+    username: 'superadmin',
+    full_name: 'Demo Super Admin',
+    position: 'System Administrator',
+    station: 'HQ - Culiat',
+    status: 'active',
+  },
+  admin: {
+    id: 'demo-admin',
+    email: 'station.commander@frsms.local',
+    role: 'admin',
+    username: 'admin',
+    full_name: 'Capt. Eduardo Morales',
+    position: 'Station Commander',
+    station: 'Station 1 - Culiat',
+    status: 'active',
+  },
+  staff: {
+    id: 'demo-staff-1',
+    email: 'r.santos@frsms.local',
+    role: 'staff',
+    username: 'r.santos',
+    full_name: 'FO2 Ramon Santos',
+    position: 'Duty Firefighter / Dispatcher',
+    station: 'Station 1 - Culiat',
+    status: 'active',
+  },
+  brgy_official: {
+    id: 'demo-official',
+    email: 'kgd.lim@culiat.gov.ph',
+    role: 'brgy_official',
+    username: 'kgd.lim',
+    full_name: 'Kgd. Pedro Lim',
+    position: 'Committee Chair on Public Safety',
+    station: 'Barangay Hall · Culiat',
+    status: 'active',
+  },
+  citizen: {
+    id: 'demo-citizen',
+    email: 'juan.delacruz@gmail.com',
+    role: 'citizen',
+    username: 'juan.delacruz',
+    full_name: 'Juan dela Cruz',
+    position: 'Verified Resident (ID: CUL-2024-0482)',
+    station: 'Purok 3, Barangay Culiat',
+    status: 'active',
+  },
+  non_citizen: {
+    id: 'demo-guest',
+    email: 'guest@visitor.local',
+    role: 'non_citizen',
+    username: 'guest.visitor',
+    full_name: 'Guest Visitor',
+    position: 'Public Portal User',
+    station: 'Public Hub',
+    status: 'active',
+  },
 };
+
+export const demoProfile = demoProfilesByRole.super_admin;
+
+// ---------------------------------------------------------------------
+// Citizen requests (demo dataset for citizen & official dashboards)
+// ---------------------------------------------------------------------
+export interface CitizenRequest {
+  id: number;
+  ref_number: string;
+  type: string;
+  applicant_name: string;
+  address: string;
+  contact: string;
+  status: 'pending' | 'processing' | 'inspection_scheduled' | 'approved' | 'issued' | 'rejected';
+  step: number; // 1 to 5
+  date_filed: string;
+  target_date?: string;
+  notes?: string;
+}
+
+export const demoCitizenRequests: CitizenRequest[] = [
+  {
+    id: 1,
+    ref_number: 'FSIC-2026-004523',
+    type: 'Fire Safety Inspection Certificate (FSIC)',
+    applicant_name: 'Juan dela Cruz',
+    address: 'Block 4 Lot 12, Purok 3, Tandang Sora Ext., Culiat',
+    contact: '0917-555-0192',
+    status: 'processing',
+    step: 3,
+    date_filed: 'Sep 18, 2026',
+    target_date: 'Sep 24, 2026',
+    notes: 'Commercial grocery store renewal. Documents verified by FO2 Santos. Awaiting inspection visit.',
+  },
+  {
+    id: 2,
+    ref_number: 'HAZ-2026-001089',
+    type: 'Fire Hazard & Smoke Report',
+    applicant_name: 'Juan dela Cruz',
+    address: 'Alley 2 near Creek, Zone B, Culiat',
+    contact: '0917-555-0192',
+    status: 'inspection_scheduled',
+    step: 2,
+    date_filed: 'Sep 19, 2026',
+    target_date: 'Sep 22, 2026',
+    notes: 'Reported illegal waste burning and tangled dangling electrical wires near wooden houses.',
+  },
+  {
+    id: 3,
+    ref_number: 'CL-2026-000312',
+    type: 'Barangay Fire Clearance Endorsement',
+    applicant_name: 'Juan dela Cruz',
+    address: 'Purok 3, Zone A',
+    contact: '0917-555-0192',
+    status: 'approved',
+    step: 4,
+    date_filed: 'Sep 10, 2026',
+    target_date: 'Sep 15, 2026',
+    notes: 'Approved by Station Commander & Kagawad Lim. Ready for official clearance release at Barangay Hall.',
+  },
+  {
+    id: 4,
+    ref_number: 'FSIC-2026-004510',
+    type: 'Residential Fire Safety Certificate',
+    applicant_name: 'Maria Clarissa Santos',
+    address: 'Purok 1, Culiat',
+    contact: '0918-444-2201',
+    status: 'issued',
+    step: 5,
+    date_filed: 'Sep 05, 2026',
+    target_date: 'Sep 12, 2026',
+    notes: 'Inspection passed with 100% compliance. Certificate valid until September 2027.',
+  },
+];
+
+// ---------------------------------------------------------------------
+// Community Announcements (Fire safety bulletins & evacuation guides)
+// ---------------------------------------------------------------------
+export interface CommunityAnnouncement {
+  id: number;
+  title: string;
+  category: 'urgent' | 'warning' | 'info' | 'event';
+  date: string;
+  author: string;
+  content: string;
+}
+
+export const demoCommunityAnnouncements: CommunityAnnouncement[] = [
+  {
+    id: 1,
+    title: '🚨 ADVISORY: High Fire Risk Alert for Dry Season',
+    category: 'urgent',
+    date: 'Sep 21, 2026',
+    author: 'Barangay Culiat Disaster Preparedness Council',
+    content: 'Due to rising heat index, all residents are strictly advised to avoid open-air burning and check household electrical circuits. Report any sparks or burning smell immediately via hotline 8-928-0000.',
+  },
+  {
+    id: 2,
+    title: '🚒 Free Community Fire Extinguisher Training & Inspection',
+    category: 'event',
+    date: 'Sep 28, 2026',
+    author: 'FRSMS Station 1 Operations',
+    content: 'Hands-on fire drill and extinguisher refill seminar at Barangay Culiat Covered Court from 9:00 AM to 3:00 PM. Open to all household heads and business owners.',
+  },
+  {
+    id: 3,
+    title: '💧 Hydrant Maintenance Notice — Tandang Sora & Luzon Ave',
+    category: 'info',
+    date: 'Sep 19, 2026',
+    author: 'Station Commander Capt. Morales',
+    content: 'Water pressure testing on fire hydrants along Luzon Avenue and Tandang Sora will occur from 10:00 PM to 2:00 AM. Minor road obstructions may be encountered.',
+  },
+];
 
 // ---------------------------------------------------------------------
 // Dashboard summary (computed live from the arrays above, same shape

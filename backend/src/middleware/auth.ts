@@ -1,7 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 
-export type UserRole = 'super_admin' | 'admin' | 'user' | 'staff' | 'super admin';
+export type UserRole =
+  | 'super_admin'
+  | 'admin'
+  | 'staff'
+  | 'brgy_official'
+  | 'citizen'
+  | 'non_citizen'
+  | 'user'
+  | 'super admin';
 
 export function isSuperAdmin(role?: string | null): boolean {
   return role === 'super_admin' || role === 'super admin';
@@ -9,6 +17,20 @@ export function isSuperAdmin(role?: string | null): boolean {
 
 export function isAdmin(role?: string | null): boolean {
   return isSuperAdmin(role) || role === 'admin';
+}
+
+export function isOfficial(role?: string | null): boolean {
+  return isAdmin(role) || role === 'brgy_official' || role === 'official';
+}
+
+export function isStaffOrAbove(role?: string | null): boolean {
+  return (
+    isAdmin(role) ||
+    role === 'staff' ||
+    role === 'user' ||
+    role === 'brgy_official' ||
+    role === 'official'
+  );
 }
 
 export interface AuthedRequest extends Request {
@@ -114,6 +136,14 @@ export function requireAdmin(req: AuthedRequest, res: Response, next: NextFuncti
 export function requireSuperAdmin(req: AuthedRequest, res: Response, next: NextFunction) {
   if (!isSuperAdmin(req.user?.role)) {
     return res.status(403).json({ error: 'Super Admin access required' });
+  }
+  next();
+}
+
+/** Restrict a route to Barangay Officials, Admins, or Super Admins. */
+export function requireOfficial(req: AuthedRequest, res: Response, next: NextFunction) {
+  if (!isOfficial(req.user?.role)) {
+    return res.status(403).json({ error: 'Barangay Official or Admin access required' });
   }
   next();
 }

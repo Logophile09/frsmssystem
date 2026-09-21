@@ -61,7 +61,12 @@ const COLORS: Record<string, string> = {
   'super admin': 'bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300',
   admin: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-300',
   user: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
-  staff: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  staff: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
+  brgy_official: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+  official: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+  citizen: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  non_citizen: 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300',
+  guest: 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300',
 };
 
 // Values that need custom display text instead of the raw stored value.
@@ -71,6 +76,11 @@ const LABELS: Record<string, string> = {
   admin: 'Admin',
   user: 'User',
   staff: 'Staff',
+  brgy_official: 'Brgy Official',
+  official: 'Brgy Official',
+  citizen: 'Citizen',
+  non_citizen: 'Non-Citizen',
+  guest: 'Guest Visitor',
   '1': 'Alert Level 1',
   '2': 'Alert Level 2',
   '3': 'Alert Level 3',

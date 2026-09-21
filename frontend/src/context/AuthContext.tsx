@@ -2,9 +2,17 @@ import { Session, User } from '@supabase/supabase-js';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { api, isBackendUnreachable } from '../lib/api';
-import { demoProfile } from '../lib/demoData';
+import { demoProfile, demoProfilesByRole } from '../lib/demoData';
 
-export type UserRole = 'super_admin' | 'admin' | 'user' | 'staff' | 'super admin';
+export type UserRole =
+  | 'super_admin'
+  | 'admin'
+  | 'staff'
+  | 'brgy_official'
+  | 'citizen'
+  | 'non_citizen'
+  | 'user'
+  | 'super admin';
 
 export interface Profile {
   id: string;
@@ -26,6 +34,7 @@ interface AuthContextValue {
   demoMode: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signInDemo: () => void;
+  switchDemoRole: (role: UserRole) => void;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   /** True while the signed-in account is still 'pending' and hasn't cleared the emailed OTP step yet. */
@@ -203,6 +212,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }
 
+  function switchDemoRole(role: UserRole) {
+    const key = role === 'super admin' ? 'super_admin' : (role === 'user' ? 'staff' : role);
+    const target = demoProfilesByRole[key] ?? demoProfilesByRole.staff;
+    setDemoMode(true);
+    setProfile(target);
+    setLoading(false);
+  }
+
   async function signOut() {
     if (demoMode) {
       setDemoMode(false);
@@ -238,7 +255,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ session, profile, loading, demoMode, signIn, signInDemo, signOut, refreshProfile, requiresOtp, markOtpVerified }}
+      value={{ session, profile, loading, demoMode, signIn, signInDemo, switchDemoRole, signOut, refreshProfile, requiresOtp, markOtpVerified }}
     >
       {children}
     </AuthContext.Provider>

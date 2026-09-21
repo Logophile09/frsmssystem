@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BMS Navigation System</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+
+    .role-switcher { display: flex; gap: 8px; flex-wrap: wrap; padding: 20px 24px; background: white; border-bottom: 1px solid #e2e8f0; }
+    .role-btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; border: 2px solid transparent; cursor: pointer; transition: 0.15s; }
+    .role-btn:hover { opacity: 0.85; }
+    .role-btn.active { border-color: rgba(0,0,0,0.3); }
+
+    .app-shell { display: flex; height: calc(100vh - 60px); min-height: 600px; }
+    .sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; transition: background 0.3s; overflow-y: auto; }
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .page-area { flex: 1; overflow-y: auto; padding: 24px; background: #f8fafc; }
+
+    /* Sidebar anatomy */
+    .sb-header { padding: 20px 16px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+    .sb-logo { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; margin-bottom: 4px; }
+    .sb-system { font-size: 15px; font-weight: 800; color: white; }
+    .sb-role-badge { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(255,255,255,0.2); color: white; }
+
+    .sb-section { padding: 8px 0; }
+    .sb-section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); padding: 8px 16px 4px; }
+    .sb-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7); cursor: pointer; transition: 0.15s; border-left: 3px solid transparent; position: relative; }
+    .sb-item:hover { background: rgba(255,255,255,0.1); color: white; }
+    .sb-item.active { background: rgba(255,255,255,0.15); color: white; border-left-color: white; font-weight: 600; }
+    .sb-item .icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.9; }
+    .sb-item .count { margin-left: auto; background: rgba(255,255,255,0.2); color: white; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+    .sb-item .count.urgent { background: #ef4444; }
+
+    .sb-footer { margin-top: auto; padding: 16px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .sb-user { display: flex; align-items: center; gap: 10px; }
+    .sb-avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; background: rgba(255,255,255,0.25); }
+    .sb-user-info { flex: 1; overflow: hidden; }
+    .sb-user-name { font-size: 13px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sb-user-email { font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Top bar items */
+    .topbar-breadcrumb { font-size: 14px; color: #64748b; }
+    .topbar-breadcrumb strong { color: #0f172a; }
+    .topbar-actions { display: flex; align-items: center; gap: 12px; }
+    .topbar-icon-btn { width: 36px; height: 36px; border-radius: 8px; background: #f1f5f9; border: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; position: relative; }
+    .notif-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; border: 2px solid white; }
+
+    /* Cards */
+    .stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
+    .stat-val { font-size: 28px; font-weight: 800; color: #0f172a; }
+    .stat-label { font-size: 13px; color: #64748b; margin-top: 2px; }
+    .stat-delta { font-size: 12px; font-weight: 600; margin-top: 8px; }
+    .stat-delta.up { color: #15803d; }
+    .stat-delta.down { color: #b91c1c; }
+
+    /* Role configs */
+    .role-config { display: none; }
+    .role-config.visible { display: flex; flex: 1; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div style="background:#0f2a4a;padding:16px 24px;display:flex;align-items:center;gap:12px;">
+  <span style="font-size:22px;">🏛️</span>
+  <div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.1em;text-transform:uppercase;">Navigation System</div>
+    <div style="font-size:17px;font-weight:800;color:white;">BMS Role-Based Navigation & Layout Wireframes</div>
+  </div>
+</div>
+
+<!-- ROLE SWITCHER -->
+<div class="role-switcher">
+  <span style="font-size:13px;font-weight:700;color:#64748b;align-self:center;margin-right:4px;">Preview Role →</span>
+  <button class="role-btn active" data-role="super-admin" style="background:#0f2a4a;color:white;" onclick="switchRole('super-admin', this)">🔐 Super Admin</button>
+  <button class="role-btn" data-role="admin" style="background:#1e4d7b;color:white;" onclick="switchRole('admin', this)">🏢 Admin</button>
+  <button class="role-btn" data-role="staff" style="background:#2563a8;color:white;" onclick="switchRole('staff', this)">👩‍💼 Staff</button>
+  <button class="role-btn" data-role="citizen" style="background:#15803d;color:white;" onclick="switchRole('citizen', this)">🏠 Citizen</button>
+  <button class="role-btn" data-role="non-citizen" style="background:#64748b;color:white;" onclick="switchRole('non-citizen', this)">🌐 Non-Citizen</button>
+  <button class="role-btn" data-role="brgy-official" style="background:#b45309;color:white;" onclick="switchRole('brgy-official', this)">⭐ Brgy Official</button>
+</div>
+
+<div class="app-shell">
+
+  <!-- ========== SUPER ADMIN ========== -->
+  <div class="role-config visible" id="role-super-admin" style="background:#0f2a4a;">
+    <div class="sidebar" style="background:#0f2a4a;">
+      <div class="sb-header">
+        <div class="sb-logo">Brgy. San Isidro</div>
+        <div class="sb-system">BMS Portal</div>
+        <span class="sb-role-badge">🔐 Super Admin</span>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Overview</div>
+        <div class="sb-item active"><span class="icon">📊</span> System Dashboard</div>
+        <div class="sb-item"><span class="icon">📈</span> Analytics & Reports<span class="count">3</span></div>
+        <div class="sb-item"><span class="icon">📋</span> Audit Logs</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">User Management</div>
+        <div class="sb-item"><span class="icon">👥</span> All Users</div>
+        <div class="sb-item"><span class="icon">🔑</span> Roles & Permissions</div>
+        <div class="sb-item"><span class="icon">🛡️</span> Access Control</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">System</div>
+        <div class="sb-item"><span class="icon">⚙️</span> System Config</div>
+        <div class="sb-item"><span class="icon">🔒</span> Security Settings</div>
+        <div class="sb-item"><span class="icon">🔄</span> Backup & Restore</div>
+        <div class="sb-item"><span class="icon">📡</span> API & Integrations</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Operations</div>
+        <div class="sb-item"><span class="icon">📑</span> All Requests<span class="count urgent">12</span></div>
+        <div class="sb-item"><span class="icon">🏢</span> Departments</div>
+        <div class="sb-item"><span class="icon">📢</span> Announcements</div>
+      </div>
+      <div class="sb-footer">
+        <div class="sb-user">
+          <div class="sb-avatar">SA</div>
+          <div class="sb-user-info"><div class="sb-user-name">System Admin</div><div class="sb-user-email">superadmin@brgy.gov.ph</div></div>
+          <span style="color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;">⎋</span>
+        </div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-breadcrumb">Dashboard / <strong>System Overview</strong></div>
+        <div class="topbar-actions">
+          <div class="topbar-icon-btn">🔍</div>
+          <div class="topbar-icon-btn">🔔<div class="notif-dot"></div></div>
+          <div style="width:36px;height:36px;border-radius:8px;background:#0f2a4a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;cursor:pointer;">SA</div>
+        </div>
+      </div>
+      <div class="page-area">
+        <div style="margin-bottom:20px;"><h1 style="font-size:22px;font-weight:800;color:#0f172a;">System Dashboard</h1><p style="font-size:13px;color:#64748b;margin-top:2px;">System-wide overview as of September 21, 2026</p></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+          <div class="stat-card"><div style="font-size:20px;margin-bottom:6px;">👥</div><div class="stat-val">4,821</div><div class="stat-label">Registered Citizens</div><div class="stat-delta up">↑ +43 this week</div></div>
+          <div class="stat-card"><div style="font-size:20px;margin-bottom:6px;">📑</div><div class="stat-val">287</div><div class="stat-label">Pending Requests</div><div class="stat-delta down">↑ +12 today</div></div>
+          <div class="stat-card"><div style="font-size:20px;margin-bottom:6px;">👤</div><div class="stat-val">34</div><div class="stat-label">Active Staff Users</div><div class="stat-delta up">↑ 2 new</div></div>
+          <div class="stat-card" style="border-color:#fca5a5;background:#fef2f2;"><div style="font-size:20px;margin-bottom:6px;">🚨</div><div class="stat-val" style="color:#b91c1c;">12</div><div class="stat-label" style="color:#b91c1c;">Escalated Cases</div><div class="stat-delta down">Needs attention</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="stat-card"><div style="font-weight:700;color:#0f172a;margin-bottom:12px;">📋 Recent Audit Log</div>
+            <div style="font-size:12px;color:#64748b;line-height:2.2;">
+              <div style="display:flex;justify-content:between;gap:8px;"><span style="color:#2563a8;font-weight:600;font-size:11px;">09:42</span><span>Admin J. Dela Cruz modified role permissions</span></div>
+              <div style="display:flex;gap:8px;"><span style="color:#2563a8;font-weight:600;font-size:11px;">09:15</span><span>New Staff account created: m.santos@brgy.gov.ph</span></div>
+              <div style="display:flex;gap:8px;"><span style="color:#ef4444;font-weight:600;font-size:11px;">08:51</span><span>⚠ Failed login attempt (3x) — IP 192.168.1.55</span></div>
+              <div style="display:flex;gap:8px;"><span style="color:#2563a8;font-weight:600;font-size:11px;">08:30</span><span>System backup completed successfully</span></div>
+            </div>
+          </div>
+          <div class="stat-card"><div style="font-weight:700;color:#0f172a;margin-bottom:12px;">🏢 Department Load</div>
+            <div>
+              <div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>Permits & Licensing</span><span style="font-weight:700;">87 requests</span></div><div style="height:8px;background:#e2e8f0;border-radius:4px;"><div style="width:72%;height:100%;background:#2563a8;border-radius:4px;"></div></div></div>
+              <div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>Social Services</span><span style="font-weight:700;">64 requests</span></div><div style="height:8px;background:#e2e8f0;border-radius:4px;"><div style="width:53%;height:100%;background:#15803d;border-radius:4px;"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>Barangay Clearance</span><span style="font-weight:700;">136 requests</span></div><div style="height:8px;background:#e2e8f0;border-radius:4px;"><div style="width:100%;height:100%;background:#b45309;border-radius:4px;"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN ========== -->
+  <div class="role-config" id="role-admin" style="background:#1e4d7b;">
+    <div class="sidebar" style="background:#1e4d7b;">
+      <div class="sb-header">
+        <div class="sb-logo">Brgy. San Isidro</div>
+        <div class="sb-system">BMS Portal</div>
+        <span class="sb-role-badge">🏢 Admin</span>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Overview</div>
+        <div class="sb-item active"><span class="icon">📊</span> Admin Dashboard</div>
+        <div class="sb-item"><span class="icon">📈</span> Reports<span class="count">5</span></div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Department</div>
+        <div class="sb-item"><span class="icon">📑</span> Request Queue<span class="count urgent">23</span></div>
+        <div class="sb-item"><span class="icon">✅</span> Approval Workflows</div>
+        <div class="sb-item"><span class="icon">👥</span> Staff Management</div>
+        <div class="sb-item"><span class="icon">📅</span> Schedules</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Content</div>
+        <div class="sb-item"><span class="icon">📢</span> Announcements</div>
+        <div class="sb-item"><span class="icon">📋</span> Document Templates</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Settings</div>
+        <div class="sb-item"><span class="icon">⚙️</span> Dept. Settings</div>
+      </div>
+      <div class="sb-footer">
+        <div class="sb-user">
+          <div class="sb-avatar">JD</div>
+          <div class="sb-user-info"><div class="sb-user-name">Jose Dela Cruz</div><div class="sb-user-email">admin@brgy.gov.ph</div></div>
+          <span style="color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;">⎋</span>
+        </div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-breadcrumb">Department / <strong>Admin Dashboard</strong></div>
+        <div class="topbar-actions">
+          <div class="topbar-icon-btn">🔍</div>
+          <div class="topbar-icon-btn">🔔<div class="notif-dot"></div></div>
+          <div style="width:36px;height:36px;border-radius:8px;background:#1e4d7b;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;cursor:pointer;">JD</div>
+        </div>
+      </div>
+      <div class="page-area">
+        <div style="margin-bottom:20px;"><h1 style="font-size:22px;font-weight:800;color:#0f172a;">Admin Dashboard</h1><p style="font-size:13px;color:#64748b;">Permits & Licensing Department · Sep 21, 2026</p></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+          <div class="stat-card"><div style="font-size:20px;margin-bottom:6px;">⏳</div><div class="stat-val">23</div><div class="stat-label">Awaiting Approval</div></div>
+          <div class="stat-card"><div style="font-size:20px;margin-bottom:6px;">✅</div><div class="stat-val">104</div><div class="stat-label">Approved This Month</div></div>
+          <div class="stat-card"><div style="font-size:20px;margin-bottom:6px;">👥</div><div class="stat-val">8</div><div class="stat-label">Active Staff</div></div>
+          <div class="stat-card"><div style="font-size:20px;margin-bottom:6px;">📊</div><div class="stat-val">96%</div><div class="stat-label">Approval Rate</div></div>
+        </div>
+        <div class="stat-card">
+          <div style="font-weight:700;color:#0f172a;margin-bottom:12px;">⏳ Pending Approvals — Requires Your Action</div>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <tr style="background:#f8fafc;"><th style="text-align:left;padding:8px 12px;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;border-bottom:1px solid #e2e8f0;">Reference</th><th style="text-align:left;padding:8px 12px;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;border-bottom:1px solid #e2e8f0;">Applicant</th><th style="text-align:left;padding:8px 12px;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;border-bottom:1px solid #e2e8f0;">Type</th><th style="text-align:left;padding:8px 12px;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;border-bottom:1px solid #e2e8f0;">Days Waiting</th><th style="padding:8px 12px;border-bottom:1px solid #e2e8f0;"></th></tr>
+            <tr><td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;"><code style="font-size:11px;color:#1e4d7b;">BP-2026-000347</code></td><td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-weight:500;">Rosa Aquino</td><td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">Business Permit</td><td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;"><span style="color:#ef4444;font-weight:700;">3 days</span></td><td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;"><button style="background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Approve</button></td></tr>
+            <tr><td style="padding:10px 12px;"><code style="font-size:11px;color:#1e4d7b;">IND-2026-001892</code></td><td style="padding:10px 12px;font-weight:500;">Pedro Reyes</td><td style="padding:10px 12px;">Indigency Cert.</td><td style="padding:10px 12px;"><span style="color:#b45309;font-weight:700;">1 day</span></td><td style="padding:10px 12px;"><button style="background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Approve</button></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== STAFF ========== -->
+  <div class="role-config" id="role-staff" style="background:#2563a8;">
+    <div class="sidebar" style="background:#2563a8;">
+      <div class="sb-header">
+        <div class="sb-logo">Brgy. San Isidro</div>
+        <div class="sb-system">BMS Portal</div>
+        <span class="sb-role-badge">👩‍💼 Staff</span>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">My Work</div>
+        <div class="sb-item active"><span class="icon">📋</span> My Queue<span class="count urgent">8</span></div>
+        <div class="sb-item"><span class="icon">➕</span> New Request</div>
+        <div class="sb-item"><span class="icon">🔍</span> Search Records</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Operations</div>
+        <div class="sb-item"><span class="icon">📑</span> All Requests</div>
+        <div class="sb-item"><span class="icon">📅</span> Appointments</div>
+        <div class="sb-item"><span class="icon">📊</span> My Reports</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Resources</div>
+        <div class="sb-item"><span class="icon">📁</span> Document Forms</div>
+        <div class="sb-item"><span class="icon">📢</span> Announcements</div>
+      </div>
+      <div class="sb-footer">
+        <div class="sb-user">
+          <div class="sb-avatar">MS</div>
+          <div class="sb-user-info"><div class="sb-user-name">Maria Santos</div><div class="sb-user-email">m.santos@brgy.gov.ph</div></div>
+          <span style="color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;">⎋</span>
+        </div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-breadcrumb">Operations / <strong>My Queue</strong></div>
+        <div class="topbar-actions">
+          <div class="topbar-icon-btn">🔍</div>
+          <div class="topbar-icon-btn">🔔<div class="notif-dot"></div></div>
+          <div style="width:36px;height:36px;border-radius:8px;background:#2563a8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;cursor:pointer;">MS</div>
+        </div>
+      </div>
+      <div class="page-area">
+        <div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;"><div><h1 style="font-size:22px;font-weight:800;color:#0f172a;">My Request Queue</h1><p style="font-size:13px;color:#64748b;">8 items require action · Sep 21, 2026</p></div><button style="background:#2563a8;color:white;border:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">+ Log New Request</button></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+          <div class="stat-card"><div class="stat-val" style="color:#f59e0b;">8</div><div class="stat-label">Pending in Queue</div></div>
+          <div class="stat-card"><div class="stat-val" style="color:#2563a8;">14</div><div class="stat-label">Processed Today</div></div>
+          <div class="stat-card"><div class="stat-val" style="color:#15803d;">97%</div><div class="stat-label">Accuracy Rate</div></div>
+        </div>
+        <div class="stat-card">
+          <div style="font-weight:700;color:#0f172a;margin-bottom:12px;">📋 Priority Queue</div>
+          <div style="font-size:13px;">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:8px;background:#fff7ed;">
+              <div style="width:36px;height:36px;background:#f97316;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;flex-shrink:0;">!</div>
+              <div style="flex:1;"><div style="font-weight:600;">BP-2026-000347 — Business Permit Renewal</div><div style="font-size:12px;color:#64748b;">Rosa Aquino · Flagged for escalation · 3 days overdue</div></div>
+              <span style="background:#ffedd5;color:#c2410c;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">ESCALATED</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:8px;">
+              <div style="width:36px;height:36px;background:#2563a8;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;flex-shrink:0;">2</div>
+              <div style="flex:1;"><div style="font-weight:600;">BRG-2026-004523 — Barangay Clearance</div><div style="font-size:12px;color:#64748b;">Maria Santos · Documents verified · Ready to process</div></div>
+              <span style="background:#dbeafe;color:#1e4d7b;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">PROCESSING</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== CITIZEN ========== -->
+  <div class="role-config" id="role-citizen" style="background:#15803d;">
+    <div class="sidebar" style="background:#15803d;">
+      <div class="sb-header">
+        <div class="sb-logo">Brgy. San Isidro</div>
+        <div class="sb-system">Citizen Portal</div>
+        <span class="sb-role-badge">🏠 Citizen</span>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">My Portal</div>
+        <div class="sb-item active"><span class="icon">🏠</span> My Dashboard</div>
+        <div class="sb-item"><span class="icon">📑</span> My Requests<span class="count">3</span></div>
+        <div class="sb-item"><span class="icon">📄</span> My Documents</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Services</div>
+        <div class="sb-item"><span class="icon">➕</span> Request a Document</div>
+        <div class="sb-item"><span class="icon">💬</span> File a Complaint</div>
+        <div class="sb-item"><span class="icon">📅</span> Book Appointment</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Community</div>
+        <div class="sb-item"><span class="icon">📢</span> Announcements<span class="count">2</span></div>
+        <div class="sb-item"><span class="icon">📋</span> Community Board</div>
+        <div class="sb-item"><span class="icon">📞</span> Contact Barangay</div>
+      </div>
+      <div class="sb-footer">
+        <div class="sb-user">
+          <div class="sb-avatar">JC</div>
+          <div class="sb-user-info"><div class="sb-user-name">Juan dela Cruz</div><div class="sb-user-email">juan@email.com</div></div>
+          <span style="color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;">⎋</span>
+        </div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-breadcrumb">Citizen Portal / <strong>My Dashboard</strong></div>
+        <div class="topbar-actions">
+          <div class="topbar-icon-btn">🔔<div class="notif-dot"></div></div>
+          <div style="width:36px;height:36px;border-radius:8px;background:#15803d;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;cursor:pointer;">JC</div>
+        </div>
+      </div>
+      <div class="page-area">
+        <div style="background:linear-gradient(135deg,#15803d,#16a34a);border-radius:12px;padding:20px;margin-bottom:20px;color:white;">
+          <div style="font-size:13px;opacity:0.75;margin-bottom:4px;">Welcome back,</div>
+          <div style="font-size:22px;font-weight:800;margin-bottom:4px;">Juan dela Cruz 👋</div>
+          <div style="font-size:13px;opacity:0.8;">Purok 3, Zone A · Resident since 2018</div>
+          <button style="margin-top:14px;background:white;color:#15803d;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">+ Request a Document</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+          <div class="stat-card"><div style="font-size:24px;margin-bottom:4px;">📑</div><div class="stat-val">3</div><div class="stat-label">Active Requests</div></div>
+          <div class="stat-card"><div style="font-size:24px;margin-bottom:4px;">✅</div><div class="stat-val">12</div><div class="stat-label">Completed Requests</div></div>
+          <div class="stat-card"><div style="font-size:24px;margin-bottom:4px;">📋</div><div class="stat-val">5</div><div class="stat-label">Saved Documents</div></div>
+        </div>
+        <div class="stat-card">
+          <div style="font-weight:700;color:#0f172a;margin-bottom:12px;">📋 My Active Requests</div>
+          <div style="font-size:13px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:8px;">
+              <div><div style="font-weight:600;">Barangay Clearance</div><div style="font-size:12px;color:#64748b;">BRG-2026-004523 · Filed Sep 20, 2026</div></div>
+              <span style="background:#dbeafe;color:#1e4d7b;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">⬤ Processing</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid #e2e8f0;border-radius:8px;">
+              <div><div style="font-weight:600;">Certificate of Residency</div><div style="font-size:12px;color:#64748b;">COR-2026-000892 · Filed Sep 15, 2026</div></div>
+              <span style="background:#fef3c7;color:#b45309;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">⬤ Pending</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== NON-CITIZEN ========== -->
+  <div class="role-config" id="role-non-citizen" style="background:#64748b;">
+    <div class="sidebar" style="background:#475569;">
+      <div class="sb-header">
+        <div class="sb-logo">Brgy. San Isidro</div>
+        <div class="sb-system">Public Portal</div>
+        <span class="sb-role-badge">🌐 Guest Access</span>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Public</div>
+        <div class="sb-item active"><span class="icon">🏛️</span> Public Home</div>
+        <div class="sb-item"><span class="icon">📢</span> Announcements</div>
+        <div class="sb-item"><span class="icon">📋</span> Services Directory</div>
+        <div class="sb-item"><span class="icon">📞</span> Contact Directory</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Information</div>
+        <div class="sb-item"><span class="icon">ℹ️</span> About the Barangay</div>
+        <div class="sb-item"><span class="icon">📜</span> Ordinances (Public)</div>
+        <div class="sb-item"><span class="icon">🗺️</span> Barangay Map</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Account</div>
+        <div class="sb-item" style="background:rgba(255,255,255,0.1);"><span class="icon">🔑</span> Log In / Register</div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-breadcrumb">Public Portal / <strong>Home</strong></div>
+        <div class="topbar-actions">
+          <button style="background:#475569;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Log In</button>
+          <button style="background:#2563a8;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Register</button>
+        </div>
+      </div>
+      <div class="page-area">
+        <div style="background:linear-gradient(135deg,#475569,#64748b);border-radius:12px;padding:24px;margin-bottom:20px;color:white;text-align:center;">
+          <div style="font-size:32px;margin-bottom:8px;">🏛️</div>
+          <div style="font-size:22px;font-weight:800;margin-bottom:6px;">Barangay San Isidro</div>
+          <div style="font-size:14px;opacity:0.8;margin-bottom:16px;">Official Digital Portal · Public Information Hub</div>
+          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+            <button style="background:white;color:#475569;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">📋 View Services</button>
+            <button style="background:rgba(255,255,255,0.2);color:white;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">📢 Announcements</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="stat-card">
+            <div style="font-weight:700;color:#0f172a;margin-bottom:10px;">📢 Latest Announcements</div>
+            <div style="font-size:13px;color:#334155;line-height:1.7;">
+              <div style="padding:8px;border-left:3px solid #2563a8;margin-bottom:8px;"><div style="font-weight:600;">Free Medical Mission — Oct 2</div><div style="font-size:12px;color:#64748b;">Barangay Health Center, 8AM-5PM</div></div>
+              <div style="padding:8px;border-left:3px solid #15803d;"><div style="font-weight:600;">Livelihood Training Program</div><div style="font-size:12px;color:#64748b;">Registration open until Sept 30</div></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div style="font-weight:700;color:#0f172a;margin-bottom:10px;">🔑 Access More Services</div>
+            <div style="font-size:13px;color:#64748b;line-height:1.7;margin-bottom:14px;">Register as a citizen to access personalized services, submit requests, and track applications online.</div>
+            <button style="width:100%;background:#15803d;color:white;border:none;padding:10px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">Create Citizen Account →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== BRGY OFFICIAL ========== -->
+  <div class="role-config" id="role-brgy-official" style="background:#b45309;">
+    <div class="sidebar" style="background:#92400e;">
+      <div class="sb-header">
+        <div class="sb-logo">Brgy. San Isidro</div>
+        <div class="sb-system">Officials Portal</div>
+        <span class="sb-role-badge">⭐ Brgy Official</span>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Executive</div>
+        <div class="sb-item active"><span class="icon">📊</span> Executive Dashboard</div>
+        <div class="sb-item"><span class="icon">📈</span> Community Analytics</div>
+        <div class="sb-item"><span class="icon">🚨</span> Escalations<span class="count urgent">4</span></div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Legislative</div>
+        <div class="sb-item"><span class="icon">📜</span> Ordinance Overview</div>
+        <div class="sb-item"><span class="icon">🗳️</span> Resolutions</div>
+        <div class="sb-item"><span class="icon">📅</span> Session Calendar</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Clearance</div>
+        <div class="sb-item"><span class="icon">✅</span> Clearance Approvals<span class="count">7</span></div>
+        <div class="sb-item"><span class="icon">🔄</span> Review Queue</div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Community</div>
+        <div class="sb-item"><span class="icon">📢</span> Issue Announcements</div>
+        <div class="sb-item"><span class="icon">📋</span> Programs & Projects</div>
+      </div>
+      <div class="sb-footer">
+        <div class="sb-user">
+          <div class="sb-avatar">KP</div>
+          <div class="sb-user-info"><div class="sb-user-name">Kgd. Pedro Lim</div><div class="sb-user-email">kgd.lim@brgy.gov.ph</div></div>
+          <span style="color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;">⎋</span>
+        </div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-breadcrumb">Officials / <strong>Executive Dashboard</strong></div>
+        <div class="topbar-actions">
+          <div class="topbar-icon-btn">🔔<div class="notif-dot"></div></div>
+          <div style="width:36px;height:36px;border-radius:8px;background:#92400e;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;cursor:pointer;">KP</div>
+        </div>
+      </div>
+      <div class="page-area">
+        <div style="margin-bottom:20px;"><h1 style="font-size:22px;font-weight:800;color:#0f172a;">Executive Dashboard</h1><p style="font-size:13px;color:#64748b;">Kagawad Pedro Lim · September 21, 2026</p></div>
+        <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">🚨</span><div><span style="font-weight:700;color:#b45309;">4 Escalated Cases</span><span style="font-size:13px;color:#78350f;"> require your immediate review and decision.</span></div>
+          <button style="margin-left:auto;background:#b45309;color:white;border:none;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Review Now →</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+          <div class="stat-card"><div style="font-size:20px;margin-bottom:4px;">👥</div><div class="stat-val">4,821</div><div class="stat-label">Total Constituents</div></div>
+          <div class="stat-card"><div style="font-size:20px;margin-bottom:4px;">✅</div><div class="stat-val">7</div><div class="stat-label">Clearances for Approval</div></div>
+          <div class="stat-card"><div style="font-size:20px;margin-bottom:4px;">📜</div><div class="stat-val">3</div><div class="stat-label">Active Ordinances</div></div>
+          <div class="stat-card" style="border-color:#fed7aa;background:#fff7ed;"><div style="font-size:20px;margin-bottom:4px;">🚨</div><div class="stat-val" style="color:#c2410c;">4</div><div class="stat-label" style="color:#c2410c;">Escalated Cases</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:3fr 2fr;gap:14px;">
+          <div class="stat-card"><div style="font-weight:700;color:#0f172a;margin-bottom:10px;">📈 Monthly Requests — Community Volume</div>
+            <div style="display:flex;align-items:end;gap:6px;height:80px;">
+              <div style="flex:1;background:#dbeafe;border-radius:4px 4px 0 0;" style="height:40%;"></div>
+              <div style="flex:1;background:#bfdbfe;border-radius:4px 4px 0 0;height:55%;"></div>
+              <div style="flex:1;background:#93c5fd;border-radius:4px 4px 0 0;height:45%;"></div>
+              <div style="flex:1;background:#60a5fa;border-radius:4px 4px 0 0;height:70%;"></div>
+              <div style="flex:1;background:#3b82f6;border-radius:4px 4px 0 0;height:85%;"></div>
+              <div style="flex:1;background:#2563eb;border-radius:4px 4px 0 0;height:100%;"></div>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <div style="flex:1;text-align:center;font-size:10px;color:#64748b;">Apr</div>
+              <div style="flex:1;text-align:center;font-size:10px;color:#64748b;">May</div>
+              <div style="flex:1;text-align:center;font-size:10px;color:#64748b;">Jun</div>
+              <div style="flex:1;text-align:center;font-size:10px;color:#64748b;">Jul</div>
+              <div style="flex:1;text-align:center;font-size:10px;color:#64748b;">Aug</div>
+              <div style="flex:1;text-align:center;font-size:10px;color:#64748b;">Sep</div>
+            </div>
+          </div>
+          <div class="stat-card"><div style="font-weight:700;color:#0f172a;margin-bottom:10px;">✅ Clearances Awaiting Signature</div>
+            <div style="font-size:13px;">
+              <div style="padding:10px;border:1px solid #fde68a;border-radius:8px;background:#fffbeb;margin-bottom:8px;">
+                <div style="font-weight:600;">Rosa Aquino</div>
+                <div style="font-size:12px;color:#64748b;">Business Clearance · BP-2026-000347</div>
+                <button style="margin-top:6px;background:#b45309;color:white;border:none;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Sign & Approve</button>
+              </div>
+              <div style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;">
+                <div style="font-weight:600;">Juan dela Cruz</div>
+                <div style="font-size:12px;color:#64748b;">Barangay Clearance · BRG-2026-004523</div>
+                <button style="margin-top:6px;background:#b45309;color:white;border:none;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">Sign & Approve</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function switchRole(role, btn) {
+  // Hide all
+  document.querySelectorAll('.role-config').forEach(el => el.classList.remove('visible'));
+  document.querySelectorAll('.role-btn').forEach(el => el.classList.remove('active'));
+  // Show selected
+  document.getElementById('role-' + role).classList.add('visible');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BMS Design System</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --bms-blue-900: #0f2a4a;
+      --bms-blue-800: #1a3a5c;
+      --bms-blue-700: #1e4d7b;
+      --bms-blue-600: #2563a8;
+      --bms-blue-500: #3b82c4;
+      --bms-blue-400: #60a5da;
+      --bms-blue-100: #dbeafe;
+      --bms-gold-600: #b45309;
+      --bms-gold-500: #d97706;
+      --bms-gold-400: #f59e0b;
+      --bms-gold-100: #fef3c7;
+      --bms-green-700: #15803d;
+      --bms-green-500: #22c55e;
+      --bms-green-100: #dcfce7;
+      --bms-red-700: #b91c1c;
+      --bms-red-500: #ef4444;
+      --bms-red-100: #fee2e2;
+      --bms-orange-600: #c2410c;
+      --bms-orange-400: #f97316;
+      --bms-orange-100: #ffedd5;
+      --bms-slate-900: #0f172a;
+      --bms-slate-700: #334155;
+      --bms-slate-500: #64748b;
+      --bms-slate-300: #cbd5e1;
+      --bms-slate-100: #f1f5f9;
+      --bms-white: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f8fafc; color: #0f172a; }
+
+    .section { padding: 40px; border-bottom: 1px solid #e2e8f0; }
+    .section-title { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    .section-sub { font-size: 14px; color: #64748b; margin-bottom: 28px; }
+
+    /* Role pill colors */
+    .role-super-admin { background: #0f2a4a; color: #fff; }
+    .role-admin { background: #1e4d7b; color: #fff; }
+    .role-staff { background: #2563a8; color: #fff; }
+    .role-citizen { background: #15803d; color: #fff; }
+    .role-non-citizen { background: #64748b; color: #fff; }
+    .role-brgy-official { background: #b45309; color: #fff; }
+
+    /* Status badges */
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    .badge-pending { background: #fef3c7; color: #b45309; }
+    .badge-pending .badge-dot { background: #f59e0b; }
+    .badge-processing { background: #dbeafe; color: #1e4d7b; }
+    .badge-processing .badge-dot { background: #3b82c4; }
+    .badge-approved { background: #dcfce7; color: #15803d; }
+    .badge-approved .badge-dot { background: #22c55e; }
+    .badge-rejected { background: #fee2e2; color: #b91c1c; }
+    .badge-rejected .badge-dot { background: #ef4444; }
+    .badge-escalated { background: #ffedd5; color: #c2410c; }
+    .badge-escalated .badge-dot { background: #f97316; }
+    .badge-completed { background: #e0e7ff; color: #3730a3; }
+    .badge-completed .badge-dot { background: #6366f1; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+    .btn-primary { background: #2563a8; color: #fff; }
+    .btn-primary:hover { background: #1e4d7b; }
+    .btn-secondary { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+    .btn-secondary:hover { background: #e2e8f0; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .btn-danger:hover { background: #fca5a5; }
+    .btn-ghost { background: transparent; color: #2563a8; padding: 10px 16px; }
+    .btn-ghost:hover { background: #dbeafe; }
+    .btn-disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+    .btn-permission-gated { background: #fef3c7; color: #b45309; border: 1px dashed #f59e0b; cursor: not-allowed; }
+
+    /* Color swatch */
+    .swatch { width: 64px; height: 64px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.08); }
+    .swatch-label { font-size: 11px; color: #64748b; margin-top: 6px; font-weight: 500; }
+    .swatch-hex { font-size: 10px; color: #94a3b8; font-family: monospace; }
+
+    /* Typography specimens */
+    .type-specimen { padding: 16px; background: white; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 12px; }
+
+    /* Nav demo */
+    .nav-demo { border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+    .nav-sidebar { width: 220px; min-height: 400px; padding: 20px 0; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.75); cursor: pointer; transition: 0.15s; }
+    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.15); color: #fff; }
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .nav-logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.12); margin-bottom: 12px; }
+
+    /* Notification banner */
+    .notif { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; border-radius: 10px; margin-bottom: 10px; }
+    .notif-icon { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; }
+    .notif-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .notif-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+    .notif-warn { background: #fffbeb; border: 1px solid #fde68a; color: #b45309; }
+    .notif-error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+
+    /* Data table */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th { background: #f8fafc; color: #64748b; font-weight: 600; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 10px 14px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .data-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: middle; }
+    .data-table tr:hover td { background: #f8fafc; }
+
+    /* Input */
+    .form-input { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #0f172a; background: white; transition: 0.15s; }
+    .form-input:focus { outline: none; border-color: #2563a8; box-shadow: 0 0 0 3px rgba(37,99,168,0.12); }
+    .form-label { font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px; display: block; }
+    .form-help { font-size: 12px; color: #64748b; margin-top: 4px; }
+    .form-error { font-size: 12px; color: #b91c1c; margin-top: 4px; }
+
+    /* WCAG focus ring */
+    .focus-ring:focus { outline: 3px solid #2563a8; outline-offset: 2px; }
+
+    /* Grid helpers */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .flex-wrap { display: flex; flex-wrap: wrap; gap: 12px; }
+    .flex-col { display: flex; flex-direction: column; }
+    .flex-row { display: flex; align-items: center; gap: 12px; }
+    .card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div style="background: linear-gradient(135deg, #0f2a4a 0%, #1e4d7b 50%, #2563a8 100%); color: white; padding: 48px 40px 40px;">
+  <div style="display:flex; align-items:center; gap:16px; margin-bottom:12px;">
+    <div style="width:48px;height:48px;background:rgba(255,255,255,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🏛️</div>
+    <div>
+      <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;opacity:0.6;margin-bottom:2px;">Barangay Management System</div>
+      <h1 style="font-size:28px;font-weight:800;letter-spacing:-0.5px;">BMS Design System v1.0</h1>
+    </div>
+  </div>
+  <p style="opacity:0.7;font-size:15px;max-width:680px;line-height:1.6;">A unified, WCAG AA–compliant design language for the six-role government portal. Includes color tokens, typography scale, navigation variants, reusable components, and accessibility guidelines.</p>
+  <div style="display:flex;gap:8px;margin-top:20px;">
+    <span style="background:rgba(255,255,255,0.15);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">WCAG AA</span>
+    <span style="background:rgba(255,255,255,0.15);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">6 User Roles</span>
+    <span style="background:rgba(255,255,255,0.15);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">Role-Based Nav</span>
+    <span style="background:rgba(255,255,255,0.15);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">Reusable Components</span>
+  </div>
+</div>
+
+<!-- ===== SECTION 1: ROLE COLOR SYSTEM ===== -->
+<div class="section">
+  <div class="section-title">1. Role Identity & Color System</div>
+  <div class="section-sub">Each role has a dedicated color identity for sidebar theming, avatars, and permission indicators. All text/background combinations meet WCAG AA (≥4.5:1 contrast).</div>
+
+  <div class="grid-3" style="margin-bottom:32px;">
+
+    <!-- Super Admin -->
+    <div class="card" style="border-top:4px solid #0f2a4a;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="width:40px;height:40px;background:#0f2a4a;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🔐</div>
+        <div>
+          <div style="font-weight:700;color:#0f172a;">Super Admin</div>
+          <div style="font-size:12px;color:#64748b;">System-wide access</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <div><div class="swatch" style="background:#0f2a4a;"></div><div class="swatch-label">Primary</div><div class="swatch-hex">#0f2a4a</div></div>
+        <div><div class="swatch" style="background:#1a3a5c;"></div><div class="swatch-label">Hover</div><div class="swatch-hex">#1a3a5c</div></div>
+        <div><div class="swatch" style="background:#dbeafe;"></div><div class="swatch-label">Tint</div><div class="swatch-hex">#dbeafe</div></div>
+      </div>
+      <span class="role-super-admin" style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">SUPER ADMIN</span>
+    </div>
+
+    <!-- Admin -->
+    <div class="card" style="border-top:4px solid #1e4d7b;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="width:40px;height:40px;background:#1e4d7b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🏢</div>
+        <div>
+          <div style="font-weight:700;color:#0f172a;">Admin</div>
+          <div style="font-size:12px;color:#64748b;">Department-level management</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <div><div class="swatch" style="background:#1e4d7b;"></div><div class="swatch-label">Primary</div><div class="swatch-hex">#1e4d7b</div></div>
+        <div><div class="swatch" style="background:#2563a8;"></div><div class="swatch-label">Hover</div><div class="swatch-hex">#2563a8</div></div>
+        <div><div class="swatch" style="background:#eff6ff;"></div><div class="swatch-label">Tint</div><div class="swatch-hex">#eff6ff</div></div>
+      </div>
+      <span class="role-admin" style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">ADMIN</span>
+    </div>
+
+    <!-- Staff -->
+    <div class="card" style="border-top:4px solid #2563a8;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="width:40px;height:40px;background:#2563a8;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">👩‍💼</div>
+        <div>
+          <div style="font-weight:700;color:#0f172a;">Staff</div>
+          <div style="font-size:12px;color:#64748b;">Daily operations</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <div><div class="swatch" style="background:#2563a8;"></div><div class="swatch-label">Primary</div><div class="swatch-hex">#2563a8</div></div>
+        <div><div class="swatch" style="background:#3b82c4;"></div><div class="swatch-label">Hover</div><div class="swatch-hex">#3b82c4</div></div>
+        <div><div class="swatch" style="background:#e0f2fe;"></div><div class="swatch-label">Tint</div><div class="swatch-hex">#e0f2fe</div></div>
+      </div>
+      <span class="role-staff" style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">STAFF</span>
+    </div>
+
+    <!-- Citizen -->
+    <div class="card" style="border-top:4px solid #15803d;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="width:40px;height:40px;background:#15803d;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🏠</div>
+        <div>
+          <div style="font-weight:700;color:#0f172a;">Citizen</div>
+          <div style="font-size:12px;color:#64748b;">Public-facing portal</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <div><div class="swatch" style="background:#15803d;"></div><div class="swatch-label">Primary</div><div class="swatch-hex">#15803d</div></div>
+        <div><div class="swatch" style="background:#16a34a;"></div><div class="swatch-label">Hover</div><div class="swatch-hex">#16a34a</div></div>
+        <div><div class="swatch" style="background:#f0fdf4;"></div><div class="swatch-label">Tint</div><div class="swatch-hex">#f0fdf4</div></div>
+      </div>
+      <span class="role-citizen" style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">CITIZEN</span>
+    </div>
+
+    <!-- Non-Citizen -->
+    <div class="card" style="border-top:4px solid #64748b;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="width:40px;height:40px;background:#64748b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🌐</div>
+        <div>
+          <div style="font-weight:700;color:#0f172a;">Non-Citizen</div>
+          <div style="font-size:12px;color:#64748b;">Guest / public view</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <div><div class="swatch" style="background:#64748b;"></div><div class="swatch-label">Primary</div><div class="swatch-hex">#64748b</div></div>
+        <div><div class="swatch" style="background:#475569;"></div><div class="swatch-label">Hover</div><div class="swatch-hex">#475569</div></div>
+        <div><div class="swatch" style="background:#f8fafc;"></div><div class="swatch-label">Tint</div><div class="swatch-hex">#f8fafc</div></div>
+      </div>
+      <span class="role-non-citizen" style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">NON-CITIZEN</span>
+    </div>
+
+    <!-- Brgy Official -->
+    <div class="card" style="border-top:4px solid #b45309;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="width:40px;height:40px;background:#b45309;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">⭐</div>
+        <div>
+          <div style="font-weight:700;color:#0f172a;">Brgy Official</div>
+          <div style="font-size:12px;color:#64748b;">Executive / legislative</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <div><div class="swatch" style="background:#b45309;"></div><div class="swatch-label">Primary</div><div class="swatch-hex">#b45309</div></div>
+        <div><div class="swatch" style="background:#d97706;"></div><div class="swatch-label">Hover</div><div class="swatch-hex">#d97706</div></div>
+        <div><div class="swatch" style="background:#fef3c7;"></div><div class="swatch-label">Tint</div><div class="swatch-hex">#fef3c7</div></div>
+      </div>
+      <span class="role-brgy-official" style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">BRGY OFFICIAL</span>
+    </div>
+  </div>
+
+  <!-- Semantic palette -->
+  <div style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:12px;">Semantic Palette — Status & Feedback</div>
+  <div class="flex-wrap">
+    <div><div class="swatch" style="background:#22c55e;"></div><div class="swatch-label">Success</div><div class="swatch-hex">#22c55e</div></div>
+    <div><div class="swatch" style="background:#ef4444;"></div><div class="swatch-label">Danger</div><div class="swatch-hex">#ef4444</div></div>
+    <div><div class="swatch" style="background:#f59e0b;"></div><div class="swatch-label">Warning</div><div class="swatch-hex">#f59e0b</div></div>
+    <div><div class="swatch" style="background:#3b82f6;"></div><div class="swatch-label">Info</div><div class="swatch-hex">#3b82f6</div></div>
+    <div><div class="swatch" style="background:#8b5cf6;"></div><div class="swatch-label">Escalated</div><div class="swatch-hex">#8b5cf6</div></div>
+    <div><div class="swatch" style="background:#f97316;"></div><div class="swatch-label">Urgent</div><div class="swatch-hex">#f97316</div></div>
+    <div style="margin-left:24px;"><div class="swatch" style="background:#0f172a;"></div><div class="swatch-label">Text-900</div><div class="swatch-hex">#0f172a</div></div>
+    <div><div class="swatch" style="background:#334155;"></div><div class="swatch-label">Text-700</div><div class="swatch-hex">#334155</div></div>
+    <div><div class="swatch" style="background:#64748b;"></div><div class="swatch-label">Text-500</div><div class="swatch-hex">#64748b</div></div>
+    <div><div class="swatch" style="background:#cbd5e1;"></div><div class="swatch-label">Border</div><div class="swatch-hex">#cbd5e1</div></div>
+    <div><div class="swatch" style="background:#f1f5f9;"></div><div class="swatch-label">Surface</div><div class="swatch-hex">#f1f5f9</div></div>
+    <div><div class="swatch" style="background:#ffffff;border:1px solid #e2e8f0;"></div><div class="swatch-label">White</div><div class="swatch-hex">#ffffff</div></div>
+  </div>
+</div>
+
+<!-- ===== SECTION 2: TYPOGRAPHY ===== -->
+<div class="section">
+  <div class="section-title">2. Typography Hierarchy</div>
+  <div class="section-sub">System stack: Segoe UI → system-ui → -apple-system. Scale follows a 1.25 modular ratio for coherent hierarchy. Min 16px body text for readability.</div>
+
+  <div class="type-specimen"><span style="font-size:36px;font-weight:800;color:#0f172a;letter-spacing:-1px;">Display — Page Title 36px / 800</span></div>
+  <div class="type-specimen"><span style="font-size:28px;font-weight:700;color:#0f172a;letter-spacing:-0.5px;">Heading 1 — Section 28px / 700</span></div>
+  <div class="type-specimen"><span style="font-size:22px;font-weight:700;color:#0f172a;">Heading 2 — Card Title 22px / 700</span></div>
+  <div class="type-specimen"><span style="font-size:18px;font-weight:600;color:#0f172a;">Heading 3 — Sub-section 18px / 600</span></div>
+  <div class="type-specimen"><span style="font-size:16px;font-weight:500;color:#334155;">Body Large — Primary content 16px / 500</span></div>
+  <div class="type-specimen"><span style="font-size:14px;font-weight:400;color:#334155;">Body — Table cells, form labels 14px / 400. The quick brown fox jumps over the lazy dog.</span></div>
+  <div class="type-specimen"><span style="font-size:13px;font-weight:400;color:#64748b;">Body Small — Helper text, captions 13px / 400. Used for secondary metadata.</span></div>
+  <div class="type-specimen"><span style="font-size:11px;font-weight:600;color:#64748b;letter-spacing:0.08em;text-transform:uppercase;">Overline — Table headers, labels 11px / 600 UPPERCASE</span></div>
+  <div class="type-specimen"><code style="font-size:13px;font-family:'Courier New',monospace;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#1e4d7b;">Mono — Reference IDs, codes, system values 13px</code></div>
+
+  <div style="margin-top:24px;padding:20px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;">
+    <div style="font-weight:700;color:#b45309;margin-bottom:6px;">⚠️ Accessibility Rules</div>
+    <ul style="font-size:13px;color:#78350f;line-height:1.7;list-style:disc;padding-left:18px;">
+      <li>Never use font-size below 12px (13px minimum for non-decorative text)</li>
+      <li>Body text minimum 16px for paragraph content — improves literacy for elderly residents</li>
+      <li>Line-height minimum 1.5 for body text (WCAG 1.4.8)</li>
+      <li>Letter-spacing at least 0.12× font-size for body text</li>
+      <li>Avoid italics for text longer than one sentence</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== SECTION 3: STATUS BADGES ===== -->
+<div class="section">
+  <div class="section-title">3. Status Badges — Request Tracking</div>
+  <div class="section-sub">Used across all request/ticket tracking. Color-coded with an accessible indicator dot and text label (never color alone — WCAG 1.4.1).</div>
+  <div class="flex-wrap" style="margin-bottom:24px;">
+    <span class="badge badge-pending"><span class="badge-dot"></span>Pending</span>
+    <span class="badge badge-processing"><span class="badge-dot"></span>Processing</span>
+    <span class="badge badge-approved"><span class="badge-dot"></span>Approved</span>
+    <span class="badge badge-rejected"><span class="badge-dot"></span>Rejected</span>
+    <span class="badge badge-escalated"><span class="badge-dot"></span>Escalated</span>
+    <span class="badge badge-completed"><span class="badge-dot"></span>Completed</span>
+  </div>
+  <div style="font-size:13px;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;">
+    <strong style="color:#334155;">Usage rule:</strong> Each badge uses a colored dot + colored text on a matching light background. Screen-reader text includes status label via <code>aria-label</code>.
+    Example: <code>&lt;span class="badge badge-pending" aria-label="Status: Pending"&gt;</code>
+  </div>
+</div>
+
+<!-- ===== SECTION 4: BUTTONS ===== -->
+<div class="section">
+  <div class="section-title">4. Button System & Permission Gates</div>
+  <div class="section-sub">Seven button variants. Permission-gated buttons are visually distinct (dashed amber border) and show a tooltip explaining why access is restricted.</div>
+  <div class="flex-wrap" style="margin-bottom:20px;">
+    <button class="btn btn-primary">✓ Submit Request</button>
+    <button class="btn btn-secondary">⬇ Export Report</button>
+    <button class="btn btn-danger">✕ Reject Application</button>
+    <button class="btn btn-ghost">← Back</button>
+    <button class="btn btn-disabled" disabled>⊘ Approve (No Permission)</button>
+    <button class="btn btn-permission-gated" title="Admin role required" aria-label="Delete Record — requires Admin or Super Admin role">🔒 Delete Record</button>
+  </div>
+  <div style="font-size:13px;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;">
+    <strong style="color:#334155;">Permission gate rule:</strong> When a user's role lacks permission, buttons render as <span style="background:#fef3c7;color:#b45309;padding:1px 6px;border-radius:4px;border:1px dashed #f59e0b;font-size:12px;font-weight:600;">🔒 gated style</span> with a tooltip. They are focusable but non-clickable (aria-disabled). This prevents "hidden elements" that disorient screen readers.
+  </div>
+</div>
+
+<!-- ===== SECTION 5: NOTIFICATION BANNERS ===== -->
+<div class="section">
+  <div class="section-title">5. Notification Banners</div>
+  <div class="section-sub">System-wide alerts, inline form validation notices, and contextual guidance. Auto-dismiss with countdown for non-critical types.</div>
+  <div class="notif notif-info">
+    <svg class="notif-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+    <div><div style="font-weight:600;margin-bottom:2px;">System Maintenance Scheduled</div><div style="font-size:13px;opacity:0.85;">The portal will be offline for maintenance on September 25, 2026 from 10PM–12AM. Please save your work.</div></div>
+  </div>
+  <div class="notif notif-success">
+    <svg class="notif-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+    <div><div style="font-weight:600;margin-bottom:2px;">Application Approved Successfully</div><div style="font-size:13px;opacity:0.85;">Your Barangay Clearance (Ref: BRG-2026-004521) has been approved. Pick up at Window 3 within 5 business days.</div></div>
+  </div>
+  <div class="notif notif-warn">
+    <svg class="notif-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+    <div><div style="font-weight:600;margin-bottom:2px;">Document Expiring Soon</div><div style="font-size:13px;opacity:0.85;">Your Barangay ID expires in 14 days. Please visit the office to renew before October 5, 2026.</div></div>
+  </div>
+  <div class="notif notif-error">
+    <svg class="notif-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+    <div><div style="font-weight:600;margin-bottom:2px;">Request Rejected</div><div style="font-size:13px;opacity:0.85;">Your Business Permit renewal (Ref: BP-2026-00128) was rejected. Reason: Incomplete documentary requirements. Please resubmit.</div></div>
+  </div>
+</div>
+
+<!-- ===== SECTION 6: FORM COMPONENTS ===== -->
+<div class="section">
+  <div class="section-title">6. Form Components</div>
+  <div class="section-sub">All inputs have visible focus rings (3px solid primary — WCAG 2.4.7), error states, helper text, and associated labels (WCAG 1.3.1). Modal forms use a persistent overlay trap.</div>
+  <div class="grid-2">
+    <div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label" for="demo-name">Full Name <span style="color:#ef4444;">*</span></label>
+        <input class="form-input focus-ring" id="demo-name" type="text" placeholder="e.g. Juan dela Cruz" />
+        <div class="form-help">As it appears on your valid government ID</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label" for="demo-type">Request Type <span style="color:#ef4444;">*</span></label>
+        <select class="form-input focus-ring" id="demo-type">
+          <option value="">Select request type...</option>
+          <option>Barangay Clearance</option>
+          <option>Certificate of Residency</option>
+          <option>Indigency Certificate</option>
+          <option>Business Permit</option>
+        </select>
+        <div class="form-help">Choose the document you need</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label" for="demo-purpose">Purpose <span style="color:#ef4444;">*</span></label>
+        <textarea class="form-input focus-ring" id="demo-purpose" rows="3" placeholder="State the purpose of your request..."></textarea>
+      </div>
+    </div>
+    <div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label" for="demo-contact">Contact Number <span style="color:#ef4444;">*</span></label>
+        <input class="form-input focus-ring" id="demo-contact" type="tel" placeholder="+63 9XX XXX XXXX" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label" for="demo-email-err">Email Address</label>
+        <input class="form-input" id="demo-email-err" type="email" value="invalid-email" style="border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.12);" />
+        <div class="form-error">⚠ Please enter a valid email address</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label">Upload Supporting Document</label>
+        <div style="border:2px dashed #cbd5e1;border-radius:8px;padding:24px;text-align:center;color:#64748b;font-size:13px;cursor:pointer;">
+          <div style="font-size:24px;margin-bottom:6px;">📎</div>
+          <div>Drag & drop or <span style="color:#2563a8;font-weight:600;">browse files</span></div>
+          <div style="font-size:11px;margin-top:4px;">PDF, JPG, PNG — max 5MB</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 7: DATA TABLE ===== -->
+<div class="section">
+  <div class="section-title">7. Data Table with Filter/Sort</div>
+  <div class="section-sub">Used in admin/staff dashboards for queue management. Supports column sorting, row-level actions, inline status badges, and bulk selection. ARIA roles: grid, row, columnheader, gridcell.</div>
+
+  <!-- Filter bar -->
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+    <input class="form-input" style="width:220px;" type="search" placeholder="🔍  Search requests..." />
+    <select class="form-input" style="width:160px;">
+      <option>All Statuses</option>
+      <option>Pending</option>
+      <option>Processing</option>
+      <option>Approved</option>
+    </select>
+    <select class="form-input" style="width:180px;">
+      <option>All Request Types</option>
+      <option>Barangay Clearance</option>
+      <option>Indigency Cert.</option>
+    </select>
+    <button class="btn btn-secondary" style="font-size:13px;padding:8px 14px;">⬇ Export CSV</button>
+    <button class="btn btn-primary" style="font-size:13px;padding:8px 14px;">+ New Request</button>
+  </div>
+
+  <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;">
+    <table class="data-table" role="grid" aria-label="Citizen Requests Queue">
+      <thead>
+        <tr>
+          <th style="width:40px;"><input type="checkbox" aria-label="Select all" /></th>
+          <th>Reference No. ↕</th>
+          <th>Applicant Name ↕</th>
+          <th>Request Type ↕</th>
+          <th>Date Filed ↓</th>
+          <th>Assigned To</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td><code style="font-size:12px;color:#1e4d7b;">BRG-2026-004523</code></td>
+          <td><div style="font-weight:500;">Maria Santos</div><div style="font-size:11px;color:#64748b;">Purok 3, Zone A</div></td>
+          <td>Barangay Clearance</td>
+          <td>Sep 20, 2026</td>
+          <td><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;background:#2563a8;border-radius:50%;color:white;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700;">JS</div>J. Santos</div></td>
+          <td><span class="badge badge-processing"><span class="badge-dot"></span>Processing</span></td>
+          <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;">View</button><button class="btn btn-secondary" style="padding:4px 10px;font-size:12px;">Approve</button></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td><code style="font-size:12px;color:#1e4d7b;">IND-2026-001892</code></td>
+          <td><div style="font-weight:500;">Pedro Reyes</div><div style="font-size:11px;color:#64748b;">Purok 1, Zone B</div></td>
+          <td>Indigency Certificate</td>
+          <td>Sep 19, 2026</td>
+          <td><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;background:#15803d;border-radius:50%;color:white;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700;">AR</div>A. Ramos</div></td>
+          <td><span class="badge badge-pending"><span class="badge-dot"></span>Pending</span></td>
+          <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;">View</button><button class="btn btn-secondary" style="padding:4px 10px;font-size:12px;">Assign</button></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td><code style="font-size:12px;color:#1e4d7b;">BP-2026-000347</code></td>
+          <td><div style="font-weight:500;">Rosa Aquino</div><div style="font-size:11px;color:#64748b;">Commercial Zone</div></td>
+          <td>Business Permit</td>
+          <td>Sep 18, 2026</td>
+          <td><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;background:#b45309;border-radius:50%;color:white;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700;">MC</div>M. Cruz</div></td>
+          <td><span class="badge badge-escalated"><span class="badge-dot"></span>Escalated</span></td>
+          <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;">View</button><button class="btn btn-danger" style="padding:4px 10px;font-size:12px;">Escalate</button></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" /></td>
+          <td><code style="font-size:12px;color:#1e4d7b;">BRG-2026-004510</code></td>
+          <td><div style="font-weight:500;">Carlos Bautista</div><div style="font-size:11px;color:#64748b;">Purok 5, Zone C</div></td>
+          <td>Barangay Clearance</td>
+          <td>Sep 17, 2026</td>
+          <td><div style="display:flex;align-items:center;gap:6px;"><div style="width:24px;height:24px;background:#2563a8;border-radius:50%;color:white;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700;">JS</div>J. Santos</div></td>
+          <td><span class="badge badge-approved"><span class="badge-dot"></span>Approved</span></td>
+          <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;">View</button><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;">Print</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="display:flex;align-items:center;justify-content:between;padding:12px 16px;border-top:1px solid #f1f5f9;font-size:13px;color:#64748b;gap:16px;">
+      <span>Showing 4 of 287 results</span>
+      <div style="display:flex;gap:4px;margin-left:auto;">
+        <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;">← Prev</button>
+        <button class="btn btn-primary" style="padding:6px 12px;font-size:12px;">1</button>
+        <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;">2</button>
+        <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;">3</button>
+        <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 8: ACCESSIBILITY CHECKLIST ===== -->
+<div class="section">
+  <div class="section-title">8. WCAG AA Accessibility Guidelines</div>
+  <div class="section-sub">All components are designed to meet WCAG 2.1 Level AA. The following checklist should be validated before shipping any new component.</div>
+  <div class="grid-2">
+    <div>
+      <div style="font-weight:700;color:#0f172a;margin-bottom:12px;">✅ Perceivable</div>
+      <div style="font-size:13px;line-height:2;color:#334155;">
+        <div>✓ 4.5:1 minimum contrast for normal text (1.4.3)</div>
+        <div>✓ 3:1 minimum contrast for large text & UI (1.4.11)</div>
+        <div>✓ Status never conveyed by color alone — use icon + label (1.4.1)</div>
+        <div>✓ All images have alt text; decorative images alt="" (1.1.1)</div>
+        <div>✓ Form labels programmatically associated (1.3.1)</div>
+        <div>✓ Focus order is logical (1.3.2)</div>
+        <div>✓ Text resizable to 200% without loss of content (1.4.4)</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-weight:700;color:#0f172a;margin-bottom:12px;">✅ Operable & Understandable</div>
+      <div style="font-size:13px;line-height:2;color:#334155;">
+        <div>✓ All interactive elements keyboard-accessible (2.1.1)</div>
+        <div>✓ Visible focus indicator — 3px solid primary (2.4.7)</div>
+        <div>✓ Skip navigation link at page top (2.4.1)</div>
+        <div>✓ Descriptive link text — no "click here" (2.4.6)</div>
+        <div>✓ Error messages identify field and suggest correction (3.3.3)</div>
+        <div>✓ Language identified in HTML lang attribute (3.1.1)</div>
+        <div>✓ Modal dialogs trap focus and restore on close (2.1.2)</div>
+        <div>✓ Timeout warnings with extension option (2.2.1)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 9: MODAL FORM ===== -->
+<div class="section">
+  <div class="section-title">9. Modal Form — Clearance Request</div>
+  <div class="section-sub">Modal dialogs use role="dialog", aria-modal="true", aria-labelledby, focus trap, and Escape key dismiss. Overlay is 50% opacity dark scrim.</div>
+  <div style="position:relative;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;min-height:360px;">
+    <!-- Scrim -->
+    <div style="position:absolute;inset:0;background:rgba(15,23,42,0.5);z-index:10;"></div>
+    <!-- Dummy bg content -->
+    <div style="padding:24px;filter:blur(2px);">
+      <div style="height:20px;background:#e2e8f0;border-radius:4px;width:60%;margin-bottom:12px;"></div>
+      <div style="height:14px;background:#e2e8f0;border-radius:4px;width:90%;margin-bottom:8px;"></div>
+      <div style="height:14px;background:#e2e8f0;border-radius:4px;width:75%;"></div>
+    </div>
+    <!-- Modal -->
+    <div role="dialog" aria-modal="true" aria-labelledby="modal-title" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;background:white;border-radius:16px;padding:28px;width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div>
+          <div id="modal-title" style="font-size:18px;font-weight:700;color:#0f172a;">Request Barangay Clearance</div>
+          <div style="font-size:13px;color:#64748b;">Fill in all required fields marked with *</div>
+        </div>
+        <button aria-label="Close dialog" style="width:32px;height:32px;background:#f1f5f9;border:none;border-radius:8px;cursor:pointer;font-size:16px;">✕</button>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label class="form-label" for="m-name">Full Name *</label>
+        <input class="form-input" id="m-name" type="text" value="Maria Santos" />
+      </div>
+      <div style="margin-bottom:14px;">
+        <label class="form-label" for="m-purpose">Purpose *</label>
+        <select class="form-input" id="m-purpose">
+          <option selected>Employment Requirements</option>
+          <option>Loan Application</option>
+          <option>Travel Abroad</option>
+        </select>
+      </div>
+      <div style="margin-bottom:20px;">
+        <label class="form-label" for="m-date">Needed By</label>
+        <input class="form-input" id="m-date" type="date" value="2026-09-28" />
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button class="btn btn-secondary">Cancel</button>
+        <button class="btn btn-primary">Submit Request →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="padding:24px 40px;background:#0f172a;color:rgba(255,255,255,0.5);font-size:12px;display:flex;justify-content:space-between;align-items:center;">
+  <span>BMS Design System v1.0 · Barangay Management System · WCAG 2.1 AA</span>
+  <span>6 User Roles · September 2026</span>
+</div>
+
+</body>
+</html>

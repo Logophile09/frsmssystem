@@ -1,11 +1,15 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import { useAuth } from './context/AuthContext';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import VerifyOtp from './pages/VerifyOtp';
 import Dashboard from './pages/Dashboard';
+import CitizenDashboard from './pages/CitizenDashboard';
+import OfficialDashboard from './pages/OfficialDashboard';
+import PublicPortal from './pages/PublicPortal';
 import Incidents from './pages/Incidents';
 import PostIncidentReport from './pages/PostIncidentReport';
 import Personnel from './pages/Personnel';
@@ -22,6 +26,15 @@ import Violations from './pages/Violations';
 import Reports from './pages/Reports';
 import StaffAccounts from './pages/StaffAccounts';
 
+function SmartDashboard() {
+  const { profile } = useAuth();
+  const role = profile?.role;
+  if (role === 'citizen') return <CitizenDashboard />;
+  if (role === 'brgy_official') return <OfficialDashboard />;
+  if (role === 'non_citizen') return <PublicPortal />;
+  return <Dashboard />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -37,7 +50,10 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={<SmartDashboard />} />
+        <Route path="/citizen-portal" element={<CitizenDashboard />} />
+        <Route path="/official-portal" element={<OfficialDashboard />} />
+        <Route path="/public-portal" element={<PublicPortal />} />
         <Route path="/incidents" element={<Incidents />} />
         <Route path="/post-incident-reports" element={<PostIncidentReport />} />
         <Route path="/personnel" element={<Personnel />} />
