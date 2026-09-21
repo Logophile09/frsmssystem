@@ -2,13 +2,20 @@
  * Transparent, rule-based false-alarm scoring engine.
  *
  * This is a client-side mirror of backend/src/lib/falseAlarmScoring.ts,
- * used ONLY by the offline demo dataset (demoData.ts) so that "Demo Data"
- * mode runs the exact same real scoring rules as the live backend instead
+ * used by the offline demo dataset (demoData.ts) so "Demo Data" mode runs
+ * the exact same real scoring rules -- including any weights saved via
+ * the "Train Your AI" panel (components/TrainYourAiPanel.tsx) -- instead
  * of faking numbers. If you change the rules here, change them in the
- * backend file too (see False_Alarm_AI_Module_Notes.txt for the source
- * spec both files implement).
+ * backend file too.
  *
- * Rules:
+ * The weights below are the DEFAULTS and the only "model parameters"
+ * this engine has; they're user-tunable at runtime (see
+ * lib/aiSettings.ts and backend/src/routes/aiSettings.ts). Nothing here
+ * becomes a black box just because it's adjustable: every weight change
+ * is still a plain arithmetic rule, and every score still comes back
+ * with the exact factors that produced it.
+ *
+ * Base rules (see False_Alarm_AI_Module_Notes.txt for the source spec):
  *   Anonymous Caller                +20
  *   Repeated False Alarm Location   +20
  *   No Smoke Sensor Trigger         +20
@@ -18,18 +25,60 @@
  *   Smoke Sensor Triggered          -40
  *   Fire Personnel Confirm Smoke    -50
  *
- * Score runs 0-100:
- *   0  - 29  : Very Likely Real Fire
- *   30 - 49  : Needs Review
- *   50 - 69  : Likely False Alarm
- *   70 - 100 : Confirmed False Alarm
+ * Score runs 0-100, split into four bands by `thresholds`:
+ *   0  - veryLikelyRealMax  : Very Likely Real Fire
+ *   ..  - needsReviewMax    : Needs Review
+ *   ..  - likelyFalseMax    : Likely False Alarm
+ *   ..  - 100               : Confirmed False Alarm
  */
 
+export interface ScoreWeights {
+  anonymousCaller: number;
+  repeatedFalseAlarmLocation: number;
+  noSmokeSensorTrigger: number;
+  smokeSensorTriggered: number;
+  singleCaller: number;
+  multipleCallers: number;
+  nightTime: number;
+  firePersonnelConfirmedSmoke: number;
+}
+
+export interface ScoreThresholds {
+  /** Scores 0..this (inclusive) are "very_likely_real" */
+  veryLikelyRealMax: number;
+  /** Scores above veryLikelyRealMax, up to this, are "needs_review" */
+  needsReviewMax: number;
+  /** Scores above needsReviewMax, up to this, are "likely_false"; above it, "confirmed_false" */
+  likelyFalseMax: number;
+}
+
+export const DEFAULT_SCORE_WEIGHTS: ScoreWeights = {
+  anonymousCaller: 20,
+  repeatedFalseAlarmLocation: 20,
+  noSmokeSensorTrigger: 20,
+  smokeSensorTriggered: -40,
+  singleCaller: 15,
+  multipleCallers: -20,
+  nightTime: 10,
+  firePersonnelConfirmedSmoke: -50,
+};
+
+export const DEFAULT_SCORE_THRESHOLDS: ScoreThresholds = {
+  veryLikelyRealMax: 29,
+  needsReviewMax: 49,
+  likelyFalseMax: 69,
+};
+
 export interface ScoreInput {
+  /** Caller did not give / could not be verified with a name+number */
   isAnonymousCaller?: boolean;
+  /** This location has one or more prior CONFIRMED false alarms */
   repeatedFalseAlarmLocation?: boolean;
+  /** IoT smoke sensor at the location fired */
   smokeSensorTriggered?: boolean;
+  /** How many separate people called this incident in */
   callerCount?: number;
+  /** Fire personnel on-scene / dispatch have visually confirmed smoke */
   firePersonnelConfirmedSmoke?: boolean;
   reported_at?: string | Date;
 }
@@ -42,56 +91,64 @@ export interface ScoreResult {
   factors: string[];
 }
 
-export function computeFalseAlarmScore(input: ScoreInput): ScoreResult {
+function signed(n: number): string {
+  return n >= 0 ? `+${n}` : `${n}`;
+}
+
+export function computeFalseAlarmScore(
+  input: ScoreInput,
+  weights: ScoreWeights = DEFAULT_SCORE_WEIGHTS,
+  thresholds: ScoreThresholds = DEFAULT_SCORE_THRESHOLDS,
+): ScoreResult {
   let score = 0;
   const factors: string[] = [];
 
   const callerCount = input.callerCount ?? 1;
 
   if (input.isAnonymousCaller) {
-    score += 20;
-    factors.push('Anonymous caller: +20');
+    score += weights.anonymousCaller;
+    factors.push(`Anonymous caller: ${signed(weights.anonymousCaller)}`);
   }
 
   if (input.repeatedFalseAlarmLocation) {
-    score += 20;
-    factors.push('Repeated false alarm location: +20');
+    score += weights.repeatedFalseAlarmLocation;
+    factors.push(`Repeated false alarm location: ${signed(weights.repeatedFalseAlarmLocation)}`);
   }
 
   if (!input.smokeSensorTriggered) {
-    score += 20;
-    factors.push('No smoke sensor trigger: +20');
+    score += weights.noSmokeSensorTrigger;
+    factors.push(`No smoke sensor trigger: ${signed(weights.noSmokeSensorTrigger)}`);
   } else {
-    score -= 40;
-    factors.push('Smoke sensor triggered: -40');
+    score += weights.smokeSensorTriggered;
+    factors.push(`Smoke sensor triggered: ${signed(weights.smokeSensorTriggered)}`);
   }
 
   if (callerCount === 1) {
-    score += 15;
-    factors.push('Single caller: +15');
+    score += weights.singleCaller;
+    factors.push(`Single caller: ${signed(weights.singleCaller)}`);
   } else if (callerCount > 1) {
-    score -= 20;
-    factors.push(`Multiple callers (${callerCount}): -20`);
+    score += weights.multipleCallers;
+    factors.push(`Multiple callers (${callerCount}): ${signed(weights.multipleCallers)}`);
   }
 
   const reportedAt = input.reported_at ? new Date(input.reported_at) : new Date();
   const hour = reportedAt.getHours();
   if (hour >= 22 || hour < 5) {
-    score += 10;
-    factors.push('Night time (10pm-5am): +10');
+    score += weights.nightTime;
+    factors.push(`Night time (10pm-5am): ${signed(weights.nightTime)}`);
   }
 
   if (input.firePersonnelConfirmedSmoke) {
-    score -= 50;
-    factors.push('Fire personnel confirmed smoke: -50');
+    score += weights.firePersonnelConfirmedSmoke;
+    factors.push(`Fire personnel confirmed smoke: ${signed(weights.firePersonnelConfirmedSmoke)}`);
   }
 
   score = Math.max(0, Math.min(100, Math.round(score)));
 
   let label: FalseAlarmLabel;
-  if (score <= 29) label = 'very_likely_real';
-  else if (score <= 49) label = 'needs_review';
-  else if (score <= 69) label = 'likely_false';
+  if (score <= thresholds.veryLikelyRealMax) label = 'very_likely_real';
+  else if (score <= thresholds.needsReviewMax) label = 'needs_review';
+  else if (score <= thresholds.likelyFalseMax) label = 'likely_false';
   else label = 'confirmed_false';
 
   if (factors.length === 0) factors.push('No risk factors detected');

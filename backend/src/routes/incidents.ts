@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { AuthedRequest, requireAuth } from '../middleware/auth';
 import { computeFalseAlarmScore } from '../lib/falseAlarmScoring';
+import { getAiSettings } from '../lib/aiSettingsStore';
 
 const router = Router();
 router.use(requireAuth);
@@ -32,20 +33,27 @@ async function scoreForIncident(incident: {
   smoke_sensor_triggered?: boolean;
   fire_personnel_confirmed_smoke?: boolean;
 }) {
-  const { count } = await supabaseAdmin
-    .from('incidents')
-    .select('id', { count: 'exact', head: true })
-    .eq('location', incident.location)
-    .eq('false_alarm_review_status', 'confirmed_false');
+  const [{ count }, aiSettings] = await Promise.all([
+    supabaseAdmin
+      .from('incidents')
+      .select('id', { count: 'exact', head: true })
+      .eq('location', incident.location)
+      .eq('false_alarm_review_status', 'confirmed_false'),
+    getAiSettings(),
+  ]);
 
-  return computeFalseAlarmScore({
-    isAnonymousCaller: incident.is_anonymous_caller ?? false,
-    repeatedFalseAlarmLocation: (count ?? 0) > 0,
-    smokeSensorTriggered: incident.smoke_sensor_triggered ?? false,
-    callerCount: incident.caller_count ?? 1,
-    firePersonnelConfirmedSmoke: incident.fire_personnel_confirmed_smoke ?? false,
-    reported_at: incident.reported_at,
-  });
+  return computeFalseAlarmScore(
+    {
+      isAnonymousCaller: incident.is_anonymous_caller ?? false,
+      repeatedFalseAlarmLocation: (count ?? 0) > 0,
+      smokeSensorTriggered: incident.smoke_sensor_triggered ?? false,
+      callerCount: incident.caller_count ?? 1,
+      firePersonnelConfirmedSmoke: incident.fire_personnel_confirmed_smoke ?? false,
+      reported_at: incident.reported_at,
+    },
+    aiSettings.weights,
+    aiSettings.thresholds,
+  );
 }
 
 router.post('/', async (req: AuthedRequest, res) => {

@@ -12,8 +12,20 @@
 // live data instead -- nothing here gets in the way of that.
 // ---------------------------------------------------------------------
 
-import { computeFalseAlarmScore } from './falseAlarmScoring';
+import { computeFalseAlarmScore, DEFAULT_SCORE_THRESHOLDS, DEFAULT_SCORE_WEIGHTS, ScoreThresholds, ScoreWeights } from './falseAlarmScoring';
 import qcBarangays from './qcBarangays.json';
+
+// ---------------------------------------------------------------------
+// AI Training & Personalization ("Train Your AI") -- demo-mode weights
+// ---------------------------------------------------------------------
+// Mutable in-memory copy of the tunable false-alarm scoring weights, so
+// the "Train Your AI" panel can be exercised fully offline. Mirrors the
+// real backend's ai_settings table: a single active weight set, used by
+// every NEW or edited incident going forward (existing scored incidents
+// are left as-is, same as the live backend).
+let demoAiWeights: ScoreWeights = { ...DEFAULT_SCORE_WEIGHTS };
+let demoAiThresholds: ScoreThresholds = { ...DEFAULT_SCORE_THRESHOLDS };
+let demoAiUpdatedAt: string | null = null;
 
 // Lightweight demo-mode mirrors of backend/src/lib/geofenceEta.ts --
 // just enough to keep the ETA panel populated while offline, without
@@ -152,14 +164,18 @@ function scoreIncident(
   reportedAt: string,
   inputs: { is_anonymous_caller?: boolean; caller_count?: number; smoke_sensor_triggered?: boolean; fire_personnel_confirmed_smoke?: boolean },
 ) {
-  return computeFalseAlarmScore({
-    isAnonymousCaller: !!inputs.is_anonymous_caller,
-    repeatedFalseAlarmLocation: hasConfirmedFalseAt(priorIncidents, location),
-    smokeSensorTriggered: !!inputs.smoke_sensor_triggered,
-    callerCount: inputs.caller_count ?? 1,
-    firePersonnelConfirmedSmoke: !!inputs.fire_personnel_confirmed_smoke,
-    reported_at: reportedAt,
-  });
+  return computeFalseAlarmScore(
+    {
+      isAnonymousCaller: !!inputs.is_anonymous_caller,
+      repeatedFalseAlarmLocation: hasConfirmedFalseAt(priorIncidents, location),
+      smokeSensorTriggered: !!inputs.smoke_sensor_triggered,
+      callerCount: inputs.caller_count ?? 1,
+      firePersonnelConfirmedSmoke: !!inputs.fire_personnel_confirmed_smoke,
+      reported_at: reportedAt,
+    },
+    demoAiWeights,
+    demoAiThresholds,
+  );
 }
 
 function buildIncident(raw: (typeof rawIncidents)[number], priorIncidents: (typeof rawIncidents)[number][]) {
@@ -321,9 +337,77 @@ function tally(rows: { [k: string]: any }[], key: string) {
   return out;
 }
 
+const predictsFalseAlarm = (label: string) => label === 'likely_false' || label === 'confirmed_false';
+
+/** Same accuracy computation the real /api/ai-settings/false-alarm-accuracy endpoint does, run against the in-memory demo incidents. */
+function computeAiAccuracy() {
+  const reviewed = incidents.filter((i: any) => i.false_alarm_review_status === 'confirmed_false' || i.false_alarm_review_status === 'confirmed_real');
+  let truePositive = 0;
+  let trueNegative = 0;
+  let falsePositive = 0;
+  let falseNegative = 0;
+  const misses: any[] = [];
+  reviewed.forEach((r: any) => {
+    const predicted = predictsFalseAlarm(r.ai_false_alarm_label ?? '');
+    const actual = r.false_alarm_review_status === 'confirmed_false';
+    if (predicted && actual) truePositive++;
+    else if (!predicted && !actual) trueNegative++;
+    else if (predicted && !actual) {
+      falsePositive++;
+      misses.push(r);
+    } else {
+      falseNegative++;
+      misses.push(r);
+    }
+  });
+  const total = reviewed.length;
+  const correct = truePositive + trueNegative;
+  return {
+    total,
+    correct,
+    accuracy: total > 0 ? Math.round((correct / total) * 1000) / 10 : null,
+    confusionMatrix: { truePositive, trueNegative, falsePositive, falseNegative },
+    recentMisses: misses.slice(0, 5).map((r) => ({
+      id: r.id,
+      incident_number: r.incident_number,
+      location: r.location,
+      ai_false_alarm_score: r.ai_false_alarm_score,
+      ai_false_alarm_label: r.ai_false_alarm_label,
+      false_alarm_review_status: r.false_alarm_review_status,
+    })),
+  };
+}
+
+const TREND_DAYS = 14;
+
 export function getDashboardSummary() {
   const activeStatuses = ['reported', 'dispatched', 'on_scene'];
   const active = incidents.filter((i) => activeStatuses.includes(i.status));
+  const resolved = incidents.filter((i: any) => (i.status === 'resolved' || i.status === 'closed') && i.resolved_at);
+
+  const resolutionDurations = resolved
+    .map((i: any) => (new Date(i.resolved_at).getTime() - new Date(i.created_at).getTime()) / 60000)
+    .filter((mins: number) => Number.isFinite(mins) && mins >= 0);
+  const avgResponseMinutes =
+    resolutionDurations.length > 0
+      ? Math.round((resolutionDurations.reduce((a: number, b: number) => a + b, 0) / resolutionDurations.length) * 10) / 10
+      : null;
+  const resolutionRate = incidents.length > 0 ? Math.round((resolved.length / incidents.length) * 1000) / 10 : null;
+
+  const trendStart = new Date(Date.now() - (TREND_DAYS - 1) * 86400000);
+  trendStart.setHours(0, 0, 0, 0);
+  const trendCounts: Record<string, number> = {};
+  for (let i = 0; i < TREND_DAYS; i++) {
+    trendCounts[new Date(trendStart.getTime() + i * 86400000).toISOString().slice(0, 10)] = 0;
+  }
+  incidents.forEach((i: any) => {
+    const key = new Date(i.created_at).toISOString().slice(0, 10);
+    if (key in trendCounts) trendCounts[key] += 1;
+  });
+  const incidentsTrend = Object.entries(trendCounts).map(([date, count]) => ({ date, count }));
+
+  const accuracy = computeAiAccuracy();
+
   return {
     totalIncidents: incidents.length,
     activeIncidents: active.length,
@@ -343,6 +427,10 @@ export function getDashboardSummary() {
         id, incident_number, incident_type, location, severity, status, created_at,
       })),
     gpsIssues: gpsDevices.filter((d) => d.status !== 'online').map((d) => ({ device_code: d.device_code, status: d.status })),
+    avgResponseMinutes,
+    resolutionRate,
+    incidentsTrend,
+    aiAccuracy: { reviewedCount: accuracy.total, accuracy: accuracy.accuracy },
   };
 }
 
@@ -404,6 +492,30 @@ export function demoRequest(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: str
     return { ok: true };
   }
   if (clean === 'me') return demoProfile;
+
+  // "Train Your AI" -- false-alarm scoring weights/thresholds, held in the
+  // module-level demoAiWeights/demoAiThresholds so edits persist for the
+  // rest of the offline session and immediately affect newly-scored
+  // incidents (existing scored incidents are left as-is, same contract
+  // as the live backend).
+  if (clean === 'ai-settings/false-alarm-weights' && method === 'GET') {
+    return { weights: demoAiWeights, thresholds: demoAiThresholds, updatedBy: null, updatedAt: demoAiUpdatedAt };
+  }
+  if (clean === 'ai-settings/false-alarm-weights' && method === 'PUT') {
+    demoAiWeights = { ...DEFAULT_SCORE_WEIGHTS, ...(body?.weights ?? {}) };
+    demoAiThresholds = { ...DEFAULT_SCORE_THRESHOLDS, ...(body?.thresholds ?? {}) };
+    demoAiUpdatedAt = new Date().toISOString();
+    return { weights: demoAiWeights, thresholds: demoAiThresholds, updatedBy: 'demo-super-admin', updatedAt: demoAiUpdatedAt };
+  }
+  if (clean === 'ai-settings/false-alarm-weights/reset') {
+    demoAiWeights = { ...DEFAULT_SCORE_WEIGHTS };
+    demoAiThresholds = { ...DEFAULT_SCORE_THRESHOLDS };
+    demoAiUpdatedAt = new Date().toISOString();
+    return { weights: demoAiWeights, thresholds: demoAiThresholds, updatedBy: 'demo-super-admin', updatedAt: demoAiUpdatedAt };
+  }
+  if (clean === 'ai-settings/false-alarm-accuracy') {
+    return computeAiAccuracy();
+  }
 
   // AI-assist endpoints (Groq API) need a live backend + GROQ_API_KEY,
   // so in offline demo mode they return a clearly-labeled placeholder

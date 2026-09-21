@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
   Bell,
+  BrainCircuit,
+  Clock,
   ExternalLink,
   FileCheck,
   Flame,
@@ -11,13 +13,17 @@ import {
   LayoutDashboard,
   Milestone,
   ShieldAlert,
+  ShieldCheck,
+  Timer,
   Truck,
   Users,
   type LucideIcon,
 } from 'lucide-react';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { api } from '../lib/api';
 import { SkeletonCard, SkeletonTableRow } from '../components/Skeleton';
 import Badge from '../components/Badge';
+import TrainYourAiPanel from '../components/TrainYourAiPanel';
 
 interface Summary {
   totalIncidents: number;
@@ -41,6 +47,10 @@ interface Summary {
     created_at: string;
   }[];
   gpsIssues: { device_code: string; status: string }[];
+  avgResponseMinutes: number | null;
+  resolutionRate: number | null;
+  incidentsTrend: { date: string; count: number }[];
+  aiAccuracy: { reviewedCount: number; accuracy: number | null };
 }
 
 interface Vehicle {
@@ -435,6 +445,66 @@ export default function Dashboard() {
             to="/certificates"
             attention={summary.certificatesExpiringSoon > 0}
           />
+        </div>
+
+        {/* Performance scorecards — executive-summary KPIs computed from
+            resolved incidents and the false-alarm review queue, not just
+            raw counts: how fast we close incidents out, what fraction end
+            in resolution, and how well the AI's false-alarm calls have
+            held up against dispatch's own confirmed outcomes. */}
+        <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCard
+            label="Avg. Response Time"
+            value={summary.avgResponseMinutes != null ? `${Math.round(summary.avgResponseMinutes)}m` : '—'}
+            icon={Timer}
+            accent="blue"
+          />
+          <StatCard
+            label="Resolution Rate"
+            value={summary.resolutionRate != null ? `${summary.resolutionRate}%` : '—'}
+            icon={ShieldCheck}
+            accent="emerald"
+          />
+          <StatCard
+            label="AI False-Alarm Accuracy"
+            value={summary.aiAccuracy.accuracy != null ? `${summary.aiAccuracy.accuracy}%` : 'No data yet'}
+            icon={BrainCircuit}
+            accent="blue"
+          />
+          <StatCard label="Reviewed Incidents" value={summary.aiAccuracy.reviewedCount} icon={Clock} accent="amber" to="/false-alarms" />
+        </div>
+
+        {/* Advanced data graph — 14-day incident volume trend, so the
+            dashboard itself shows a live-updating history, not just
+            today's snapshot (the deeper breakdowns live on /reports). */}
+        <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none">
+          <p className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">Incident Volume — Last 14 Days</p>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={summary.incidentsTrend}>
+              <defs>
+                <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#dc2626" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#dc2626" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 11 }}
+                tickFormatter={(d: string) => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              />
+              <YAxis allowDecimals={false} tick={{ fontSize: 12 }} width={28} />
+              <Tooltip labelFormatter={(d: string) => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} />
+              <Area type="monotone" dataKey="count" name="Incidents" stroke="#dc2626" strokeWidth={2} fill="url(#trendFill)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* AI Training & Personalization module — collapsed by default so
+            it doesn't crowd the console for dispatchers who never touch
+            it, but one click away for whoever owns model tuning. */}
+        <div className="mb-6">
+          <TrainYourAiPanel />
         </div>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
